@@ -25,7 +25,8 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Parser
+      ParserCombinator
   other-modules:
       Paths_lispyhaskell
   hs-source-dirs:

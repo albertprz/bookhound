@@ -1,4 +1,4 @@
-module Parser (Parser(parse), ParseResult(..), ParseError(..), anyOf, char, isMatch) where
+module Parser (Parser(parse), ParseResult(..), ParseError(..), char, anyOf, allOf, isMatch, check) where
 
 type Input = String
 
@@ -8,7 +8,8 @@ data ParseResult a = Result Input a | Error ParseError
   deriving Eq
 
 data ParseError = UnexpectedEof       | ExpectedEof Input       |
-                  UnexpectedChar Char | UnexpectedString String
+                  UnexpectedChar Char | UnexpectedString String |
+                  NoMatch String
   deriving (Eq, Show)
 
 
@@ -18,6 +19,7 @@ instance Show a => Show (ParseResult a) where
   show (Error (ExpectedEof i))      = "Expected end of stream, but got >" ++ show i ++ "<"
   show (Error (UnexpectedChar c))   = "Unexpected character: " ++ [c]
   show (Error (UnexpectedString s)) = "Unexpected string: " ++ show s
+  show (Error (NoMatch s))          = "Did not match condition: " ++ s
 
 
 instance Functor ParseResult where
@@ -48,9 +50,17 @@ anyOf [] = errorParser UnexpectedEof
 anyOf [x] = x
 anyOf ((P p):rest) = P (
   \i -> case p i of
-    x @ (Result _ _) -> x
-    Error pe -> parse (anyOf rest) i)
+    result @ (Result _ _) -> result
+    error  @ (Error _)    -> parse (anyOf rest) i)
 
+
+allOf :: [Parser a] -> Parser a
+allOf [] = errorParser UnexpectedEof
+allOf [x] = x
+allOf ((P p):rest) = P (
+  \i -> case p i of
+    result @ (Result _ _) -> parse (allOf rest) i
+    error  @ (Error _)    -> error)
 
 char :: Parser Char
 char = P parseIt where
@@ -58,10 +68,18 @@ char = P parseIt where
   parseIt (char:rest) = Result rest char
 
 
-isMatch :: (Eq a, Show a) => Parser a -> a -> Parser a
+isMatch :: Parser Char -> Char -> Parser Char
 isMatch parser c1 = do
   c2 <- parser
   let next = if c1 == c2
              then pure
-             else const . errorParser $ UnexpectedString $ show c2
+             else const . errorParser $ UnexpectedChar c2
   next c1
+
+check :: (a -> Bool) -> String -> Parser a -> Parser a
+check cond condName parser = do
+  c2 <- parser
+  let next = if cond c2
+             then pure c2
+             else errorParser $ NoMatch condName
+  next

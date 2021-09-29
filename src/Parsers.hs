@@ -1,18 +1,18 @@
 module Parsers(Parser, char, digit, upper, lower, alpha, alphaNum, number,
                space, tab, newLine, comma, dot, quote, doubleQuote) where
 
-import Parser(Parser, char)
+import Internal.Parser(Parser, char)
 import ParserCombinators (IsMatch(..), (<|>), someTimes)
 
 
 digit :: Parser Char
-digit = oneOf ['0' .. '9']
+digit = inSet ['0' .. '9']
 
 upper :: Parser Char
-upper = oneOf ['A' .. 'Z']
+upper = inSet ['A' .. 'Z']
 
 lower :: Parser Char
-lower = oneOf ['a' .. 'z']
+lower = inSet ['a' .. 'z']
 
 alpha :: Parser Char
 alpha =  upper <|> lower

@@ -1,4 +1,4 @@
-module Parser (Parser(parse), ParseResult(..), ParseError(..), char, anyOf, allOf, isMatch, check) where
+module Internal.Parser (Parser(parse), ParseResult(..), ParseError(..), char, anyOf, allOf, isMatch, check) where
 
 type Input = String
 
@@ -76,8 +76,8 @@ isMatch parser c1 = do
              else const . errorParser $ UnexpectedChar c2
   next c1
 
-check :: (a -> Bool) -> String -> Parser a -> Parser a
-check cond condName parser = do
+check :: String -> (a -> Bool) -> Parser a -> Parser a
+check condName cond parser = do
   c2 <- parser
   let next = if cond c2
              then pure c2

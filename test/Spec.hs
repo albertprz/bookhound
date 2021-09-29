@@ -1,11 +1,18 @@
-module Spec where
+{-# LANGUAGE PostfixOperators #-}
 
-import Parsers (Parser)
-import ParserCombinators ((|*), oneOf)
+import Parsers (number)
+import ParserCombinators ((<#>), (|+), (|?))
 
-myParser = do spaces
-              x <- (|*) $ oneOf ['a' .. 'z']
-              oneOf [67, 89, 75]
-              pure x
 
-result = parse myParser "56   75"
+myParser = do number
+              (space |+)
+              w1 <- lower <#> 3
+              (inSet ['_', '-'] |?)
+              w2 <- lower <#> 3
+              (space |+)
+              number
+
+              pure [w1, w2]
+
+
+result = parse myParser "56   abc-def   75"

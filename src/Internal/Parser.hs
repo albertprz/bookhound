@@ -1,7 +1,6 @@
 module Internal.Parser where
 
 import Data.Maybe (maybeToList)
-import GHC.Real (reduce)
 
 type Input = String
 
@@ -44,14 +43,6 @@ instance Monad Parser where
       Error pe -> Error pe)
 
 
-
-  -- x :: Parser a -> Parser String
-
--- instance (ToList m, ToString a) => ParserOps (m a) where
---   normalize = ((fmap toString . toList) <$>)
-  -- x = (foldl ++ [] . fmap (: []) <$>)
-
--- foldl ++ [] .
 
 char :: Parser Char
 char = P parseIt where

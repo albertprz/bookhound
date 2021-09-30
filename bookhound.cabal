@@ -26,9 +26,12 @@ library
   exposed-modules:
       Internal.Parser
       ParserCombinators
-      Parsers
-      Util.List
-      Util.String
+      Parsers.Char
+      Parsers.Collections
+      Parsers.Number
+      Parsers.String
+      Util.ListOps
+      Util.StringOps
   other-modules:
       Paths_bookhound
   hs-source-dirs:

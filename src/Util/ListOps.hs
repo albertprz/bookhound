@@ -1,4 +1,4 @@
-module Util.List where
+module Util.ListOps where
 
 hasNone :: [a] -> Bool
 hasNone = null

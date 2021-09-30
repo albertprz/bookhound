@@ -1,6 +1,7 @@
 {-# LANGUAGE  FlexibleInstances, UndecidableInstances, IncoherentInstances  #-}
 
-module Util.String where
+module Util.StringOps where
+
 
 class ToString a where
   toString :: a -> String

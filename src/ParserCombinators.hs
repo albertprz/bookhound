@@ -1,10 +1,10 @@
 {-# LANGUAGE FlexibleInstances, UndecidableInstances, IncoherentInstances, MonoLocalBinds  #-}
 
-module ParserCombinators where
+module ParserCombinators (module ParserCombinators, Parser(parse)) where
 
 import Internal.Parser (Parser(parse), char, isMatch, check, anyOf, allOf)
-import Util.List (hasSome, hasMany)
-import Util.String (ToString(..))
+import Util.ListOps (hasSome, hasMany)
+import Util.StringOps (ToString(..))
 
 import Data.Maybe (listToMaybe, maybeToList)
 
@@ -63,7 +63,7 @@ manyTimes = check "manyTimes" hasMany . anyTimes
 (<#>) = times
 
 (>>>) :: (ToString a, ToString b) => Parser a -> Parser b -> Parser String
-(>>>) p1 p2 = (toString <$> p1) >>= \x -> (x ++) <$> (toString <$> p2)
+(>>>) p1 p2 = p1 >>= (\x -> (x ++) <$> (toString <$> p2)) . toString
 
 
 -- Parser Unary Operators

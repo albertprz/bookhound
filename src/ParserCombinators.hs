@@ -1,30 +1,37 @@
-{-# LANGUAGE FlexibleInstances, UndecidableInstances, IncoherentInstances, PostfixOperators  #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances, IncoherentInstances, MonoLocalBinds  #-}
 
-module ParserCombinators(IsMatch(..), (<|>), (<&>), (<#>), (|?), (|*), (|+), (|++),
-                         anyOf, allOf, times, maybeTimes, anyTimes, someTimes, manyTimes) where
+module ParserCombinators where
 
-import Internal.Parser (Parser(parse), char, anyOf, allOf, isMatch, check)
+import Internal.Parser (Parser(parse), char, isMatch, check, anyOf, allOf)
 import Util.List (hasSome, hasMany)
-import Data.Maybe (listToMaybe)
+import Util.String (ToString(..))
+
+import Data.Maybe (listToMaybe, maybeToList)
 
 
 class IsMatch a where
   is :: a -> Parser a
-  inSet :: [a] -> Parser a
+  isNot :: a -> Parser a
+  oneOf :: [a] -> Parser a
+  noneOf :: [a] -> Parser a
   satisfies :: Parser a -> (a -> Bool) -> Parser a
 
-  inSet xs = anyOf $ is <$> xs
+  oneOf xs = anyOf $ is <$> xs
+  noneOf xs = allOf $ isNot <$> xs
   satisfies parser cond = check "satisfies" cond parser
 
 
 instance IsMatch Char where
-  is = isMatch char
+  is = isMatch (==) char
+  isNot = isMatch (/=) char
 
 instance IsMatch String where
   is = traverse is
+  isNot = traverse isNot
 
 instance (Num a, Read a, Show a) => IsMatch a where
   is n = read <$> (is . show) n
+  isNot n = read <$> (isNot . show) n
 
 
 
@@ -54,6 +61,9 @@ manyTimes = check "manyTimes" hasMany . anyTimes
 
 (<#>) :: Parser a -> Integer -> Parser [a]
 (<#>) = times
+
+(>>>) :: (ToString a, ToString b) => Parser a -> Parser b -> Parser String
+(>>>) p1 p2 = (toString <$> p1) >>= \x -> (x ++) <$> (toString <$> p2)
 
 
 -- Parser Unary Operators

@@ -13,7 +13,6 @@ author:         Author name here
 maintainer:     example@example.com
 copyright:      2021 Author name here
 license:        BSD3
-license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
@@ -29,6 +28,7 @@ library
       ParserCombinators
       Parsers
       Util.List
+      Util.String
   other-modules:
       Paths_bookhound
   hs-source-dirs:

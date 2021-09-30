@@ -7,11 +7,10 @@ import ParserCombinators ((<#>), (|+), (|?))
 myParser = do number
               (space |+)
               w1 <- lower <#> 3
-              (inSet ['_', '-'] |?)
+              (oneOf ['_', '-'] |?)
               w2 <- lower <#> 3
               (space |+)
               number
-
               pure [w1, w2]
 
 

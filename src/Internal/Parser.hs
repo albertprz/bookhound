@@ -1,4 +1,7 @@
-module Internal.Parser (Parser(parse), ParseResult(..), ParseError(..), char, anyOf, allOf, isMatch, check) where
+module Internal.Parser where
+
+import Data.Maybe (maybeToList)
+import GHC.Real (reduce)
 
 type Input = String
 
@@ -41,6 +44,21 @@ instance Monad Parser where
       Error pe -> Error pe)
 
 
+
+  -- x :: Parser a -> Parser String
+
+-- instance (ToList m, ToString a) => ParserOps (m a) where
+--   normalize = ((fmap toString . toList) <$>)
+  -- x = (foldl ++ [] . fmap (: []) <$>)
+
+-- foldl ++ [] .
+
+char :: Parser Char
+char = P parseIt where
+  parseIt [] = Error UnexpectedEof
+  parseIt (char:rest) = Result rest char
+
+
 errorParser :: ParseError -> Parser a
 errorParser = P . const . Error
 
@@ -62,19 +80,15 @@ allOf ((P p):rest) = P (
     result @ (Result _ _) -> parse (allOf rest) i
     error  @ (Error _)    -> error)
 
-char :: Parser Char
-char = P parseIt where
-  parseIt [] = Error UnexpectedEof
-  parseIt (char:rest) = Result rest char
 
-
-isMatch :: Parser Char -> Char -> Parser Char
-isMatch parser c1 = do
+isMatch :: (Char -> Char -> Bool) -> Parser Char -> Char -> Parser Char
+isMatch cond parser c1 = do
   c2 <- parser
-  let next = if c1 == c2
+  let next = if cond c1 c2
              then pure
              else const . errorParser $ UnexpectedChar c2
   next c1
+
 
 check :: String -> (a -> Bool) -> Parser a -> Parser a
 check condName cond parser = do

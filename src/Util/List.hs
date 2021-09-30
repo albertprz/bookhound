@@ -1,4 +1,4 @@
-module Util.List(hasNone, hasSome, hasMany) where
+module Util.List where
 
 hasNone :: [a] -> Bool
 hasNone = null

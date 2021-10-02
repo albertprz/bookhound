@@ -2,11 +2,11 @@
 
 module Json.Parser where
 
-import ParserCombinators (Parser(parse), IsMatch(..), (<|>), (>>>), (|*), (|?))
+import ParserCombinators (Parser, IsMatch(..), (<|>), (>>>), (|*), (|?))
 import Parsers.Number (double)
 import Parsers.Collections (listOf, mapOf)
 import Parsers.Char (char, alphaNum)
-import Parsers.String (withinDoubleQuotes, withinSpacing)
+import Parsers.String (withinDoubleQuotes, maybeWithinSpacing)
 import Json.Ast (JsExpression(..))
 
 
@@ -36,6 +36,6 @@ nil = JsNull <$ is "null"
 
 
 json :: Parser JsExpression
-json = withinSpacing jsValue where
+json = maybeWithinSpacing jsValue where
 
   jsValue = number <|> bool <|> string <|> array <|> object <|> nil

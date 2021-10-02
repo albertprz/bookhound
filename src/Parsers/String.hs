@@ -2,13 +2,16 @@
 
 module Parsers.String where
 
-import ParserCombinators (Parser, IsMatch(..), (|*), (<|>))
-import Parsers.Char (char, digit, upper, lower, letter, alpha, alphaNum, space, quote, doubleQuote, openParens, closeParens, openBracket, closeBracket, openCurly, closeCurly)
+import ParserCombinators (Parser, IsMatch(..), (|*), (|+), (|?), (<|>))
+import Parsers.Char (char, digit, upper, lower, letter, alpha, alphaNum, space, quote, doubleQuote, openParens, closeParens, openBracket, closeBracket, openCurly, closeCurly, openAngle, closeAngle)
 import Util.MonadOps (extract)
 
 
 string :: Parser String
 string = (char |*)
+
+word :: Parser String
+word = string `satisfies` notElem ' '
 
 digits :: Parser String
 digits = (digit |*)
@@ -46,7 +49,7 @@ newLines :: Parser [String]
 newLines = (newLine |*)
 
 spacing :: Parser [String]
-spacing = ((((: []) <$> space) <|> tab <|> newLine) |*)
+spacing = ((((: []) <$> space) <|> tab <|> newLine) |+)
 
 
 
@@ -65,5 +68,11 @@ withinBrackets = extract openBracket closeBracket
 withinCurlyBrackets :: Parser b -> Parser b
 withinCurlyBrackets = extract openCurly closeCurly
 
+withinAngleBrackets :: Parser b -> Parser b
+withinAngleBrackets = extract openAngle closeAngle
+
 withinSpacing :: Parser b -> Parser b
 withinSpacing = extract spacing spacing
+
+maybeWithinSpacing :: Parser b -> Parser b
+maybeWithinSpacing = extract (spacing |?) (spacing |?)

@@ -34,6 +34,8 @@ library
       Util.FoldableOps
       Util.MonadOps
       Util.StringOps
+      Xml.Ast
+      Xml.Parser
   other-modules:
       Paths_bookhound
   hs-source-dirs:

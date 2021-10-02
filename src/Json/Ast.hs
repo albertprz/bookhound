@@ -40,9 +40,9 @@ instance Ord JsExpression where
 instance Show JsExpression where
   show expr = case expr of
     JsNull       -> "null"
-    JsNumber x   -> show x
-    JsBool x     -> toLower <$> show x
-    JsString x   -> show x
+    JsNumber n   -> show n
+    JsBool bool  -> toLower <$> show bool
+    JsString str -> show str
     JsArray arr  -> stringify "," "[" "]" $ show   <$> arr
     JsObject obj -> stringify "," "{" "}" $ showFn <$> tuples where
 

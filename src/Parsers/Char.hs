@@ -70,3 +70,9 @@ openCurly = is '{'
 
 closeCurly :: Parser Char
 closeCurly = is '}'
+
+openAngle :: Parser Char
+openAngle = is '<'
+
+closeAngle :: Parser Char
+closeAngle = is '>'

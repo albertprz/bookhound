@@ -42,11 +42,31 @@ colon = is ':'
 quote :: Parser Char
 quote = is '\''
 
-doubleQuote :: Parser Char
-doubleQuote = is '"'
+doubleQuote :: Parser String
+doubleQuote = is "\""
 
 dash :: Parser Char
 dash = is '-'
 
 underscore :: Parser Char
 underscore = is '_'
+
+
+
+openParens :: Parser Char
+openParens = is '('
+
+closeParens :: Parser Char
+closeParens = is ')'
+
+openBracket :: Parser Char
+openBracket = is '['
+
+closeBracket :: Parser Char
+closeBracket = is ']'
+
+openCurly :: Parser Char
+openCurly = is '{'
+
+closeCurly :: Parser Char
+closeCurly = is '}'

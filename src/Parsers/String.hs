@@ -2,8 +2,9 @@
 
 module Parsers.String where
 
-import ParserCombinators (Parser, IsMatch(..), (|*))
-import Parsers.Char (char, digit, upper, lower, letter, alpha, alphaNum, space)
+import ParserCombinators (Parser, IsMatch(..), (|*), (<|>))
+import Parsers.Char (char, digit, upper, lower, letter, alpha, alphaNum, space, quote, doubleQuote, openParens, closeParens, openBracket, closeBracket, openCurly, closeCurly)
+import Util.MonadOps (extract)
 
 
 string :: Parser String
@@ -39,7 +40,30 @@ tabs :: Parser [String]
 tabs = (tab |*)
 
 newLine :: Parser String
-newLine = is "\n"
+newLine = oneOf ["\n", "\r"]
 
 newLines :: Parser [String]
 newLines = (newLine |*)
+
+spacing :: Parser [String]
+spacing = ((((: []) <$> space) <|> tab <|> newLine) |*)
+
+
+
+withinQuotes :: Parser b -> Parser b
+withinQuotes = extract quote quote
+
+withinDoubleQuotes :: Parser b -> Parser b
+withinDoubleQuotes = extract doubleQuote doubleQuote
+
+withinParens :: Parser b -> Parser b
+withinParens = extract openParens closeParens
+
+withinBrackets :: Parser b -> Parser b
+withinBrackets = extract openBracket closeBracket
+
+withinCurlyBrackets :: Parser b -> Parser b
+withinCurlyBrackets = extract openCurly closeCurly
+
+withinSpacing :: Parser b -> Parser b
+withinSpacing = extract spacing spacing

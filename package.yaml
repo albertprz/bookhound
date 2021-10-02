@@ -1,5 +1,5 @@
 name:                bookhound
-version:             0.1.0.0
+version:             0.1.0
 github:              "githubuser/bookhound"
 license:             BSD3
 author:              "Author name here"
@@ -8,7 +8,6 @@ copyright:           "2021 Author name here"
 
 extra-source-files:
 - README.md
-- ChangeLog.md
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -21,20 +20,10 @@ description: Please see the README on GitHub at <https://github.com/githubuser/b
 
 dependencies:
 - base >= 4.7 && < 5
+- containers
 
 library:
   source-dirs: src
-
-executables:
-  bookhound-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - bookhound
 
 tests:
   bookhound-test:

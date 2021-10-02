@@ -3,7 +3,7 @@
 module ParserCombinators (module ParserCombinators, Parser(parse)) where
 
 import Internal.Parser (Parser(parse), char, isMatch, check, anyOf, allOf)
-import Util.ListOps (hasSome, hasMany)
+import Util.FoldableOps (hasSome, hasMany)
 import Util.StringOps (ToString(..))
 
 import Data.Maybe (listToMaybe, maybeToList)
@@ -49,7 +49,6 @@ someTimes = check "someTimes" hasSome . anyTimes
 
 manyTimes :: Parser a -> Parser [a]
 manyTimes = check "manyTimes" hasMany . anyTimes
-
 
 
 -- Parser Binary Operators

@@ -43,6 +43,12 @@ instance Monad Parser where
       Error pe -> Error pe)
 
 
+toEither :: ParseResult a -> Either a ParseError
+toEither result = case result of
+  Error pe -> Right pe
+  Result input a -> if null input then Left a
+                    else               Right $ ExpectedEof input
+
 
 char :: Parser Char
 char = P parseIt where
@@ -78,13 +84,13 @@ isMatch cond parser c1 = do
   let next = if cond c1 c2
              then pure
              else const . errorParser $ UnexpectedChar c2
-  next c1
+  next c2
 
 
 check :: String -> (a -> Bool) -> Parser a -> Parser a
 check condName cond parser = do
   c2 <- parser
   let next = if cond c2
-             then pure c2
-             else errorParser $ NoMatch condName
-  next
+             then pure
+             else const . errorParser $ NoMatch condName
+  next c2

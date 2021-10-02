@@ -1,6 +1,7 @@
 {-# LANGUAGE  FlexibleInstances, UndecidableInstances, IncoherentInstances  #-}
 
 module Util.StringOps where
+import Data.List (intercalate)
 
 
 class ToString a where
@@ -17,3 +18,9 @@ instance (Num a, Show a) => ToString a where
 
 instance (ToString a, Foldable m) => ToString (m a) where
   toString = concatMap toString
+
+
+
+indent :: Int -> String -> String
+indent n str = intercalate "\n" $ indentLine n <$> lines str where
+  indentLine n = (concat (replicate n " ") ++)

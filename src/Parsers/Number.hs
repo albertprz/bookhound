@@ -2,7 +2,7 @@
 
 module Parsers.Number where
 
-import ParserCombinators (Parser, (>>>), (<|>), (|*), (|+), (|?))
+import ParserCombinators (Parser, IsMatch(..), (>>>), (<|>), (|*), (|+), (|?))
 import Parsers.Char (digit, dot, dash)
 
 
@@ -15,5 +15,8 @@ negInt = read <$> dash >>> (digit |+)
 int :: Parser Integer
 int = negInt <|> posInt
 
-number :: Parser Double
-number = read <$> int >>> (dot >>> posInt |?)
+double :: Parser Double
+double = read <$> int >>> (decimals |?) >>> (exp |?) where
+
+  decimals = dot >>> posInt
+  exp      = oneOf ['e', 'E'] >>> posInt

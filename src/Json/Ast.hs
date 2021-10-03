@@ -11,30 +11,7 @@ import Data.Char (toLower)
 data JsExpression = JsNumber Double | JsBool Bool |
                     JsString String | JsArray [JsExpression] |
                     JsObject (Map JsExpression JsExpression) |
-                    JsNull
-
-
-instance Eq JsExpression where
-  (==) a b = case (a, b) of
-    (JsNumber x, JsNumber y) -> x == y
-    (JsBool x, JsBool y)     -> x == y
-    (JsString x, JsString y) -> x == y
-    (JsArray x, JsArray y)   -> x == y
-    (JsObject x, JsObject y) -> x == y
-    (JsNull, JsNull)         -> True
-    (_, _ )                  -> False
-
-
-
-instance Ord JsExpression where
-  compare a b = case (a, b) of
-    (JsNumber x, JsNumber y) -> compare x y
-    (JsBool x, JsBool y)     -> compare x y
-    (JsString x, JsString y) -> compare x y
-    (JsArray x, JsArray y)   -> compare x y
-    (JsObject x, JsObject y) -> compare x y
-    (JsNull, JsNull)         -> Ord.EQ
-    (_, _)                   -> error "cannot compare these values"
+                    JsNull deriving (Eq, Ord)
 
 
 instance Show JsExpression where
@@ -43,8 +20,8 @@ instance Show JsExpression where
     JsNumber n   -> show n
     JsBool bool  -> toLower <$> show bool
     JsString str -> show str
-    JsArray arr  -> stringify "," "[" "]" $ show   <$> arr
-    JsObject obj -> stringify "," "{" "}" $ showFn <$> tuples where
+    JsArray arr  -> stringify ",\n" "[\n" "\n]" 2 $ show   <$> arr
+    JsObject obj -> stringify ",\n" "{\n" "\n}" 2 $ showFn <$> tuples where
 
       showFn (x, y) = show x ++ ": " ++ show y
       tuples = zip (keys obj) (elems obj)

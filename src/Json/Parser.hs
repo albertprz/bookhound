@@ -2,7 +2,7 @@
 
 module Json.Parser where
 
-import ParserCombinators (Parser, IsMatch(..), (<|>), (>>>), (|*), (|?))
+import ParserCombinators (Parser(parse), IsMatch(..), (<|>), (>>>), (|*), (|?))
 import Parsers.Number (double)
 import Parsers.Collections (listOf, mapOf)
 import Parsers.Char (char, alphaNum)

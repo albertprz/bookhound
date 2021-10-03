@@ -16,10 +16,10 @@ data ParseError = UnexpectedEof       | ExpectedEof Input       |
 
 
 instance Show a => Show (ParseResult a) where
-  show (Result i a)                 = "Result" ++ " >" ++ i ++ "< " ++ show a
+  show (Result i a)                 = "Result" ++ " >" ++ i ++ "< " ++ "\n\n" ++ show a
   show (Error UnexpectedEof)        = "Unexpected end of stream"
   show (Error (ExpectedEof i))      = "Expected end of stream, but got >" ++ show i ++ "<"
-  show (Error (UnexpectedChar c))   = "Unexpected character: " ++ [c]
+  show (Error (UnexpectedChar c))   = "Unexpected character: " ++ show c
   show (Error (UnexpectedString s)) = "Unexpected string: " ++ show s
   show (Error (NoMatch s))          = "Did not match condition: " ++ s
 

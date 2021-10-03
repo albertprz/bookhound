@@ -15,8 +15,8 @@ hasMany :: Foldable m => m a -> Bool
 hasMany xs = all hasSome $ [id, tail] <*> [Foldable.toList xs]
 
 
-stringify :: (Foldable m) => String -> String -> String -> m String -> String
-stringify sep start end xs = start ++ "\n" ++ indent 2 str ++ "\n" ++ end where
+stringify :: (Foldable m) => String -> String -> String -> Int -> m String -> String
+stringify sep start end n xs = start ++ indent n str ++ end where
 
-  str = intercalate (sep ++ "\n") list
+  str = intercalate sep list
   list = toList xs

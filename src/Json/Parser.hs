@@ -1,6 +1,6 @@
 {-# LANGUAGE PostfixOperators #-}
 
-module Json.Parser where
+module Json.Parser(json) where
 
 import ParserCombinators (Parser(parse), IsMatch(..), (<|>), (>>>), (|*), (|?))
 import Parsers.Number (double)

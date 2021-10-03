@@ -23,6 +23,7 @@ source-repository head
 
 library
   exposed-modules:
+      Converters.ToXml
       Internal.Parser
       Json.Ast
       Json.Parser

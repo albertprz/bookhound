@@ -1,13 +1,13 @@
 {-# LANGUAGE PostfixOperators #-}
 
-module Xml.Parser where
+module Xml.Parser(xml) where
 
 import ParserCombinators (Parser(parse), IsMatch(..), (<|>), (>>>), (|*), (|+))
 import Parsers.Number (double)
 import Parsers.Collections (listOf, mapOf)
 import Parsers.Char (space)
 import Parsers.String (withinDoubleQuotes, withinAngleBrackets, spacing, maybeWithinSpacing)
-import Xml.Ast ( XmlExpression(..) )
+import Xml.Ast ( XmlExpression(..), literalExpression )
 
 import qualified Data.Map as Map
 import Data.Map(Map)
@@ -36,17 +36,16 @@ branchExpr :: Parser XmlExpression
 branchExpr = do (tag, flds) <- withinAngleBrackets fullTag
                 exprs       <- (xml |+) <|> literal
                 maybeWithinSpacing (is ("</" ++ tag ++ ">"))
-                pure $ XmlExpression tag flds exprs
+                pure $ XmlExpression { tagName = tag, fields = flds, expressions = exprs }
 
 
 literal :: Parser [XmlExpression]
-literal = (\val -> [XmlExpression "literalValue" (Map.fromList [("value", val)]) []]) <$>
-           maybeWithinSpacing (noneOf "<" |*)
+literal = (: []) . literalExpression <$> maybeWithinSpacing (noneOf "<" |*)
 
 
 leafExpr :: Parser XmlExpression
 leafExpr = do (tag, flds) <- withinAngleBrackets (fullTag <* is '/')
-              pure $ XmlExpression tag flds []
+              pure $ XmlExpression { tagName = tag, fields = flds, expressions = [] }
 
 
 header :: Parser String

@@ -13,14 +13,10 @@ import Data.Map(Map)
 
 collOf :: Char -> Char -> Char -> Parser a -> Parser [a]
 collOf sep start end parser = do is start
-                                 elems <- (elemParser |*)
-                                 elem <- maybeWithinSpacing (parser |?)
+                                 elems <- ((maybeWithinSpacing $ parser <* is sep) |*)
+                                 elem  <- maybeWithinSpacing (parser |?)
                                  is end
-                                 pure (elems ++ Foldable.toList elem) where
-
-  elemParser = do elem <- maybeWithinSpacing parser
-                  is sep
-                  pure elem
+                                 pure (elems ++ Foldable.toList elem)
 
 
 listOf :: Parser a -> Parser [a]

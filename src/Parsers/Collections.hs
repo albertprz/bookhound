@@ -2,7 +2,8 @@
 
 module Parsers.Collections where
 
-import ParserCombinators (Parser, IsMatch(..), (<|>), (|*), (|?))
+import Parser (Parser)
+import ParserCombinators (IsMatch(..), (<|>), (|*), (|?))
 import Parsers.Char (colon)
 import Parsers.String(maybeWithinSpacing)
 

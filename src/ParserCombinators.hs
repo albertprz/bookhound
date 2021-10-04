@@ -1,10 +1,10 @@
-{-# LANGUAGE FlexibleInstances, UndecidableInstances, IncoherentInstances, MonoLocalBinds  #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances, IncoherentInstances #-}
 
-module ParserCombinators (module ParserCombinators, Parser(parse)) where
+module ParserCombinators  where
 
-import Internal.Parser (Parser(parse), char, isMatch, check, anyOf, allOf)
-import Util.FoldableOps (hasSome, hasMany)
-import Util.StringOps (ToString(..))
+import Parser (Parser, char, isMatch, check, anyOf, allOf)
+import Utils.FoldableOps (hasSome, hasMany)
+import Utils.StringOps (ToString(..))
 
 import Data.Maybe (listToMaybe, maybeToList)
 

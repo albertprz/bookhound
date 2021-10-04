@@ -1,4 +1,4 @@
-module Util.MonadOps where
+module Utils.MonadOps where
 
 import qualified Data.Foldable as Foldable
 import GHC.OldList (intercalate)

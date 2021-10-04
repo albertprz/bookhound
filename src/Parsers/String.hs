@@ -2,9 +2,10 @@
 
 module Parsers.String where
 
-import ParserCombinators (Parser, IsMatch(..), (|*), (|+), (|?), (<|>))
-import Parsers.Char (char, digit, upper, lower, letter, alpha, alphaNum, space, quote, doubleQuote, openParens, closeParens, openBracket, closeBracket, openCurly, closeCurly, openAngle, closeAngle)
-import Util.MonadOps (extract)
+import Parser (Parser)
+import ParserCombinators (IsMatch(..), (|*), (|+), (|?), (<|>))
+import Parsers.Char
+import Utils.MonadOps (extract)
 
 
 string :: Parser String

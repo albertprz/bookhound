@@ -1,13 +1,14 @@
 {-# LANGUAGE PostfixOperators #-}
 
-module Xml.Parser(xml) where
+module Parsers.Xml (xml) where
 
-import ParserCombinators (Parser(parse), IsMatch(..), (<|>), (>>>), (|*), (|+))
+import Parser (Parser)
+import ParserCombinators (IsMatch(..), (<|>), (>>>), (|*), (|+))
 import Parsers.Number (double)
 import Parsers.Collections (listOf, mapOf)
 import Parsers.Char (space)
 import Parsers.String (withinDoubleQuotes, withinAngleBrackets, spacing, maybeWithinSpacing)
-import Xml.Ast ( XmlExpression(..), literalExpression )
+import SyntaxTrees.Xml ( XmlExpression(..), literalExpression )
 
 import qualified Data.Map as Map
 import Data.Map(Map)

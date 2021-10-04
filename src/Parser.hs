@@ -1,4 +1,4 @@
-module Internal.Parser where
+module Parser where
 
 import Data.Maybe (maybeToList)
 

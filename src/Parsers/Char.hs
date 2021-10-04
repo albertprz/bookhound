@@ -1,7 +1,8 @@
 module Parsers.Char where
 
-import qualified Internal.Parser as Parser
-import ParserCombinators (Parser, IsMatch(..), (<|>))
+import qualified Parser
+import Parser (Parser)
+import ParserCombinators (IsMatch(..), (<|>))
 
 
 char :: Parser Char

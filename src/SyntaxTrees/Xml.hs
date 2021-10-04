@@ -1,12 +1,11 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Xml.Ast where
+module SyntaxTrees.Xml where
 
-import Util.FoldableOps (stringify)
+import Utils.FoldableOps (stringify)
 
 import Data.Map (Map, keys, elems)
 import qualified Data.Map as Map
-
 import Data.Maybe (listToMaybe)
 
 
@@ -20,14 +19,14 @@ data XmlExpression = XmlExpression {
 instance Show XmlExpression where
 
   show XmlExpression { tagName = tag, fields, expressions }
-    | tag == "|literal|"  = head . elems $ fields
-    | otherwise           = "<" ++ tag ++ flds ++ innerExprs   where
+    | tag == "literal"  = head . elems $ fields
+    | otherwise         = "<" ++ tag ++ flds ++ innerExprs   where
 
         innerExprs = if null expressions then "/>"
                      else                     ">"  ++ ending
 
-        (sep, n) = if (tagName . head) expressions == "|literal|" then ("", 0)
-                   else                                                ("\n", 2)
+        (sep, n) = if (tagName . head) expressions == "literal" then ("", 0)
+                   else                                              ("\n", 2)
 
         ending = stringify sep sep sep n (show <$> expressions) ++ "</" ++ tag ++ ">"
 
@@ -41,7 +40,7 @@ instance Show XmlExpression where
 
 
 literalExpression :: String -> XmlExpression
-literalExpression val = XmlExpression { tagName = "|literal|",
+literalExpression val = XmlExpression { tagName = "literal",
                                         fields = Map.fromList [("value", val)],
                                         expressions = [] }
 

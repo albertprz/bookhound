@@ -1,6 +1,6 @@
-module Util.FoldableOps where
+module Utils.FoldableOps where
 
-import Util.StringOps ( indent )
+import Utils.StringOps ( indent )
 import Data.Foldable as Foldable ( Foldable(toList) )
 import Data.List ( intercalate )
 

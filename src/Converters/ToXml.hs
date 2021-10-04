@@ -1,15 +1,21 @@
+{-# LANGUAGE PostfixOperators, FlexibleInstances, UndecidableInstances, IncoherentInstances #-}
+
 module Converters.ToXml where
 
-import Xml.Ast (XmlExpression(..), literalExpression)
-import Json.Ast (JsExpression(..))
+import SyntaxTrees.Xml  (XmlExpression(..), literalExpression)
+import SyntaxTrees.Json (JsExpression(..))
+import Converters.ToJson (ToJson(..))
+
 import qualified Data.Map as Map
 import Data.Char (toLower)
-import Json.Parser (json)
-import ParserCombinators (Parser(parse))
 
 
 class ToXml a where
   toXml :: a -> XmlExpression
+
+
+instance ToXml XmlExpression where
+  toXml = id
 
 
 instance ToXml JsExpression where
@@ -28,6 +34,10 @@ instance ToXml JsExpression where
 
     JsObject obj -> XmlExpression "object" Map.empty (keyValueExpr <$> Map.toList obj)  where
 
-      keyValueExpr (key, value) = XmlExpression { tagName = read $ show key,
+      keyValueExpr (key, value) = XmlExpression { tagName = key,
                                                   fields = Map.empty,
                                                   expressions = [toXml value] }
+
+
+instance ToJson a => ToXml a where
+  toXml = toXml . toJson

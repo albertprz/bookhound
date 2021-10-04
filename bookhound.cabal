@@ -23,20 +23,21 @@ source-repository head
 
 library
   exposed-modules:
+      Converters.ToJson
       Converters.ToXml
-      Internal.Parser
-      Json.Ast
-      Json.Parser
+      Parser
       ParserCombinators
       Parsers.Char
       Parsers.Collections
+      Parsers.Json
       Parsers.Number
       Parsers.String
-      Util.FoldableOps
-      Util.MonadOps
-      Util.StringOps
-      Xml.Ast
-      Xml.Parser
+      Parsers.Xml
+      SyntaxTrees.Json
+      SyntaxTrees.Xml
+      Utils.FoldableOps
+      Utils.MonadOps
+      Utils.StringOps
   other-modules:
       Paths_bookhound
   hs-source-dirs:

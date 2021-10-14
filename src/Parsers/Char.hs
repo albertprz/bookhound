@@ -3,6 +3,7 @@ module Parsers.Char where
 import qualified Parser
 import Parser (Parser)
 import ParserCombinators (IsMatch(..), (<|>))
+import Data.Data (ConstrRep(CharConstr))
 
 
 char :: Parser Char
@@ -31,6 +32,18 @@ alphaNum = alpha <|> digit
 space :: Parser Char
 space = is ' '
 
+tab :: Parser Char
+tab = is '\t'
+
+spaceOrTab :: Parser Char
+spaceOrTab = space <|> tab
+
+whiteSpace :: Parser Char
+whiteSpace = space <|> tab <|> newLine
+
+newLine :: Parser Char
+newLine = is '\n'
+
 comma :: Parser Char
 comma = is ','
 
@@ -43,14 +56,20 @@ colon = is ':'
 quote :: Parser Char
 quote = is '\''
 
-doubleQuote :: Parser String
-doubleQuote = is "\""
+doubleQuote :: Parser Char
+doubleQuote = is '"'
 
 dash :: Parser Char
 dash = is '-'
 
+plus :: Parser Char
+plus = is '+'
+
 underscore :: Parser Char
 underscore = is '_'
+
+hashTag :: Parser Char
+hashTag = is '#'
 
 
 

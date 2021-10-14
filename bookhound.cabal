@@ -25,6 +25,7 @@ library
   exposed-modules:
       Converters.ToJson
       Converters.ToXml
+      Converters.ToYaml
       Parser
       ParserCombinators
       Parsers.Char
@@ -33,8 +34,10 @@ library
       Parsers.Number
       Parsers.String
       Parsers.Xml
+      Parsers.Yaml
       SyntaxTrees.Json
       SyntaxTrees.Xml
+      SyntaxTrees.Yaml
       Utils.FoldableOps
       Utils.MonadOps
       Utils.StringOps

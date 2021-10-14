@@ -8,13 +8,13 @@ import Parser (parse, toEither)
 import ParserCombinators (IsMatch(..), (|*), (<|>), (>>>))
 import Parsers.String (withinBrackets)
 import Parsers.Char (dot)
-import Parsers.Number (posInt)
+import Parsers.Number (unsignedInt)
 
 import Data.Map (Map, keys, elems)
 import qualified Data.Map as Map
 import Data.Maybe (listToMaybe, maybeToList)
 import Data.Char (toLower)
-import Data.Either (fromLeft)
+import Data.Either (fromRight)
 
 
 data JsExpression = JsNumber Double | JsBool Bool |
@@ -65,9 +65,9 @@ findByKeys (x : xs) expr = findByKey x expr >>= findByKeys xs where
 findByPath :: String -> JsExpression -> Maybe JsExpression
 findByPath path = findByKeys pathSeq where
 
-  pathSeq = fromLeft [] . toEither $ parse parseJsonPath path
+  pathSeq = fromRight [] . toEither $ parse parseJsonPath path
   parseJsonPath = is '$' *> (index <|> key |*)
 
-  index = show <$> withinBrackets posInt
+  index = show <$> withinBrackets unsignedInt
   key   = dot *> word
   word  = (noneOf ['.', '['] |*)

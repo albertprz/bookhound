@@ -1,6 +1,7 @@
 module Parser where
 
 import Data.Maybe (maybeToList)
+import Data.Either (fromRight)
 
 type Input = String
 
@@ -43,17 +44,21 @@ instance Monad Parser where
       Error pe -> Error pe)
 
 
-toEither :: ParseResult a -> Either a ParseError
+andThen :: Parser Input -> Parser a -> Parser a
+andThen p1 p2 = P (\i -> parse p2 $ fromRight i $ toEither $ parse p1 i)
+
+toEither :: ParseResult a -> Either ParseError a
 toEither result = case result of
-  Error pe -> Right pe
-  Result input a -> if null input then Left a
-                    else               Right $ ExpectedEof input
+  Error pe -> Left pe
+  Result input a -> if null input then Right a
+                    else               Left $ ExpectedEof input
 
 
 char :: Parser Char
 char = P parseIt where
   parseIt [] = Error UnexpectedEof
-  parseIt (char:rest) = Result rest char
+  parseIt (char : rest) = Result rest char
+
 
 
 errorParser :: ParseError -> Parser a
@@ -63,7 +68,7 @@ errorParser = P . const . Error
 anyOf :: [Parser a] -> Parser a
 anyOf [] = errorParser UnexpectedEof
 anyOf [x] = x
-anyOf ((P p):rest) = P (
+anyOf ((P p) : rest) = P (
   \i -> case p i of
     result @ (Result _ _) -> result
     error  @ (Error _)    -> parse (anyOf rest) i)
@@ -72,7 +77,7 @@ anyOf ((P p):rest) = P (
 allOf :: [Parser a] -> Parser a
 allOf [] = errorParser UnexpectedEof
 allOf [x] = x
-allOf ((P p):rest) = P (
+allOf ((P p) : rest) = P (
   \i -> case p i of
     result @ (Result _ _) -> parse (allOf rest) i
     error  @ (Error _)    -> error)
@@ -94,3 +99,10 @@ check condName cond parser = do
              then pure
              else const . errorParser $ NoMatch condName
   next c2
+
+
+except :: Show a => Parser a -> Parser a -> Parser a
+except alt (P p) = P (
+  \i -> case p i of
+    result @ (Result _ a) -> Error $ UnexpectedString (show a)
+    error  @ (Error _)    -> parse alt i)

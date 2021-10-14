@@ -1,12 +1,13 @@
-{-# LANGUAGE FlexibleInstances, UndecidableInstances, IncoherentInstances #-}
+{-# LANGUAGE FlexibleInstances, IncoherentInstances, PostfixOperators #-}
 
 module ParserCombinators  where
 
-import Parser (Parser, char, isMatch, check, anyOf, allOf)
+import Parser (Parser, char, isMatch, check, anyOf, allOf, except)
 import Utils.FoldableOps (hasSome, hasMany)
 import Utils.StringOps (ToString(..))
 
 import Data.Maybe (listToMaybe, maybeToList)
+import Data.List (isInfixOf)
 
 
 class IsMatch a where
@@ -14,24 +15,47 @@ class IsMatch a where
   isNot :: a -> Parser a
   oneOf :: [a] -> Parser a
   noneOf :: [a] -> Parser a
-  satisfies :: Parser a -> (a -> Bool) -> Parser a
+  inverse :: Parser a -> Parser a
 
   oneOf xs = anyOf $ is <$> xs
   noneOf xs = allOf $ isNot <$> xs
-  satisfies parser cond = check "satisfies" cond parser
 
 
 instance IsMatch Char where
   is = isMatch (==) char
   isNot = isMatch (/=) char
+  inverse = except char
 
 instance IsMatch String where
   is = traverse is
   isNot = traverse isNot
+  inverse = except (char |*)
 
-instance (Num a, Read a, Show a) => IsMatch a where
+instance IsMatch Integer where
   is n = read <$> (is . show) n
   isNot n = read <$> (isNot . show) n
+  inverse p = read <$> inverse (show <$> p)
+
+instance IsMatch Int where
+  is n = read <$> (is . show) n
+  isNot n = read <$> (isNot . show) n
+  inverse p = read <$> inverse (show <$> p)
+
+instance IsMatch Double where
+  is n = read <$> (is . show) n
+  isNot n = read <$> (isNot . show) n
+  inverse p = read <$> inverse (show <$> p)
+
+
+
+satisfies :: Parser a -> (a -> Bool) -> Parser a
+satisfies parser cond = check "satisfies" cond parser
+
+contains :: Eq a => Parser [a] -> [a] -> Parser [a]
+contains p str = check "contains" (isInfixOf str) p
+
+notContains :: Eq a => Parser [a] -> [a] -> Parser [a]
+notContains p str = check "notContains" (isInfixOf str) p
 
 
 

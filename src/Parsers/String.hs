@@ -3,7 +3,7 @@
 module Parsers.String where
 
 import Parser (Parser)
-import ParserCombinators (IsMatch(..), (|*), (|+), (|?), (<|>))
+import ParserCombinators (IsMatch(..), (|*), (|+), (|?), (<|>), (>>>))
 import Parsers.Char
 import Utils.MonadOps (extract)
 
@@ -12,68 +12,79 @@ string :: Parser String
 string = (char |*)
 
 word :: Parser String
-word = string `satisfies` notElem ' '
+word = (inverse whiteSpace |+)
 
 digits :: Parser String
-digits = (digit |*)
+digits = (digit |+)
 
 uppers :: Parser String
-uppers = (upper |*)
+uppers = (upper |+)
 
 lowers :: Parser String
-lowers = (lower |*)
+lowers = (lower |+)
 
 letters :: Parser String
-letters = (letter |*)
+letters = (letter |+)
 
 alphas :: Parser String
-alphas = (alpha |*)
+alphas = (alpha |+)
 
 alphaNums :: Parser String
-alphaNums = (alphaNum |*)
+alphaNums = (alphaNum |+)
 
 
 
 spaces :: Parser String
-spaces = (space |*)
+spaces = (space |+)
 
-tab :: Parser String
-tab = is "\t"
+tabs :: Parser String
+tabs = (tab |+)
 
-tabs :: Parser [String]
-tabs = (tab |*)
+newLines :: Parser String
+newLines = (newLine |+)
 
-newLine :: Parser String
-newLine = oneOf ["\n", "\r"]
+spacesOrTabs :: Parser String
+spacesOrTabs = (spaceOrTab |+)
 
-newLines :: Parser [String]
-newLines = (newLine |*)
+spacing :: Parser String
+spacing = (whiteSpace |+)
 
-spacing :: Parser [String]
-spacing = ((((: []) <$> space) <|> tab <|> newLine) |+)
+blankLine :: Parser String
+blankLine = (spacesOrTabs |?) >>> whiteSpace
+
+blankLines :: Parser String
+blankLines = mconcat <$> (blankLine |+)
+
+
+
+within :: Parser a -> Parser b -> Parser b
+within p = extract p p
+
+maybeWithin :: Parser a -> Parser b -> Parser b
+maybeWithin p = within (p |?)
+
+withinBoth :: Parser a -> Parser b -> Parser c -> Parser c
+withinBoth = extract
+
+maybeWithinBoth :: Parser a -> Parser b -> Parser c -> Parser c
+maybeWithinBoth p1 p2 = extract (p1 |?) (p2 |?)
 
 
 
 withinQuotes :: Parser b -> Parser b
-withinQuotes = extract quote quote
+withinQuotes = within quote
 
 withinDoubleQuotes :: Parser b -> Parser b
-withinDoubleQuotes = extract doubleQuote doubleQuote
+withinDoubleQuotes = within doubleQuote
 
 withinParens :: Parser b -> Parser b
-withinParens = extract openParens closeParens
+withinParens = withinBoth openParens closeParens
 
 withinBrackets :: Parser b -> Parser b
-withinBrackets = extract openBracket closeBracket
+withinBrackets = withinBoth openBracket closeBracket
 
 withinCurlyBrackets :: Parser b -> Parser b
-withinCurlyBrackets = extract openCurly closeCurly
+withinCurlyBrackets = withinBoth openCurly closeCurly
 
 withinAngleBrackets :: Parser b -> Parser b
-withinAngleBrackets = extract openAngle closeAngle
-
-withinSpacing :: Parser b -> Parser b
-withinSpacing = extract spacing spacing
-
-maybeWithinSpacing :: Parser b -> Parser b
-maybeWithinSpacing = extract (spacing |?) (spacing |?)
+withinAngleBrackets = withinBoth openAngle closeAngle

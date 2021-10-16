@@ -1,6 +1,6 @@
 {-# LANGUAGE PostfixOperators #-}
 
-module Parsers.Xml (xml) where
+module Parsers.Xml (xml, branchExpr, leafExpr, literal) where
 
 import Parser (Parser)
 import ParserCombinators (IsMatch(..), (<|>), (>>>), (|*), (|+))
@@ -14,21 +14,18 @@ import qualified Data.Map as Map
 import Data.Map(Map)
 
 
-word :: Parser String
-word = (noneOf ['/', '>', ' ', '='] |+)
-
 
 field :: Parser (String, String)
-field = do x <- word
+field = do x <- text
            is '='
-           y <- string
+           y <- quotedText
            pure (x, y) where
 
-  string = withinDoubleQuotes (inverse doubleQuote |*)
+  quotedText = withinDoubleQuotes (inverse doubleQuote |*)
 
 
 fullTag :: Parser (String, Map String String)
-fullTag = do tag  <- word
+fullTag = do tag  <- text
              flds <- Map.fromList <$> ((spacing *> field) |*)
              pure (tag, flds)
 
@@ -41,7 +38,7 @@ branchExpr = do (tag, flds) <- withinAngleBrackets fullTag
 
 
 literal :: Parser [XmlExpression]
-literal = (: []) . literalExpression <$> maybeWithin spacing (isNot '<' |*)
+literal = pure . literalExpression <$> maybeWithin spacing (isNot '<' |*)
 
 
 leafExpr :: Parser XmlExpression
@@ -59,5 +56,9 @@ comment = maybeWithin spacing $ is "<!--" *> (isNot '-' |*) <* is "-->"
 
 
 xml :: Parser XmlExpression
-xml = maybeWithin  (header <|> comment |*) $
-        maybeWithin spacing (branchExpr <|> leafExpr)
+xml = maybeWithin  ((header <|> comment) |+) $
+        maybeWithin spacing $ branchExpr <|> leafExpr
+
+
+text :: Parser String
+text = (noneOf ['/', '>', ' ', '='] |+)

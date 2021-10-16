@@ -54,7 +54,7 @@ instance ToJson String where
   toJson = JsString
 
 instance ToJson Char where
-  toJson = JsString . (: [])
+  toJson = JsString . pure
 
 instance ToJson Int where
   toJson = JsNumber . fromIntegral
@@ -73,3 +73,6 @@ instance ToJson a => ToJson [a] where
 
 instance ToJson a => ToJson (Map String a) where
   toJson = JsObject . fmap toJson
+
+instance ToJson a => ToJson (Maybe a) where
+  toJson = maybe JsNull toJson

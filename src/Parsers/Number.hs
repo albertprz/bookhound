@@ -8,10 +8,10 @@ import Parsers.Char (digit, dot, dash, plus)
 
 
 hexInt :: Parser Integer
-hexInt = read <$> (is "0x" *> (digit <|> oneOf ['A' .. 'F'] <|> oneOf ['a' .. 'f'] |+))
+hexInt = read <$> (is "0x" >>> ((digit <|> oneOf ['A' .. 'F'] <|> oneOf ['a' .. 'f']) |+))
 
 octInt :: Parser Integer
-octInt = read <$> (is "0o" *> (digit |+))
+octInt = read <$> (is "0o" >>> (oneOf ['0' .. '7'] |+))
 
 unsignedInt :: Parser Integer
 unsignedInt = read <$> (digit |+)

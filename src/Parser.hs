@@ -17,7 +17,8 @@ data ParseError = UnexpectedEof       | ExpectedEof Input       |
 
 
 instance Show a => Show (ParseResult a) where
-  show (Result i a)                 = "Result" ++ " >" ++ i ++ "< " ++ "\n\n" ++ show a
+  show (Result i a)                 = "Pending: " ++ " >" ++ i ++ "< " ++
+                                      "\n\nResult: \n" ++ show a
   show (Error UnexpectedEof)        = "Unexpected end of stream"
   show (Error (ExpectedEof i))      = "Expected end of stream, but got >" ++ show i ++ "<"
   show (Error (UnexpectedChar c))   = "Unexpected character: " ++ show c
@@ -44,8 +45,9 @@ instance Monad Parser where
       Error pe -> Error pe)
 
 
-andThen :: Parser Input -> Parser a -> Parser a
-andThen p1 p2 = P (\i -> parse p2 $ fromRight i $ toEither $ parse p1 i)
+runParser :: Parser a -> Input -> Either ParseError a
+runParser p i = toEither $ parse p i
+
 
 toEither :: ParseResult a -> Either ParseError a
 toEither result = case result of
@@ -60,9 +62,20 @@ char = P parseIt where
   parseIt (char : rest) = Result rest char
 
 
-
 errorParser :: ParseError -> Parser a
 errorParser = P . const . Error
+
+
+andThen :: Parser Input -> Parser a -> Parser a
+andThen p1 p2 = P (\i -> parse p2 $ fromRight i $ runParser p1 i)
+
+
+exactly :: Parser a -> Parser a
+exactly (P p) = P (
+  \i -> case p i of
+    result @ (Result "" _) -> result
+    result @ (Result i _)  -> Error $ ExpectedEof i
+    error  @ (Error _)     -> error)
 
 
 anyOf :: [Parser a] -> Parser a

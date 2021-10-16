@@ -26,6 +26,7 @@ library
       Converters.ToJson
       Converters.ToXml
       Converters.ToYaml
+      Normalizers.Yaml
       Parser
       ParserCombinators
       Parsers.Char

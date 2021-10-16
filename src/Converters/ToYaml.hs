@@ -29,6 +29,5 @@ instance ToYaml JsExpression where
     JsObject obj -> YamlMap  $ toYaml <$> obj
 
 
-
 instance ToJson a => ToYaml a where
   toYaml = toYaml . toJson

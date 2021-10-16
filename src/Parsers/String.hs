@@ -50,7 +50,7 @@ spacing :: Parser String
 spacing = (whiteSpace |+)
 
 blankLine :: Parser String
-blankLine = (spacesOrTabs |?) >>> whiteSpace
+blankLine = (spacesOrTabs |?) >>> newLine
 
 blankLines :: Parser String
 blankLines = mconcat <$> (blankLine |+)

@@ -11,7 +11,7 @@ instance ToString String where
   toString = id
 
 instance ToString Char where
-  toString = (: [])
+  toString = pure
 
 instance ToString Int where
   toString = show

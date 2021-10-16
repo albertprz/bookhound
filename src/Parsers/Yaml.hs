@@ -1,25 +1,27 @@
 {-# LANGUAGE PostfixOperators #-}
 
-module Parsers.Yaml where
+module Parsers.Yaml (yaml, nil, integer, float, bool, string, list, mapping) where
 
-import Parser(Parser(..), ParseError(..), errorParser, check, andThen)
-import ParserCombinators (IsMatch(..), (<|>), (<&>), (>>>), (<#>), (|*), (|?), (|+), (|++))
-import Parsers.Number (double, int, hexInt, octInt)
-import Parsers.String (withinDoubleQuotes, withinQuotes, within, maybeWithin, word,
-                      spacesOrTabs, newLines, spaces, blankLines)
-import Parsers.Char (dash, hashTag, doubleQuote, quote, colon,
-                     space, newLine, whiteSpace, char)
+
+import Parser(Parser(..), ParseError(..), errorParser, check, andThen, exactly)
+import ParserCombinators (IsMatch(..), (<|>), (|?), (|*), (|+))
+import Parsers.Number (double, hexInt, int, octInt)
+import Parsers.String (blankLines, maybeWithin, spacesOrTabs, blankLine)
+import Parsers.Char (colon, dash, space, whiteSpace, newLine)
 import SyntaxTrees.Yaml (YamlExpression(..))
+import Normalizers.Yaml (text, normalize, indentationCheck)
 
 import qualified Data.Map as Map
 import Data.Map (Map)
+import Parsers.Collections (mapOf, listOf)
+
 
 
 nil :: Parser YamlExpression
-nil = YamlNull <$ is "null"
+nil = YamlNull <$ oneOf ["null", "Null", "NULL"]
 
 integer :: Parser YamlExpression
-integer = YamlInteger <$> (int <|> hexInt <|> octInt)
+integer = YamlInteger <$> (hexInt <|> octInt <|> int)
 
 float :: Parser YamlExpression
 float = YamlFloat <$> double
@@ -29,14 +31,17 @@ bool = YamlBool <$> (True  <$ oneOf ["true", "True", "TRUE"])    <|>
                     (False <$ oneOf ["false", "False", "FALSE"])
 
 
-string :: Parser YamlExpression
-string = YamlString <$> text
+string :: Int -> Parser YamlExpression
+string indent = YamlString <$> text indent
 
 
 list :: Int -> Parser YamlExpression
-list indent = YamlList <$> listParser  where
+list indent = YamlList <$> (jsonList <|> yamlList)  where
 
-  listParser = ((snd <$> check "indentation" (\(n, _) -> n > indent) elemParser) |+)
+  yamlList = listParser
+  jsonList = maybeWithin spacesOrTabs $ listOf $ yamlWithIndent (-1)
+
+  listParser = indentationCheck elemParser indent
 
   elemParser = do n <- length <$> (space |*)
                   dash *> whiteSpace
@@ -45,76 +50,39 @@ list indent = YamlList <$> listParser  where
 
 
 mapping :: Int -> Parser YamlExpression
-mapping indent = YamlMap . Map.fromList <$> mapParser  where
+mapping indent = YamlMap <$> (jsonMap <|> yamlMap)  where
 
-  mapParser = ((snd <$> check "indentation" (\(n, _) -> n > indent) keyValueParser) |+)
+  yamlMap = Map.fromList <$> mapParser
+  jsonMap = maybeWithin spacesOrTabs $ mapOf (text 100) $ yamlWithIndent (-1)
+
+  mapParser = indentationCheck keyValueParser indent
 
   keyValueParser = do n <- length <$> (space |*)
-                      key <- text
+                      key <- text indent
                       (spacesOrTabs |?)
                       colon *> whiteSpace
                       value <- yamlWithIndent n
                       pure (n, (key, value))
 
 
-text :: Parser String
-text = (noneOf ['\n', ':', '!', '-', '#', '&', '*'] >>> (noneOf ['\n', '#', '&', '*'] |*))  <|>
-       withinDoubleQuotes (inverse doubleQuote |*)                                          <|>
-       withinQuotes       (inverse quote       |*)
+start :: Parser String
+start = is "---"
 
-
-comment :: Parser String
-comment = hashTag *> (inverse space *> (inverse newLine |+)) <* newLine
+end :: Parser String
+end = is "..."
 
 
 yamlWithIndent :: Int -> Parser YamlExpression
-yamlWithIndent indent = maybeWithin blankLines yamlValue  where
+yamlWithIndent indent = maybeWithin ((blankLine <|> start <|> end) |+) yamlValue  where
 
   yamlValue = yamlContainer <|> maybeWithin spacesOrTabs yamlElem
 
   yamlContainer = list indent <|> mapping indent
 
-  yamlElem = integer <|> float <|> bool <|> nil <|> string
+  yamlElem = (exactly float <|> exactly integer <|> exactly bool <|> exactly nil) <|>
+                string indent
 
 
 
 yaml :: Parser YamlExpression
-yaml =  normalizeYaml `andThen` yamlWithIndent (-1) where
-
-  normalizeYaml = spreadDashes             <|>
-                  spreadDashKey            <|>
-                  spreadKeyDash            <|>
-                  stripComment             <|>
-                  (char >>> normalizeYaml) <|>
-                  (char |*)
-
-  dashesParser = do offset <- length <$> (spaces |?)
-                    n <- length <$> ((dash <* spacesOrTabs) |++)
-                    pure (offset, n)
-
-  spreadDashes = ((++ "- ") . genDashes <$> dashesParser) >>> normalizeYaml
-
-  genDashes (offset, n) = concatMap (\x -> "- " ++ replicate (offset + 2 * x) ' ')
-                                    [1 .. n - 1]
-
-
-  dashKeyParser = do offset <- length <$> (spaces |?)
-                     dash <* spacesOrTabs
-                     key <- text <* maybeWithin spacesOrTabs colon
-                     pure (offset, key)
-
-  spreadDashKey = ((\(offset, key) -> replicate offset ' ' ++ "- " ++
-                                      replicate (offset + 2) ' ' ++ key ++ ": ")
-                  <$> dashKeyParser) >>> normalizeYaml
-
-
-  keyDashParser = do offset <- length <$> (spaces |?)
-                     key <- text <* maybeWithin spacesOrTabs colon
-                     dash <* spacesOrTabs
-                     pure (offset, key)
-
-  spreadKeyDash = ((\(offset, key) -> replicate offset ' ' ++ key ++ ": " ++
-                                      replicate (offset + 2) ' ' ++ "- ")
-                  <$> keyDashParser) >>> normalizeYaml
-
-  stripComment = ("\n" <$ comment) >>> normalizeYaml
+yaml =  normalize `andThen` yamlWithIndent (-1)

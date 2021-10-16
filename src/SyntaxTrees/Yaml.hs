@@ -20,7 +20,23 @@ instance Show YamlExpression where
     YamlInteger n   -> show n
     YamlFloat n     -> show n
     YamlBool bool   -> toLower <$> show bool
-    YamlString str  -> str
+    YamlString str  -> format str  where
+
+      format str = (if (length (lines str) > 1) && not (any (`elem` str) forbiddenChar)
+                    then "| \n"
+                    else if length (lines str) > 1 then "\n"
+                    else "") ++
+
+                   (if not $ any (`elem` str) forbiddenChar  then str
+                   else if '"' `elem` str  then "'"  ++ indented str 3 ++ "'"
+                   else                         "\"" ++ indented str 3 ++ "\"")
+
+      indented str n = head (lines str) ++
+                       mconcat ((("\n" ++ replicate n ' ') ++) <$> tail (lines str))
+
+      forbiddenChar = ['#', '&', '*', ',', '?', '-', ':', '[', ']', '{', '}'] ++
+                     ['>', '|', ':', '!']
+
     YamlList list   -> stringify "\n" "\n" "" 2 $ ("- " ++) . show <$> list
     YamlMap mapping -> stringify "\n" "\n" "" 2 $ showFn           <$> tuples where
 

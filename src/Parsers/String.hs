@@ -3,9 +3,8 @@
 module Parsers.String where
 
 import Parser (Parser)
-import ParserCombinators (IsMatch(..), (|*), (|+), (|?), (<|>), (>>>))
+import ParserCombinators (IsMatch(..), (|*), (|+), (|?), (<|>), (>>>), within, withinBoth)
 import Parsers.Char
-import Utils.MonadOps (extract)
 
 
 string :: Parser String
@@ -54,20 +53,6 @@ blankLine = (spacesOrTabs |?) >>> newLine
 
 blankLines :: Parser String
 blankLines = mconcat <$> (blankLine |+)
-
-
-
-within :: Parser a -> Parser b -> Parser b
-within p = extract p p
-
-maybeWithin :: Parser a -> Parser b -> Parser b
-maybeWithin p = within (p |?)
-
-withinBoth :: Parser a -> Parser b -> Parser c -> Parser c
-withinBoth = extract
-
-maybeWithinBoth :: Parser a -> Parser b -> Parser c -> Parser c
-maybeWithinBoth p1 p2 = extract (p1 |?) (p2 |?)
 
 
 

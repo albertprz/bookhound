@@ -17,8 +17,10 @@ import Data.Char (toLower)
 import Data.Either (fromRight)
 
 
+
 data JsExpression = JsNumber Double | JsBool Bool |
-                    JsString String | JsArray [JsExpression] |
+                    JsString String |
+                    JsArray [JsExpression] |
                     JsObject (Map String JsExpression) |
                     JsNull deriving (Eq, Ord)
 

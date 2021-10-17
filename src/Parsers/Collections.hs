@@ -3,9 +3,9 @@
 module Parsers.Collections where
 
 import Parser (Parser)
-import ParserCombinators (IsMatch(..), (<|>), (|*), (|?))
+import ParserCombinators (IsMatch(..), (<|>), (|*), (|?), maybeWithin)
 import Parsers.Char (colon)
-import Parsers.String(maybeWithin, spacing)
+import Parsers.String(spacing)
 
 import qualified Data.Foldable as Foldable
 import qualified Data.Map as Map

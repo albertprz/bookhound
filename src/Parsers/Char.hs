@@ -71,6 +71,9 @@ underscore = is '_'
 hashTag :: Parser Char
 hashTag = is '#'
 
+question :: Parser Char
+question = is '?'
+
 
 
 openParens :: Parser Char

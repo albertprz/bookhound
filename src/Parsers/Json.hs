@@ -3,11 +3,11 @@
 module Parsers.Json (json, nil, number, bool, string, array, object) where
 
 import Parser(Parser(parse))
-import ParserCombinators (IsMatch(..), (<|>), (>>>), (|*), (|?))
+import ParserCombinators (IsMatch(..), (<|>), (>>>), (|*), (|?), maybeWithin)
 import Parsers.Number (double)
 import Parsers.Collections (listOf, mapOf)
 import Parsers.Char (char, doubleQuote)
-import Parsers.String (withinDoubleQuotes, spacing, maybeWithin)
+import Parsers.String (withinDoubleQuotes, spacing)
 import SyntaxTrees.Json (JsExpression(..))
 
 

@@ -31,14 +31,18 @@ library
       ParserCombinators
       Parsers.Char
       Parsers.Collections
+      Parsers.DateTime
       Parsers.Json
       Parsers.Number
       Parsers.String
+      Parsers.Toml
       Parsers.Xml
       Parsers.Yaml
       SyntaxTrees.Json
+      SyntaxTrees.Toml
       SyntaxTrees.Xml
       SyntaxTrees.Yaml
+      Utils.DateTimeOps
       Utils.FoldableOps
       Utils.MonadOps
       Utils.StringOps
@@ -49,6 +53,7 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
+    , time
   default-language: Haskell2010
 
 test-suite bookhound-test
@@ -63,4 +68,5 @@ test-suite bookhound-test
       base >=4.7 && <5
     , bookhound
     , containers
+    , time
   default-language: Haskell2010

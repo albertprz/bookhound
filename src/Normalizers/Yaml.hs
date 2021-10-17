@@ -4,8 +4,8 @@ module Normalizers.Yaml where
 
 
 import Parser(Parser, check)
-import ParserCombinators (IsMatch(..), (<|>), (>>>), (|?), (|*), (|+), (|++))
-import Parsers.String (maybeWithin, spaces, spacesOrTabs, withinDoubleQuotes,
+import ParserCombinators (IsMatch(..), (<|>), (>>>), (|?), (|*), (|+), (|++), maybeWithin)
+import Parsers.String (spaces, spacesOrTabs, withinDoubleQuotes,
                        withinQuotes, blankLine, blankLines, tabs)
 import Parsers.Char (char, colon, dash, doubleQuote, hashTag, newLine, quote, space)
 

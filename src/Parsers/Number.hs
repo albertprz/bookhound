@@ -2,7 +2,7 @@
 
 module Parsers.Number where
 
-import Parser (Parser)
+import Parser (Parser, errorParser, ParseError(..))
 import ParserCombinators (IsMatch(..), (>>>), (<|>), (|*), (|+), (|?))
 import Parsers.Char (digit, dot, dash, plus)
 
@@ -24,6 +24,18 @@ negInt = read <$> dash >>> (digit |+)
 
 int :: Parser Integer
 int = negInt <|> posInt
+
+intLike :: Parser Integer
+intLike = parser <|> int  where
+
+  parser = do n1      <- show <$> int
+              n2      <- show <$> (dot *> unsignedInt)
+              expNum  <- oneOf ['e', 'E'] *> int
+
+              if length n1 + length n2 <= fromInteger expNum then
+                pure . read $ n1 ++ "." ++ n2 ++ "E" ++ show expNum
+              else
+                errorParser $ NoMatch "intLike"
 
 
 double :: Parser Double

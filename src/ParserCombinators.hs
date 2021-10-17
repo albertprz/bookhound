@@ -5,6 +5,7 @@ module ParserCombinators  where
 import Parser (Parser, char, isMatch, check, anyOf, allOf, except)
 import Utils.FoldableOps (hasSome, hasMany)
 import Utils.StringOps (ToString(..))
+import Utils.MonadOps (extract)
 
 import Data.Maybe (listToMaybe, maybeToList)
 import Data.List (isInfixOf)
@@ -48,6 +49,7 @@ instance IsMatch Double where
 
 
 
+-- Condition combinators
 satisfies :: Parser a -> (a -> Bool) -> Parser a
 satisfies parser cond = check "satisfies" cond parser
 
@@ -58,7 +60,7 @@ notContains :: Eq a => Parser [a] -> [a] -> Parser [a]
 notContains p str = check "notContains" (isInfixOf str) p
 
 
-
+-- Frequency combinators
 times :: Parser a -> Integer -> Parser [a]
 times parser n = sequence $ parser <$ [1 .. n]
 
@@ -73,6 +75,20 @@ someTimes = check "someTimes" hasSome . anyTimes
 
 manyTimes :: Parser a -> Parser [a]
 manyTimes = check "manyTimes" hasMany . anyTimes
+
+
+-- Within combinators
+within :: Parser a -> Parser b -> Parser b
+within p = extract p p
+
+maybeWithin :: Parser a -> Parser b -> Parser b
+maybeWithin p = within (p |?)
+
+withinBoth :: Parser a -> Parser b -> Parser c -> Parser c
+withinBoth = extract
+
+maybeWithinBoth :: Parser a -> Parser b -> Parser c -> Parser c
+maybeWithinBoth p1 p2 = extract (p1 |?) (p2 |?)
 
 
 -- Parser Binary Operators

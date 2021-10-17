@@ -4,16 +4,18 @@ module Parsers.Yaml (yaml, nil, integer, float, bool, string, list, mapping) whe
 
 
 import Parser(Parser(..), ParseError(..), errorParser, check, andThen, exactly)
-import ParserCombinators (IsMatch(..), (<|>), (|?), (|*), (|+))
+import ParserCombinators (IsMatch(..), (<|>), (<#>), (|?), (|*), (|+), maybeWithin)
 import Parsers.Number (double, hexInt, int, octInt)
-import Parsers.String (blankLines, maybeWithin, spacesOrTabs, blankLine)
-import Parsers.Char (colon, dash, space, whiteSpace, newLine)
+import Parsers.String (blankLines, spacesOrTabs, blankLine)
+import Parsers.Char (colon, dash, space, whiteSpace, newLine, question, dot)
 import SyntaxTrees.Yaml (YamlExpression(..))
 import Normalizers.Yaml (text, normalize, indentationCheck)
+import Parsers.Collections (mapOf, listOf)
+import qualified Parsers.DateTime as Dt
 
 import qualified Data.Map as Map
 import Data.Map (Map)
-import Parsers.Collections (mapOf, listOf)
+import Data.List (nub)
 
 
 
@@ -31,22 +33,39 @@ bool = YamlBool <$> (True  <$ oneOf ["true", "True", "TRUE"])    <|>
                     (False <$ oneOf ["false", "False", "FALSE"])
 
 
+dateTime :: Parser YamlExpression
+dateTime = YamlDateTime <$> Dt.dateTime
+
+date :: Parser YamlExpression
+date = YamlDate <$> Dt.date
+
+time :: Parser YamlExpression
+time = YamlTime <$> Dt.time
+
+
 string :: Int -> Parser YamlExpression
 string indent = YamlString <$> text indent
 
 
-list :: Int -> Parser YamlExpression
-list indent = YamlList <$> (jsonList <|> yamlList)  where
-
-  yamlList = listParser
-  jsonList = maybeWithin spacesOrTabs $ listOf $ yamlWithIndent (-1)
+yamlSeq :: Parser a -> Int -> Parser [YamlExpression]
+yamlSeq sep indent = listParser where
 
   listParser = indentationCheck elemParser indent
 
   elemParser = do n <- length <$> (space |*)
-                  dash *> whiteSpace
+                  sep *> whiteSpace
                   elem <- yamlWithIndent n
                   pure (n, elem)
+
+
+list :: Int -> Parser YamlExpression
+list indent = YamlList <$> (jsonList <|> yamlSeq dash indent)  where
+
+  jsonList = maybeWithin spacesOrTabs $ listOf $ yamlWithIndent (-1)
+
+
+set :: Int -> Parser YamlExpression
+set indent = YamlList . nub <$> yamlSeq question indent
 
 
 mapping :: Int -> Parser YamlExpression
@@ -58,29 +77,31 @@ mapping indent = YamlMap <$> (jsonMap <|> yamlMap)  where
   mapParser = indentationCheck keyValueParser indent
 
   keyValueParser = do n <- length <$> (space |*)
-                      key <- text indent
+                      key <- show <$> element indent
                       (spacesOrTabs |?)
                       colon *> whiteSpace
                       value <- yamlWithIndent n
                       pure (n, (key, value))
 
 
-start :: Parser String
-start = is "---"
 
-end :: Parser String
-end = is "..."
+element :: Int -> Parser YamlExpression
+element indent = (exactly float <|> exactly integer <|> exactly bool <|> exactly nil <|>
+                  exactly dateTime <|> exactly date <|> exactly time) <|>
+                   string indent
+
+container :: Int -> Parser YamlExpression
+container indent = list indent <|> mapping indent <|> set indent
+
 
 
 yamlWithIndent :: Int -> Parser YamlExpression
-yamlWithIndent indent = maybeWithin ((blankLine <|> start <|> end) |+) yamlValue  where
+yamlWithIndent indent = maybeWithin ((blankLine <|> docStart <|> docEnd) |+) yamlValue  where
 
-  yamlValue = yamlContainer <|> maybeWithin spacesOrTabs yamlElem
+  yamlValue = container indent <|> maybeWithin spacesOrTabs (element indent)
 
-  yamlContainer = list indent <|> mapping indent
-
-  yamlElem = (exactly float <|> exactly integer <|> exactly bool <|> exactly nil) <|>
-                string indent
+  docStart = dash <#> 3
+  docEnd = dot <#> 3
 
 
 

@@ -5,7 +5,6 @@ module Parsers.Xml (xml, branchExpr, leafExpr, literal) where
 import Parser (Parser)
 import ParserCombinators (IsMatch(..), (<|>), (>>>), (|*), (|+), maybeWithin)
 import Parsers.Number (double)
-import Parsers.Collections (listOf, mapOf)
 import Parsers.Char (space, doubleQuote)
 import Parsers.String (withinDoubleQuotes, withinAngleBrackets, spacing)
 import SyntaxTrees.Xml ( XmlExpression(..), literalExpression )

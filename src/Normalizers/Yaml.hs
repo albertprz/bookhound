@@ -40,16 +40,11 @@ text indent = withinDoubleQuotes (quotedParser (inverse doubleQuote |*))        
   forbiddenChar = ['\n', '#', '&', '*', ',', '?', '-', ':', '[', ']', '{', '}']
 
 
-comment :: Parser String
-comment = hashTag *> (inverse space *> (inverse newLine |+)) <* newLine
-
-directive :: Parser String
-directive = is "%" *> (inverse space *> (inverse newLine |+)) <* newLine
-
 
 indentationCheck :: Parser (Int, a) -> Int -> Parser [a]
 indentationCheck parser indent = ((snd <$> check "indentation"
                                   (\(n, _) -> n > indent) parser) |+)
+
 
 normalize :: Parser String
 normalize = (parserActions >>> normalize) <|> (char |*) where
@@ -57,8 +52,6 @@ normalize = (parserActions >>> normalize) <|> (char |*) where
   parserActions = spreadDashes     <|>
                   spreadDashKey    <|>
                   spreadKeyDash    <|>
-                  stripComment     <|>
-                  stripDirective   <|>
                   next
 
   next = pure <$> char
@@ -91,8 +84,3 @@ normalize = (parserActions >>> normalize) <|> (char |*) where
                      key <- text 100 <* maybeWithin spacesOrTabs colon
                      dash <* spacesOrTabs
                      pure (offset, key)
-
-
-  stripComment = "\n" <$ comment
-
-  stripDirective = "\n" <$ directive

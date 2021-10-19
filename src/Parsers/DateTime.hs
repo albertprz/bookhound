@@ -4,7 +4,7 @@ module Parsers.DateTime where
 
 import Parser(Parser(..), check)
 import ParserCombinators (IsMatch(..), (<|>), (<#>), (|?), (|*), (|+), within)
-import Parsers.Char (digit, dash, colon)
+import Parsers.Char (digit, dash, colon, plus)
 
 import Data.Time (Day, LocalTime(..), TimeOfDay(..), TimeZone, ZonedTime(..),
                   fromGregorian, minutesToTimeZone)
@@ -50,9 +50,10 @@ time = do h <- hour
 
 
 timeZoneOffset :: Parser TimeZone
-timeZoneOffset = do h <- hour
+timeZoneOffset = do pos <- (True <$ plus) <|> (False <$ dash)
+                    h <- hour
                     min <- fromMaybe 0 <$> ((colon *> minute) |?)
-                    pure $ minutesToTimeZone $ h * 60 + min
+                    pure $ minutesToTimeZone $ (if pos then 1 else (-1)) * (h * 60 + min)
 
 localDateTime :: Parser LocalTime
 localDateTime = do d <- date
@@ -62,7 +63,7 @@ localDateTime = do d <- date
 
 offsetDateTime :: Parser ZonedTime
 offsetDateTime = do localTime <- localDateTime
-                    offset    <- dash *> timeZoneOffset
+                    offset    <- timeZoneOffset
                     pure $ ZonedTime localTime offset
 
 dateTime :: Parser ZonedTime

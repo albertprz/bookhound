@@ -1,16 +1,17 @@
 {-# LANGUAGE PostfixOperators, TupleSections #-}
 
-module SyntaxTrees.Json where
+module SyntaxTrees.Json (JsExpression(..), findByPath, findByKeys, findAll) where
 
 import Utils.FoldableOps (stringify)
+import Utils.MapOps (showMap)
 
 import Parser (parse, toEither)
 import ParserCombinators (IsMatch(..), (|*), (<|>), (>>>))
-import Parsers.String (withinBrackets)
+import Parsers.String (withinSquareBrackets)
 import Parsers.Char (dot)
 import Parsers.Number (unsignedInt)
 
-import Data.Map (Map, keys, elems)
+import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (listToMaybe, maybeToList)
 import Data.Char (toLower)
@@ -32,10 +33,7 @@ instance Show JsExpression where
     JsBool bool  -> toLower <$> show bool
     JsString str -> show str
     JsArray arr  -> stringify ",\n" "[\n" "\n]" 2 $ show   <$> arr
-    JsObject obj -> stringify ",\n" "{\n" "\n}" 2 $ showFn <$> tuples where
-
-      showFn (x, y) = show x ++ ": " ++ show y
-      tuples = zip (keys obj) (elems obj)
+    JsObject obj -> stringify ",\n" "{\n" "\n}" 2 $ showMap ": " id show obj
 
 
 
@@ -70,6 +68,6 @@ findByPath path = findByKeys pathSeq where
   pathSeq = fromRight [] . toEither $ parse parseJsonPath path
   parseJsonPath = is '$' *> (index <|> key |*)
 
-  index = show <$> withinBrackets unsignedInt
+  index = show <$> withinSquareBrackets unsignedInt
   key   = dot *> word
   word  = (noneOf ['.', '['] |*)

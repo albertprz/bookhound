@@ -5,6 +5,7 @@ module Converters.ToJson where
 import SyntaxTrees.Json (JsExpression(..))
 import SyntaxTrees.Xml  (XmlExpression(..))
 import SyntaxTrees.Yaml (YamlExpression(..))
+import SyntaxTrees.Toml  (TomlExpression(..), TableType(..))
 import Parsers.Json (json)
 import Parsers.String (spacing)
 import Parser (Parser(parse), toEither)
@@ -48,6 +49,20 @@ instance ToJson YamlExpression where
     YamlList list         -> JsArray $ toJson <$> list
     YamlMap mapping       -> JsObject $ toJson <$> mapping
 
+
+instance ToJson TomlExpression where
+
+  toJson expr = case expr of
+    TomlNull              -> JsNull
+    TomlInteger n         -> JsNumber $ fromIntegral n
+    TomlFloat n           -> JsNumber n
+    TomlBool bool         -> JsBool bool
+    TomlString str        -> JsString str
+    TomlDate date         -> JsString $ show date
+    TomlTime time         -> JsString $ show time
+    TomlDateTime dateTime -> JsString $ show dateTime
+    TomlArray list        -> JsArray $ toJson <$> list
+    TomlTable _ mapping   -> JsObject $ toJson <$> mapping
 
 
 instance ToJson JsExpression where

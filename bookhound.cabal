@@ -44,6 +44,7 @@ library
       SyntaxTrees.Yaml
       Utils.DateTimeOps
       Utils.FoldableOps
+      Utils.MapOps
       Utils.MonadOps
       Utils.StringOps
   other-modules:

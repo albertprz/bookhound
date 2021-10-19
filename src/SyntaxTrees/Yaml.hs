@@ -1,12 +1,12 @@
-module SyntaxTrees.Yaml where
+module SyntaxTrees.Yaml (YamlExpression(..)) where
 
+import Utils.DateTimeOps (showDateTime)
 import Utils.FoldableOps (stringify)
-import Utils.DateTimeOps ()
+import Utils.MapOps (showMap)
 
-import Data.Map (Map, keys, elems)
-import qualified Data.Map as Map
+import Data.Map (Map)
 import Data.Char (toLower)
-import Data.Time (Day, TimeOfDay, ZonedTime)
+import Data.Time (Day, TimeOfDay, ZonedTime(..), LocalTime(..))
 
 
 
@@ -28,25 +28,24 @@ instance Show YamlExpression where
     YamlDate date         -> show date
     YamlTime time         -> show time
     YamlDateTime dateTime -> show dateTime
-    YamlString str        -> format str  where
+    YamlString str        -> showStr str
+    YamlList list         -> stringify "\n" "\n" "" 2 $ ("- " ++) . show <$> list
+    YamlMap mapping       -> stringify "\n" "\n" "" 2 $ showMap ": " mapping
 
-      format str = (if (length (lines str) > 1) && not (any (`elem` str) forbiddenChar)
+
+
+showStr :: String -> String
+showStr str = (if (length (lines str) > 1) && not (any (`elem` str) forbiddenChar)
                     then "| \n"
                     else if length (lines str) > 1 then "\n"
                     else "") ++
 
                    (if not $ any (`elem` str) forbiddenChar  then str
                    else if '"' `elem` str  then "'"  ++ indented str 3 ++ "'"
-                   else                         "\"" ++ indented str 3 ++ "\"")
+                   else                         "\"" ++ indented str 3) ++ "\""  where
 
-      indented str n = head (lines str) ++
-                       mconcat ((("\n" ++ replicate n ' ') ++) <$> tail (lines str))
+  indented str n = head (lines str) ++
+                    mconcat ((("\n" ++ replicate n ' ') ++) <$> tail (lines str))
 
-      forbiddenChar = ['#', '&', '*', ',', '?', '-', ':', '[', ']', '{', '}'] ++
-                      ['>', '|', ':', '!']
-
-    YamlList list   -> stringify "\n" "\n" "" 2 $ ("- " ++) . show <$> list
-    YamlMap mapping -> stringify "\n" "\n" "" 2 $ showFn           <$> tuples where
-
-      showFn (x, y) = x ++ ": " ++ show y
-      tuples = zip (keys mapping) (elems mapping)
+  forbiddenChar = ['#', '&', '*', ',', '?', '-', ':', '[', ']', '{', '}'] ++
+                  ['>', '|', ':', '!']

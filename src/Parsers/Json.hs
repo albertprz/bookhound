@@ -2,14 +2,18 @@
 
 module Parsers.Json (json, nil, number, bool, string, array, object) where
 
-import Parser(Parser(parse))
+import Parser(Parser(parse), exactly)
 import ParserCombinators (IsMatch(..), (<|>), (>>>), (|*), (|?), maybeWithin)
 import Parsers.Number (double)
 import Parsers.Collections (listOf, mapOf)
-import Parsers.Char (char, doubleQuote)
+import Parsers.Char (char, doubleQuote, colon)
 import Parsers.String (withinDoubleQuotes, spacing)
 import SyntaxTrees.Json (JsExpression(..))
 
+
+
+nil :: Parser JsExpression
+nil = JsNull <$ is "null"
 
 number :: Parser JsExpression
 number = JsNumber <$> double
@@ -29,17 +33,20 @@ array = JsArray <$> listOf json
 
 
 object :: Parser JsExpression
-object = JsObject <$> mapOf text json
+object = JsObject <$> mapOf colon text json
 
 
-nil :: Parser JsExpression
-nil = JsNull <$ is "null"
+element :: Parser JsExpression
+element = exactly number <|> exactly bool <|> exactly nil <|> exactly string
+
+container :: Parser JsExpression
+container = array <|> object
 
 
 json :: Parser JsExpression
 json = maybeWithin spacing jsValue where
 
-  jsValue = number <|> bool <|> string <|> array <|> object <|> nil
+  jsValue = element <|> container
 
 
 text :: Parser String

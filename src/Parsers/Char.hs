@@ -65,6 +65,9 @@ dash = is '-'
 plus :: Parser Char
 plus = is '+'
 
+equal :: Parser Char
+equal = is '='
+
 underscore :: Parser Char
 underscore = is '_'
 
@@ -82,11 +85,11 @@ openParens = is '('
 closeParens :: Parser Char
 closeParens = is ')'
 
-openBracket :: Parser Char
-openBracket = is '['
+openSquare :: Parser Char
+openSquare = is '['
 
-closeBracket :: Parser Char
-closeBracket = is ']'
+closeSquare :: Parser Char
+closeSquare = is ']'
 
 openCurly :: Parser Char
 openCurly = is '{'

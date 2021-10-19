@@ -1,6 +1,6 @@
 module Utils.DateTimeOps where
 
-import Data.Time (ZonedTime(..))
+import Data.Time (ZonedTime(..), LocalTime(..))
 
 
 instance Eq ZonedTime where
@@ -9,3 +9,8 @@ instance Eq ZonedTime where
 
 instance Ord ZonedTime where
   compare x y = compare (zonedTimeToLocalTime x) (zonedTimeToLocalTime y)
+
+
+showDateTime :: ZonedTime -> String
+showDateTime (ZonedTime (LocalTime date time) offset) = show date ++ "T" ++ show time ++
+                                    take 3 (show offset) ++ ":" ++ drop 3 (show offset)

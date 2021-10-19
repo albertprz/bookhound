@@ -65,8 +65,8 @@ withinDoubleQuotes = within doubleQuote
 withinParens :: Parser b -> Parser b
 withinParens = withinBoth openParens closeParens
 
-withinBrackets :: Parser b -> Parser b
-withinBrackets = withinBoth openBracket closeBracket
+withinSquareBrackets :: Parser b -> Parser b
+withinSquareBrackets = withinBoth openSquare closeSquare
 
 withinCurlyBrackets :: Parser b -> Parser b
 withinCurlyBrackets = withinBoth openCurly closeCurly

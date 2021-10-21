@@ -1,10 +1,11 @@
-module SyntaxTrees.Yaml (YamlExpression(..)) where
+module SyntaxTrees.Yaml (YamlExpression(..), CollectionType(..)) where
 
-import Utils.DateTimeOps (showDateTime)
-import Utils.FoldableOps (stringify)
-import Utils.MapOps (showMap)
+import Utils.DateTime (showDateTime)
+import Utils.Foldable (stringify)
+import Utils.Map (showMap)
 
 import Data.Map (Map)
+import qualified Data.Map as Map
 import Data.Char (toLower)
 import Data.Time (Day, TimeOfDay, ZonedTime(..), LocalTime(..))
 
@@ -13,24 +14,33 @@ import Data.Time (Day, TimeOfDay, ZonedTime(..), LocalTime(..))
 data YamlExpression = YamlInteger Integer | YamlFloat Double | YamlBool Bool |
                       YamlString String | YamlDate Day |
                       YamlTime TimeOfDay | YamlDateTime ZonedTime |
-                      YamlList [YamlExpression] |
-                      YamlMap (Map String YamlExpression) |
+                      YamlList CollectionType [YamlExpression] |
+                      YamlMap CollectionType (Map String YamlExpression) |
                       YamlNull
                     deriving (Eq, Ord)
+
+data CollectionType = Standard | Inline deriving (Eq, Ord)
 
 
 instance Show YamlExpression where
   show expr = case expr of
-    YamlNull              -> "null"
-    YamlInteger n         -> show n
-    YamlFloat n           -> show n
-    YamlBool bool         -> toLower <$> show bool
-    YamlDate date         -> show date
-    YamlTime time         -> show time
-    YamlDateTime dateTime -> show dateTime
-    YamlString str        -> showStr str
-    YamlList list         -> stringify "\n" "\n" "" 2 $ ("- " ++) . show <$> list
-    YamlMap mapping       -> stringify "\n" "\n" "" 2 $ showMap ": " mapping
+    YamlNull                   -> "null"
+    YamlInteger n              -> show n
+    YamlFloat n                -> show n
+    YamlBool bool              -> toLower <$> show bool
+    YamlDate date              -> show date
+    YamlTime time              -> show time
+    YamlDateTime dateTime      -> show dateTime
+    YamlString str             -> showStr str
+    YamlList Standard list     -> stringify "\n" "\n" "" 2 $ ("- " ++) . show <$> list
+    YamlMap  Standard mapping  -> stringify "\n" "\n" "" 2 $ showMap ": " id show mapping
+
+    YamlList Inline   list     -> stringify (", " ++ sep) ("[ " ++ sep) (" ]" ++ sep) n $ show <$> list where
+      (sep, n) = if (length . mconcat) (show <$> list) >= 80 then ("\n", 2) else ("", 0)
+
+    YamlMap  Inline   mapping  -> stringify (", " ++ sep) ("{ " ++ sep) (" }" ++ sep) n $
+                                    showMap ": " id show mapping where
+      (sep, n) = if (length . mconcat) (show <$> Map.toList mapping) >= 80 then ("\n", 2) else ("", 0)
 
 
 

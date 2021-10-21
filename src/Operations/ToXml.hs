@@ -1,10 +1,10 @@
 {-# LANGUAGE PostfixOperators, FlexibleInstances, UndecidableInstances, IncoherentInstances #-}
 
-module Converters.ToXml where
+module Operations.ToXml where
 
 import SyntaxTrees.Xml  (XmlExpression(..), literalExpression)
 import SyntaxTrees.Json (JsExpression(..))
-import Converters.ToJson (ToJson(..))
+import Operations.ToJson (ToJson(..))
 
 import qualified Data.Map as Map
 import Data.Char (toLower)

@@ -3,9 +3,9 @@
 module ParserCombinators  where
 
 import Parser (Parser, char, isMatch, check, anyOf, allOf, except)
-import Utils.FoldableOps (hasSome, hasMany)
-import Utils.StringOps (ToString(..))
-import Utils.MonadOps (extract)
+import Utils.Foldable (hasSome, hasMany)
+import Utils.String (ToString(..))
+import Utils.Applicative (extract)
 
 import Data.Maybe (listToMaybe, maybeToList)
 import Data.List (isInfixOf)

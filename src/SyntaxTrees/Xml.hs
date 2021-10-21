@@ -2,7 +2,7 @@
 
 module SyntaxTrees.Xml where
 
-import Utils.FoldableOps (stringify)
+import Utils.Foldable (stringify)
 
 import Data.Map (Map, keys, elems)
 import qualified Data.Map as Map

@@ -1,4 +1,4 @@
-module Utils.DateTimeOps where
+module Utils.DateTime where
 
 import Data.Time (ZonedTime(..), LocalTime(..))
 

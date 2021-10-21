@@ -1,11 +1,11 @@
 {-# LANGUAGE PostfixOperators, FlexibleInstances, IncoherentInstances #-}
 
-module Converters.ToJson where
+module Operations.ToJson where
 
 import SyntaxTrees.Json (JsExpression(..))
 import SyntaxTrees.Xml  (XmlExpression(..))
 import SyntaxTrees.Yaml (YamlExpression(..))
-import SyntaxTrees.Toml  (TomlExpression(..), TableType(..))
+import SyntaxTrees.Toml  (TomlExpression(..))
 import Parsers.Json (json)
 import Parsers.String (spacing)
 import Parser (Parser(parse), toEither)
@@ -46,8 +46,8 @@ instance ToJson YamlExpression where
     YamlDate date         -> JsString $ show date
     YamlTime time         -> JsString $ show time
     YamlDateTime dateTime -> JsString $ show dateTime
-    YamlList list         -> JsArray $ toJson <$> list
-    YamlMap mapping       -> JsObject $ toJson <$> mapping
+    YamlList _ list       -> JsArray $ toJson <$> list
+    YamlMap  _ mapping    -> JsObject $ toJson <$> mapping
 
 
 instance ToJson TomlExpression where

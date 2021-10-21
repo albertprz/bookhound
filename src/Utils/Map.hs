@@ -1,4 +1,4 @@
-module Utils.MapOps where
+module Utils.Map where
 
 import Data.Map (Map, keys, elems)
 

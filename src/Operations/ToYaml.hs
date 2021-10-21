@@ -1,17 +1,15 @@
 {-# LANGUAGE FlexibleInstances, UndecidableInstances, IncoherentInstances #-}
 
-module Converters.ToYaml where
+module Operations.ToYaml where
 
-import SyntaxTrees.Yaml  (YamlExpression(..))
+import SyntaxTrees.Yaml  (YamlExpression(..), CollectionType(..))
 import SyntaxTrees.Json (JsExpression(..))
-import Converters.ToJson (ToJson(..))
+import Operations.ToJson (ToJson(..))
 import Parsers.String (spacing)
 import Parsers.Number (intLike)
 import ParserCombinators ((<|>))
 import Parser (Parser(), runParser)
 
-
-import qualified Data.Map as Map
 import Data.Char (toLower)
 
 
@@ -30,8 +28,8 @@ instance ToYaml JsExpression where
     JsNumber n   -> either (const (YamlFloat n)) YamlInteger $ runParser intLike $ show n
     JsBool bool  -> YamlBool bool
     JsString str -> YamlString str
-    JsArray arr  -> YamlList $ toYaml <$> arr
-    JsObject obj -> YamlMap  $ toYaml <$> obj
+    JsArray arr  -> YamlList Standard $ toYaml <$> arr
+    JsObject obj -> YamlMap  Standard $ toYaml <$> obj
 
 
 instance ToJson a => ToYaml a where

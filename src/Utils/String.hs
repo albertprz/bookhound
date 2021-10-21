@@ -1,6 +1,6 @@
 {-# LANGUAGE  FlexibleInstances, UndecidableInstances, IncoherentInstances  #-}
 
-module Utils.StringOps where
+module Utils.String where
 import Data.List (intercalate)
 
 

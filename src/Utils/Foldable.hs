@@ -1,8 +1,8 @@
-module Utils.FoldableOps where
+module Utils.Foldable where
 
-import Utils.StringOps ( indent )
-import Data.Foldable as Foldable ( Foldable(toList) )
-import Data.List ( intercalate )
+import Utils.String (indent)
+import Data.Foldable as Foldable (Foldable(toList))
+import Data.List (intercalate)
 
 
 hasNone :: Foldable m => m a -> Bool

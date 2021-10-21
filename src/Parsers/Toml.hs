@@ -19,6 +19,7 @@ import Data.Map (Map)
 import Data.Maybe (maybeToList)
 
 
+-- TODO: Add support for anchors and aliases
 
 nil :: Parser TomlExpression
 nil = TomlNull <$ is "null"

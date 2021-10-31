@@ -19,16 +19,16 @@ packages:
       size: 2823
     hackage: containers-0.6.5.1@sha256:a029734132bb3471f8a91e3deaa095581a97410c405a1c665643053db87d87c1,2596
 - original:
-    hackage: time-1.9.2
+    hackage: time-1.12.1
   completed:
     pantry-tree:
-      sha256: ae5693aa6175d76bb4ded5a957da79bb3f582310607c254f4b359569216b998b
-      size: 6558
-    hackage: time-1.9.2@sha256:874e07fb970531b9dcd814f74e00f253ce2f22ccd8272a6c4c137ee9040237fb,5679
+      sha256: 96205222b57c39156ee646d710a4100a119dc28f211c57cacaf741f6c1bb35da
+      size: 7208
+    hackage: time-1.12.1@sha256:af1fafc1fb66e3d0afb66fb5ab8629f74c038bebd42c234b581aff7abc201089,6295
 - original:
-    hackage: split-0.1.2.3
+    hackage: split-0.2.3.4
   completed:
     pantry-tree:
-      sha256: 930e71f5538abb93584b4220889f73061114a4af4a9bb4a5d305525f0969db78
-      size: 425
-    hackage: split-0.1.2.3@sha256:2d679f5247d5c6da6bf06b832533bdee15c0b7c6dadb29f0739a46fa63021038,753
+      sha256: 4e7559f1be32a70cdbdb96d14db768561dd36b8fdff36b3ffac94751f5b5ae6d
+      size: 439
+    hackage: split-0.2.3.4@sha256:a6df9c3e806ee7cb50bc980a183fc1156f35022a39430dabac0bf9456fe18a4b,2647

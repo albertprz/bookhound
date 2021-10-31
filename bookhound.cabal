@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           bookhound
-version:        0.1.0.0
+version:        0.1.1.0
 synopsis:       Simple Parser Combinators & Parsers for usual data formats
 description:    Please see the README on GitHub at <https://github.com/albertprz/bookhound#readme>
 category:       Parsers
@@ -56,6 +56,6 @@ library
   build-depends:
       base >=4.7 && <5
     , containers >=0.6 && <1
-    , split >=0.1.2 && <0.2
-    , time >=1.9 && <2
+    , split >=0.2.3 && <0.3
+    , time >=1.12 && <2
   default-language: Haskell2010

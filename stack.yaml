@@ -42,8 +42,8 @@ packages:
 #
 extra-deps:
   - containers-0.6.5.1
-  - time-1.9.2
-  - split-0.1.2.3
+  - time-1.12.1
+  - split-0.2.3.4
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

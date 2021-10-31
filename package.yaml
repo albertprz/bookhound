@@ -20,9 +20,9 @@ description: Please see the README on GitHub at <https://github.com/albertprz/bo
 
 dependencies:
 - base >= 4.7 && < 5
-- containers
-- time
-- split
+- containers >= 0.6 && < 1
+- time >= 1.9 && < 2
+- split >= 0.1.2 && < 0.2
 
 library:
   source-dirs: src

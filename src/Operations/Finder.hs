@@ -1,5 +1,3 @@
-{-# LANGUAGE PostfixOperators #-}
-
 module Operations.Finder where
 
 
@@ -48,38 +46,38 @@ class Finder a where
 
 
 instance Finder JsExpression where
-  toList expr = case expr of
-    null @ JsNull      -> [("", null)]
-    n @ (JsNumber _)   -> [("", n)]
-    bool @ (JsBool _)  -> [("", bool)]
-    str @ (JsString _) -> [("", str)]
-    JsArray arr        -> zip (show <$> [0 .. length arr - 1]) arr
-    JsObject obj       -> Map.toList obj
+  toList = \case
+    nil@JsNull       -> [("", nil)]
+    n@(JsNumber _)   -> [("", n)]
+    bool@(JsBool _)  -> [("", bool)]
+    str@(JsString _) -> [("", str)]
+    JsArray arr      -> zip (show <$> [0 .. length arr - 1]) arr
+    JsObject obj     -> Map.toList obj
 
 
 instance Finder YamlExpression where
-  toList expr = case expr of
-    null @ YamlNull             -> [("", null)]
-    n @ (YamlInteger _)         -> [("", n)]
-    n @ (YamlFloat _)           -> [("", n)]
-    bool @ (YamlBool _)         -> [("", bool)]
-    str @ (YamlString _)        -> [("", str)]
-    date @ (YamlDate _)         -> [("", date)]
-    time @ (YamlTime _)         -> [("", time)]
-    dateTime @ (YamlDateTime _) -> [("", dateTime)]
-    YamlList _ arr              -> zip (show <$> [0 .. length arr - 1]) arr
-    YamlMap _ obj               -> Map.toList obj
+  toList = \case
+    nil@YamlNull              -> [("", nil)]
+    n@(YamlInteger _)         -> [("", n)]
+    n@(YamlFloat _)           -> [("", n)]
+    bool@(YamlBool _)         -> [("", bool)]
+    str@(YamlString _)        -> [("", str)]
+    date@(YamlDate _)         -> [("", date)]
+    time@(YamlTime _)         -> [("", time)]
+    dateTime@(YamlDateTime _) -> [("", dateTime)]
+    YamlList _ arr            -> zip (show <$> [0 .. length arr - 1]) arr
+    YamlMap _ obj             -> Map.toList obj
 
 
 instance Finder TomlExpression where
-  toList expr = case expr of
-    null @ TomlNull             -> [("", null)]
-    n @ (TomlInteger _)         -> [("", n)]
-    n @ (TomlFloat _)           -> [("", n)]
-    bool @ (TomlBool _)         -> [("", bool)]
-    str @ (TomlString _)        -> [("", str)]
-    date @ (TomlDate _)         -> [("", date)]
-    time @ (TomlTime _)         -> [("", time)]
-    dateTime @ (TomlDateTime _) -> [("", dateTime)]
-    TomlArray arr               -> zip (show <$> [0 .. length arr - 1]) arr
-    TomlTable _ obj             -> Map.toList obj
+  toList = \case
+    nil@TomlNull              -> [("", nil)]
+    n@(TomlInteger _)         -> [("", n)]
+    n@(TomlFloat _)           -> [("", n)]
+    bool@(TomlBool _)         -> [("", bool)]
+    str@(TomlString _)        -> [("", str)]
+    date@(TomlDate _)         -> [("", date)]
+    time@(TomlTime _)         -> [("", time)]
+    dateTime@(TomlDateTime _) -> [("", dateTime)]
+    TomlArray arr             -> zip (show <$> [0 .. length arr - 1]) arr
+    TomlTable _ obj           -> Map.toList obj

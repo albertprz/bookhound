@@ -1,21 +1,18 @@
-{-# LANGUAGE PostfixOperators #-}
-
 module Parsers.Toml (toml, nil, integer, float, bool, string, array, inlineTable) where
 
-import Parser(Parser(..), ParseError(..), errorParser, check, andThen, exactly)
+import Parser(Parser)
 import ParserCombinators (IsMatch(..), (<|>), (>>>), (<#>), (|?), (|*), (|+),
                           maybeWithin, within)
 import Parsers.Number (double, hexInt, int, octInt)
 import Parsers.String (blankLine, withinQuotes, withinDoubleQuotes,
-                       spacesOrTabs, spaces, withinSquareBrackets, spacing, blankLines)
-import Parsers.Char (quote, doubleQuote, whiteSpace, hashTag, space, newLine,
+                       spacesOrTabs, withinSquareBrackets, spacing, blankLines)
+import Parsers.Char (quote, doubleQuote, whiteSpace, hashTag, newLine,
                      dot, digit, letter, underscore, dash, equal, spaceOrTab)
 import SyntaxTrees.Toml (TomlExpression(..), TableType(..))
 import Parsers.Collections (mapOf, listOf)
 import qualified Parsers.DateTime as Dt
 
 import qualified Data.Map as Map
-import Data.Map (Map)
 import Data.Maybe (maybeToList)
 
 

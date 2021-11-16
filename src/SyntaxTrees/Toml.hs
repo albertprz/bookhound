@@ -4,9 +4,9 @@ import Utils.DateTime (showDateTime)
 import Utils.Foldable (stringify)
 import Utils.Map (showMap)
 
-import Data.Map (Map, keys, elems)
+import Data.Map (Map)
 import qualified Data.Map as Map
-import Data.Time (Day, TimeOfDay, ZonedTime(..), LocalTime(..))
+import Data.Time (Day, TimeOfDay, ZonedTime(..))
 import Data.Char (toLower)
 
 
@@ -24,7 +24,7 @@ data TableType = TopLevel | Standard | Inline deriving (Eq, Ord)
 
 
 instance Show TomlExpression where
-  show expr = case expr of
+  show = \case
     TomlNull                   -> "null"
     TomlInteger n              -> show n
     TomlFloat n                -> show n

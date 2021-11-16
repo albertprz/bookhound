@@ -3,7 +3,6 @@ module Parsers.Char where
 import qualified Parser
 import Parser (Parser)
 import ParserCombinators (IsMatch(..), (<|>))
-import Data.Data (ConstrRep(CharConstr))
 
 
 char :: Parser Char

@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Utils.DateTime where
 
 import Data.Time (ZonedTime(..), LocalTime(..))

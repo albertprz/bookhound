@@ -1,12 +1,11 @@
-{-# LANGUAGE PostfixOperators #-}
 
 module Parsers.Json (json, nil, number, bool, string, array, object) where
 
-import Parser(Parser(parse), exactly)
-import ParserCombinators (IsMatch(..), (<|>), (>>>), (|*), (|?), maybeWithin)
+import Parser(Parser, exactly)
+import ParserCombinators (IsMatch(..), (<|>), (|*), maybeWithin)
 import Parsers.Number (double)
 import Parsers.Collections (listOf, mapOf)
-import Parsers.Char (char, doubleQuote, colon)
+import Parsers.Char (doubleQuote, colon)
 import Parsers.String (withinDoubleQuotes, spacing)
 import SyntaxTrees.Json (JsExpression(..))
 
@@ -20,8 +19,8 @@ number = JsNumber <$> double
 
 
 bool :: Parser JsExpression
-bool = JsBool <$> (True  <$ is "true") <|>
-                  (False <$ is "false")
+bool = JsBool <$> (True  <$ is "true" <|>
+                   False <$ is "false")
 
 
 string :: Parser JsExpression

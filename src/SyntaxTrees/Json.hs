@@ -1,5 +1,3 @@
-{-# LANGUAGE PostfixOperators, TupleSections #-}
-
 module SyntaxTrees.Json where
 
 import Utils.Foldable (stringify)
@@ -18,7 +16,7 @@ data JsExpression = JsNumber Double | JsBool Bool |
 
 
 instance Show JsExpression where
-  show expr = case expr of
+  show = \case
     JsNull       -> "null"
     JsNumber n   -> show n
     JsBool bool  -> toLower <$> show bool

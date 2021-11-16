@@ -1,13 +1,13 @@
 module SyntaxTrees.Yaml (YamlExpression(..), CollectionType(..)) where
 
-import Utils.DateTime (showDateTime)
+import Utils.DateTime ()
 import Utils.Foldable (stringify)
 import Utils.Map (showMap)
 
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Char (toLower)
-import Data.Time (Day, TimeOfDay, ZonedTime(..), LocalTime(..))
+import Data.Time (Day, TimeOfDay, ZonedTime(..))
 
 
 
@@ -23,7 +23,7 @@ data CollectionType = Standard | Inline deriving (Eq, Ord)
 
 
 instance Show YamlExpression where
-  show expr = case expr of
+  show = \case
     YamlNull                   -> "null"
     YamlInteger n              -> show n
     YamlFloat n                -> show n
@@ -51,11 +51,11 @@ showStr str = (if (length (lines str) > 1) && not (any (`elem` str) forbiddenCha
                     else "") ++
 
                    (if not $ any (`elem` str) forbiddenChar  then str
-                   else if '"' `elem` str  then "'"  ++ indented str 3 ++ "'"
-                   else                         "\"" ++ indented str 3) ++ "\""  where
+                   else if '"' `elem` str  then "'"  ++ indented 3 ++ "'"
+                   else                         "\"" ++ indented 3) ++ "\""  where
 
-  indented str n = head (lines str) ++
-                    mconcat ((("\n" ++ replicate n ' ') ++) <$> tail (lines str))
+  indented n = head (lines str) ++
+               mconcat ((("\n" ++ replicate n ' ') ++) <$> tail (lines str))
 
   forbiddenChar = ['#', '&', '*', ',', '?', '-', ':', '[', ']', '{', '}'] ++
                   ['>', '|', ':', '!']

@@ -1,10 +1,11 @@
-{-# LANGUAGE PostfixOperators #-}
-
 module Parsers.String where
 
 import Parser (Parser)
-import ParserCombinators (IsMatch(..), (|*), (|+), (|?), (<|>), (>>>), within, withinBoth)
-import Parsers.Char
+import ParserCombinators (IsMatch(..), (|*), (|+), (|?), (>>>), within, withinBoth)
+import Parsers.Char (char, digit, upper, lower, letter, alpha, alphaNum,
+                     space, tab, spaceOrTab, whiteSpace, newLine, quote,
+                     doubleQuote, openParens, closeParens, openSquare,
+                     closeSquare, openCurly, closeCurly, openAngle, closeAngle)
 
 
 string :: Parser String

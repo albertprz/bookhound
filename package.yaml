@@ -1,5 +1,5 @@
 name:                bookhound
-version:             0.1.1.0
+version:             0.1.2.0
 github:              "albertprz/bookhound"
 license:             LGPL
 author:              "Alberto Perez Lopez"
@@ -21,8 +21,47 @@ description: Please see the README on GitHub at <https://github.com/albertprz/bo
 dependencies:
 - base >= 4.7 && < 5
 - containers >= 0.6 && < 1
-- time >= 1.12 && < 2
+- time >= 1.9 && < 2
 - split >= 0.2.3 && < 0.3
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wredundant-constraints
+
+default-extensions:
+- LambdaCase
+- EmptyCase
+- EmptyDataDecls
+- MultiWayIf
+- ApplicativeDo
+- TupleSections
+- NamedFieldPuns
+- PostfixOperators
+
+- BangPatterns
+- PatternSynonyms
+
+- FlexibleContexts
+- FlexibleInstances
+- MultiParamTypeClasses
+
+- GADTs
+- TypeFamilies
+- FunctionalDependencies
+- TypeFamilyDependencies
+- TypeApplications
+- ScopedTypeVariables
+- DataKinds
+- PolyKinds
+
+- DeriveFunctor
+- DeriveFoldable
+- DeriveTraversable
+- DeriveGeneric
+- GeneralizedNewtypeDeriving
 
 library:
   source-dirs: src

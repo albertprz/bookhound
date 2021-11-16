@@ -1,10 +1,8 @@
-{-# LANGUAGE PostfixOperators #-}
-
 module Parsers.Yaml (yaml, nil, integer, float, bool, string, list, mapping) where
 
 
 import SyntaxTrees.Yaml (YamlExpression(..), CollectionType(..))
-import Parser(Parser(..), ParseError(..), errorParser, check, andThen, exactly)
+import Parser(Parser(..), check, andThen, exactly)
 import ParserCombinators (IsMatch(..), (<|>), (<#>), (>>>), (|?), (|*), (|+), (|++), maybeWithin)
 import Parsers.Number (double, hexInt, int, octInt)
 import Parsers.String (spaces, spacesOrTabs, withinDoubleQuotes, withinQuotes,
@@ -15,7 +13,6 @@ import Parsers.Collections (mapOf, listOf)
 import qualified Parsers.DateTime as Dt
 
 import qualified Data.Map as Map
-import Data.Map (Map)
 import Data.List (nub)
 
 
@@ -56,8 +53,8 @@ sequential sep indent = listParser where
 
   elemParser = do n <- length <$> (space |*)
                   sep *> whiteSpace
-                  elem <- yamlWithIndent n
-                  pure (n, elem)
+                  elm <- yamlWithIndent n
+                  pure (n, elm)
 
 
 list :: Int -> Parser YamlExpression

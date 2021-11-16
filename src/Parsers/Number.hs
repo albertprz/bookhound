@@ -1,9 +1,7 @@
-{-# LANGUAGE PostfixOperators #-}
-
 module Parsers.Number where
 
 import Parser (Parser, errorParser, ParseError(..))
-import ParserCombinators (IsMatch(..), (>>>), (<|>), (|*), (|+), (|?))
+import ParserCombinators (IsMatch(..), (>>>), (<|>), (|+), (|?))
 import Parsers.Char (digit, dot, dash, plus)
 
 
@@ -39,7 +37,7 @@ intLike = parser <|> int  where
 
 
 double :: Parser Double
-double = read <$> int >>> (decimals |?) >>> (exp |?) where
+double = read <$> int >>> (decimals |?) >>> (expn |?) where
 
   decimals = dot >>> unsignedInt
-  exp      = oneOf ['e', 'E'] >>> int
+  expn      = oneOf ['e', 'E'] >>> int

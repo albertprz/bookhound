@@ -1,5 +1,3 @@
-{-# LANGUAGE PostfixOperators, FlexibleInstances, IncoherentInstances #-}
-
 module Operations.ToJson where
 
 import SyntaxTrees.Json (JsExpression(..))
@@ -12,13 +10,16 @@ import Parser (Parser(parse), toEither)
 import ParserCombinators (IsMatch(..), (<|>), (|*), maybeWithin)
 
 import qualified Data.Map as Map
-import Data.Map (Map, elems, mapKeys)
+import Data.Map (Map, elems)
 import Data.Either (fromRight)
 
 
 class ToJson a where
   toJson :: a -> JsExpression
 
+
+instance {-# OVERLAPPABLE #-} ToJson JsExpression where
+  toJson = id
 
 instance ToJson XmlExpression where
 
@@ -37,7 +38,7 @@ instance ToJson XmlExpression where
 
 instance ToJson YamlExpression where
 
-  toJson expr = case expr of
+  toJson = \case
     YamlNull              -> JsNull
     YamlInteger n         -> JsNumber $ fromIntegral n
     YamlFloat n           -> JsNumber n
@@ -52,7 +53,7 @@ instance ToJson YamlExpression where
 
 instance ToJson TomlExpression where
 
-  toJson expr = case expr of
+  toJson = \case
     TomlNull              -> JsNull
     TomlInteger n         -> JsNumber $ fromIntegral n
     TomlFloat n           -> JsNumber n
@@ -64,9 +65,6 @@ instance ToJson TomlExpression where
     TomlArray list        -> JsArray $ toJson <$> list
     TomlTable _ mapping   -> JsObject $ toJson <$> mapping
 
-
-instance ToJson JsExpression where
-  toJson = id
 
 
 instance ToJson String where

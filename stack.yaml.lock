@@ -10,25 +10,4 @@ snapshots:
     sha256: ae30d25a4691c6bb32b5766c617dff24270b2b3576ebd6047d754418e9256389
     url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/11.yaml
     size: 586041
-packages:
-- original:
-    hackage: containers-0.6.5.1
-  completed:
-    pantry-tree:
-      sha256: 86234e3221f6fa50e82d860a8428005ac3ff19fea92103ff79a3047cd5cd1625
-      size: 2823
-    hackage: containers-0.6.5.1@sha256:a029734132bb3471f8a91e3deaa095581a97410c405a1c665643053db87d87c1,2596
-- original:
-    hackage: time-1.12.1
-  completed:
-    pantry-tree:
-      sha256: 96205222b57c39156ee646d710a4100a119dc28f211c57cacaf741f6c1bb35da
-      size: 7208
-    hackage: time-1.12.1@sha256:af1fafc1fb66e3d0afb66fb5ab8629f74c038bebd42c234b581aff7abc201089,6295
-- original:
-    hackage: split-0.2.3.4
-  completed:
-    pantry-tree:
-      sha256: 4e7559f1be32a70cdbdb96d14db768561dd36b8fdff36b3ffac94751f5b5ae6d
-      size: 439
-    hackage: split-0.2.3.4@sha256:a6df9c3e806ee7cb50bc980a183fc1156f35022a39430dabac0bf9456fe18a4b,2647
+packages: []

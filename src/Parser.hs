@@ -1,7 +1,7 @@
 module Parser where
 
-import Data.Maybe (maybeToList)
 import Data.Either (fromRight)
+import Data.Functor((<&>))
 
 type Input = String
 
@@ -28,7 +28,7 @@ instance Show a => Show (ParseResult a) where
 
 instance Functor ParseResult where
   fmap f (Result i a) = Result i (f a)
-  fmap f (Error pe) = Error pe
+  fmap _ (Error pe) = Error pe
 
 
 instance Functor Parser where
@@ -36,11 +36,11 @@ instance Functor Parser where
 
 instance Applicative Parser where
   pure a = P (`Result` a)
-  (<*>) mf ma = mf >>= (\f -> ma >>= (pure . f))
+  (<*>) mf ma = mf >>= (ma <&>)
 
 instance Monad Parser where
   (>>=) (P p) f = P (
-    \i -> case p i of
+    \x -> case p x of
       Result i a -> parse (f a) i
       Error pe -> Error pe)
 
@@ -50,7 +50,7 @@ runParser p i = toEither $ parse p i
 
 
 toEither :: ParseResult a -> Either ParseError a
-toEither result = case result of
+toEither = \case
   Error pe -> Left pe
   Result input a -> if null input then Right a
                     else               Left $ ExpectedEof input
@@ -59,7 +59,7 @@ toEither result = case result of
 char :: Parser Char
 char = P parseIt where
   parseIt [] = Error UnexpectedEof
-  parseIt (char : rest) = Result rest char
+  parseIt (ch : rest) = Result rest ch
 
 
 errorParser :: ParseError -> Parser a
@@ -72,28 +72,28 @@ andThen p1 p2 = P (\i -> parse p2 $ fromRight i $ runParser p1 i)
 
 exactly :: Parser a -> Parser a
 exactly (P p) = P (
-  \i -> case p i of
-    result @ (Result "" _) -> result
-    result @ (Result i _)  -> Error $ ExpectedEof i
-    error  @ (Error _)     -> error)
+  \x -> case p x of
+    result@(Result "" _) -> result
+    Result i _           -> Error $ ExpectedEof i
+    err@(Error _)        -> err)
 
 
 anyOf :: [Parser a] -> Parser a
 anyOf [] = errorParser UnexpectedEof
 anyOf [x] = x
 anyOf ((P p) : rest) = P (
-  \i -> case p i of
-    result @ (Result _ _) -> result
-    error  @ (Error _)    -> parse (anyOf rest) i)
+  \x -> case p x of
+    result@(Result _ _) -> result
+    Error _             -> parse (anyOf rest) x)
 
 
 allOf :: [Parser a] -> Parser a
 allOf [] = errorParser UnexpectedEof
 allOf [x] = x
 allOf ((P p) : rest) = P (
-  \i -> case p i of
-    result @ (Result _ _) -> parse (allOf rest) i
-    error  @ (Error _)    -> error)
+  \x -> case p x of
+    Result i _    -> parse (allOf rest) i
+    err@(Error _) -> err)
 
 
 isMatch :: (Char -> Char -> Bool) -> Parser Char -> Char -> Parser Char
@@ -116,6 +116,6 @@ check condName cond parser = do
 
 except :: Show a => Parser a -> Parser a -> Parser a
 except alt (P p) = P (
-  \i -> case p i of
-    result @ (Result _ a) -> Error $ UnexpectedString (show a)
-    error  @ (Error _)    -> parse alt i)
+  \x -> case p x of
+    Result _ a -> Error $ UnexpectedString (show a)
+    Error _     -> parse alt x)

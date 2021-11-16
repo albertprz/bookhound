@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, IncoherentInstances, PostfixOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module ParserCombinators  where
 
@@ -7,46 +7,35 @@ import Utils.Foldable (hasSome, hasMany)
 import Utils.String (ToString(..))
 import Utils.Applicative (extract)
 
-import Data.Maybe (listToMaybe, maybeToList)
+import Data.Maybe (listToMaybe)
 import Data.List (isInfixOf)
 
 
 class IsMatch a where
-  is :: a -> Parser a
-  isNot :: a -> Parser a
-  oneOf :: [a] -> Parser a
-  noneOf :: [a] -> Parser a
+  is      :: a -> Parser a
+  isNot   :: a -> Parser a
+  oneOf   :: [a] -> Parser a
+  noneOf  :: [a] -> Parser a
   inverse :: Parser a -> Parser a
 
-  oneOf xs = anyOf $ is <$> xs
+  oneOf xs  = anyOf $ is <$> xs
   noneOf xs = allOf $ isNot <$> xs
 
 
 instance IsMatch Char where
-  is = isMatch (==) char
-  isNot = isMatch (/=) char
+  is      = isMatch (==) char
+  isNot   = isMatch (/=) char
   inverse = except char
 
 instance IsMatch String where
-  is = traverse is
-  isNot = traverse isNot
+  is      = traverse is
+  isNot   = traverse isNot
   inverse = except (char |*)
 
-instance IsMatch Integer where
-  is n = read <$> (is . show) n
-  isNot n = read <$> (isNot . show) n
+instance {-# OVERLAPPABLE #-} (Num a, Read a, Show a) => IsMatch a where
+  is n      = read <$> (is . show) n
+  isNot n   = read <$> (isNot . show) n
   inverse p = read <$> inverse (show <$> p)
-
-instance IsMatch Int where
-  is n = read <$> (is . show) n
-  isNot n = read <$> (isNot . show) n
-  inverse p = read <$> inverse (show <$> p)
-
-instance IsMatch Double where
-  is n = read <$> (is . show) n
-  isNot n = read <$> (isNot . show) n
-  inverse p = read <$> inverse (show <$> p)
-
 
 
 -- Condition combinators
@@ -90,17 +79,21 @@ withinBoth = extract
 maybeWithinBoth :: Parser a -> Parser b -> Parser c -> Parser c
 maybeWithinBoth p1 p2 = extract (p1 |?) (p2 |?)
 
-
 -- Parser Binary Operators
+
+infixl 3 <|>
 (<|>) :: Parser a -> Parser a -> Parser a
 (<|>) p1 p2 = anyOf [p1, p2]
 
+infixl 3 <&>
 (<&>) :: Parser a -> Parser a -> Parser a
 (<&>) p1 p2 = allOf [p1, p2]
 
+infixl 6 <#>
 (<#>) :: Parser a -> Integer -> Parser [a]
 (<#>) = times
 
+infixl 6 >>>
 (>>>) :: (ToString a, ToString b) => Parser a -> Parser b -> Parser String
 (>>>) p1 p2 = p1 >>= (\x -> (x ++) <$> (toString <$> p2)) . toString
 

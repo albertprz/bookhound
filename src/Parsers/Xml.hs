@@ -1,11 +1,8 @@
-{-# LANGUAGE PostfixOperators #-}
-
 module Parsers.Xml (xml, branchExpr, leafExpr, literal) where
 
 import Parser (Parser)
-import ParserCombinators (IsMatch(..), (<|>), (>>>), (|*), (|+), maybeWithin)
-import Parsers.Number (double)
-import Parsers.Char (space, doubleQuote)
+import ParserCombinators (IsMatch(..), (<|>), (|*), (|+), maybeWithin)
+import Parsers.Char (doubleQuote)
 import Parsers.String (withinDoubleQuotes, withinAngleBrackets, spacing)
 import SyntaxTrees.Xml ( XmlExpression(..), literalExpression )
 

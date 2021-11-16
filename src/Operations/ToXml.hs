@@ -1,4 +1,4 @@
-{-# LANGUAGE PostfixOperators, FlexibleInstances, UndecidableInstances, IncoherentInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Operations.ToXml where
 
@@ -14,13 +14,16 @@ class ToXml a where
   toXml :: a -> XmlExpression
 
 
+instance {-# OVERLAPPABLE #-} ToJson a => ToXml a where
+  toXml = toXml . toJson
+
 instance ToXml XmlExpression where
   toXml = id
 
 
 instance ToXml JsExpression where
 
-  toXml x = case x of
+  toXml = \case
     JsNull       -> literalExpression "null"
     JsNumber n   -> literalExpression $ show n
     JsBool bool  -> literalExpression $ toLower <$> show bool
@@ -28,16 +31,12 @@ instance ToXml JsExpression where
 
     JsArray arr  -> XmlExpression "array" Map.empty (elemExpr <$> arr) where
 
-      elemExpr elem = XmlExpression { tagName = "elem",
+      elemExpr element = XmlExpression { tagName = "elem",
                                        fields = Map.empty,
-                                       expressions = [toXml elem] }
+                                       expressions = [toXml element] }
 
     JsObject obj -> XmlExpression "object" Map.empty (keyValueExpr <$> Map.toList obj)  where
 
       keyValueExpr (key, value) = XmlExpression { tagName = key,
                                                   fields = Map.empty,
                                                   expressions = [toXml value] }
-
-
-instance ToJson a => ToXml a where
-  toXml = toXml . toJson

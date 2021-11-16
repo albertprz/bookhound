@@ -1,9 +1,7 @@
-{-# LANGUAGE PostfixOperators #-}
-
 module Parsers.DateTime where
 
 import Parser(Parser(..), check)
-import ParserCombinators (IsMatch(..), (<|>), (<#>), (|?), (|*), (|+), within)
+import ParserCombinators (IsMatch(..), (<|>), (<#>), (|?), (|+), within)
 import Parsers.Char (digit, dash, colon, plus)
 
 import Data.Time (Day, LocalTime(..), TimeOfDay(..), TimeZone, ZonedTime(..),
@@ -35,36 +33,28 @@ secondDecimals = read <$> check "pico seconds" ((<= 12) . length) (digit |+)
 
 
 date :: Parser Day
-date = do y <- year
-          m <- within dash month
-          d <- day
-          pure $ fromGregorian y m d
+date = fromGregorian <$> year <*> within dash month <*> day
 
 
 time :: Parser TimeOfDay
 time = do h <- hour
-          min <- colon *> minute
+          m <- colon *> minute
           s <- colon *> second
-          decimals <- fromMaybe (toInteger 0) <$> ((colon *> secondDecimals) |?)
-          pure $ TimeOfDay h min $ read (show s ++ "." ++ show decimals)
+          decimals <- fromMaybe 0 <$> ((colon *> secondDecimals) |?)
+          pure $ TimeOfDay h m $ read (show s ++ "." ++ show decimals)
 
 
 timeZoneOffset :: Parser TimeZone
 timeZoneOffset = do pos <- (True <$ plus) <|> (False <$ dash)
                     h <- hour
-                    min <- fromMaybe 0 <$> ((colon *> minute) |?)
-                    pure $ minutesToTimeZone $ (if pos then 1 else (-1)) * (h * 60 + min)
+                    m <- fromMaybe 0 <$> ((colon *> minute) |?)
+                    pure $ minutesToTimeZone $ (if pos then 1 else (-1)) * (h * 60 + m)
 
 localDateTime :: Parser LocalTime
-localDateTime = do d <- date
-                   oneOf ['T', 't']
-                   t <- time
-                   pure $ LocalTime d t
+localDateTime = LocalTime <$> (date <* oneOf ['T', 't']) <*> time
 
 offsetDateTime :: Parser ZonedTime
-offsetDateTime = do localTime <- localDateTime
-                    offset    <- timeZoneOffset
-                    pure $ ZonedTime localTime offset
+offsetDateTime = ZonedTime <$> localDateTime <*> timeZoneOffset
 
 dateTime :: Parser ZonedTime
 dateTime = ((`ZonedTime` minutesToTimeZone 0) <$> localDateTime <* is 'Z') <|>
@@ -72,4 +62,4 @@ dateTime = ((`ZonedTime` minutesToTimeZone 0) <$> localDateTime <* is 'Z') <|>
 
 
 range :: Ord a => a -> a -> a -> Bool
-range min max x = x >= min && x <= max
+range mn mx x = x >= mn && x <= mx

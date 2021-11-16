@@ -1,5 +1,3 @@
-{-# LANGUAGE NamedFieldPuns #-}
-
 module SyntaxTrees.Xml where
 
 import Utils.Foldable (stringify)

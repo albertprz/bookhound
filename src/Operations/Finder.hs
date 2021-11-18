@@ -1,4 +1,4 @@
-module Operations.Finder where
+module Operations.Finder (Finder(..)) where
 
 
 import Parser (runParser)
@@ -37,7 +37,7 @@ class Finder a where
   findByPath path = findByKeys pathSeq where
 
     pathSeq = fromRight [] $ runParser parsePath path
-    parsePath = is '$' *> (index <|> key |*)
+    parsePath = is '$' *> ((index <|> key) |*)
 
     index = show <$> withinSquareBrackets unsignedInt
     key   = dot *> word

@@ -1,6 +1,9 @@
 {-# LANGUAGE UndecidableInstances #-}
 
-module ParserCombinators  where
+module ParserCombinators (IsMatch(..), satisfies, contains, notContains,
+                          times, maybeTimes, anyTimes, someTimes, manyTimes,
+                          within, maybeWithin, withinBoth, maybeWithinBoth,
+                          (<|>), (<&>), (<#>), (>>>), (|?), (|*), (|+), (|++))  where
 
 import Parser (Parser, char, isMatch, check, anyOf, allOf, except)
 import Utils.Foldable (hasSome, hasMany)

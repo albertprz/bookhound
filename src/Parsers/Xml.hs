@@ -11,6 +11,12 @@ import Data.Map(Map)
 
 
 
+xml :: Parser XmlExpression
+xml = maybeWithin  ((header <|> comment) |+) $
+        maybeWithin spacing $ branchExpr <|> leafExpr
+
+
+
 field :: Parser (String, String)
 field = do x <- text
            is '='
@@ -49,11 +55,6 @@ header = maybeWithin spacing $ is "<?" *> (isNot '?' |*) <* is "?>"
 comment :: Parser String
 comment = maybeWithin spacing $ is "<!--" *> (isNot '-' |*) <* is "-->"
 
-
-
-xml :: Parser XmlExpression
-xml = maybeWithin  ((header <|> comment) |+) $
-        maybeWithin spacing $ branchExpr <|> leafExpr
 
 
 text :: Parser String

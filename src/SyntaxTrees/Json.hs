@@ -1,4 +1,4 @@
-module SyntaxTrees.Json where
+module SyntaxTrees.Json (JsExpression(..)) where
 
 import Utils.Foldable (stringify)
 import Utils.Map (showMap)

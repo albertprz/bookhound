@@ -1,4 +1,4 @@
-module Operations.ToJson where
+module Operations.ToJson (ToJson(..)) where
 
 import SyntaxTrees.Json (JsExpression(..))
 import SyntaxTrees.Xml  (XmlExpression(..))
@@ -6,7 +6,7 @@ import SyntaxTrees.Yaml (YamlExpression(..))
 import SyntaxTrees.Toml  (TomlExpression(..))
 import Parsers.Json (json)
 import Parsers.String (spacing)
-import Parser (Parser(parse), toEither)
+import Parser (runParser)
 import ParserCombinators (IsMatch(..), (<|>), (|*), maybeWithin)
 
 import qualified Data.Map as Map
@@ -24,7 +24,7 @@ instance {-# OVERLAPPABLE #-} ToJson JsExpression where
 instance ToJson XmlExpression where
 
   toJson XmlExpression { tagName = tag, fields = flds, expressions = exprs }
-    | tag == "literal"   = fromRight JsNull . toEither . parse literalParser .
+    | tag == "literal"   = fromRight JsNull . runParser literalParser .
                              head . elems $ flds
     | tag == "array"     = JsArray $ childExprToJson <$> exprs
     | tag == "object"    = JsObject . Map.fromList $ (\x -> (tagName x, childExprToJson x)) <$>

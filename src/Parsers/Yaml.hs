@@ -1,4 +1,5 @@
-module Parsers.Yaml (yaml, nil, integer, float, bool, string, list, mapping) where
+module Parsers.Yaml (yaml, nil, integer, float, bool, string,
+                     list, mapping) where
 
 
 import SyntaxTrees.Yaml (YamlExpression(..), CollectionType(..))
@@ -16,7 +17,14 @@ import qualified Data.Map as Map
 import Data.List (nub)
 
 
--- TODO: Add support for table arrays
+
+yaml :: Parser YamlExpression
+yaml =  normalize `andThen` yamlWithIndent (-1)
+
+
+
+
+-- TODO: Add support for anchors and aliases
 
 nil :: Parser YamlExpression
 nil = YamlNull <$ oneOf ["null", "Null", "NULL"]
@@ -28,8 +36,8 @@ float :: Parser YamlExpression
 float = YamlFloat <$> double
 
 bool :: Parser YamlExpression
-bool = YamlBool <$> (True  <$ oneOf ["true", "True", "TRUE"])    <|>
-                    (False <$ oneOf ["false", "False", "FALSE"])
+bool = YamlBool <$> (True  <$ oneOf ["true", "True", "TRUE"]    <|>
+                     False <$ oneOf ["false", "False", "FALSE"])
 
 
 dateTime :: Parser YamlExpression
@@ -111,10 +119,6 @@ yamlWithIndent indent = maybeWithin ((blankLine <|> comment <|> directive <|>
   docStart = dash <#> 3
   docEnd = dot <#> 3
 
-
-
-yaml :: Parser YamlExpression
-yaml =  normalize `andThen` yamlWithIndent (-1)
 
 
 

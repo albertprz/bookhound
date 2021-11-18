@@ -1,4 +1,4 @@
-module SyntaxTrees.Toml where
+module SyntaxTrees.Toml (TomlExpression(..), TableType(..)) where
 
 import Utils.DateTime (showDateTime)
 import Utils.Foldable (stringify)

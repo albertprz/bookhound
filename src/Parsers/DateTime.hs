@@ -1,4 +1,5 @@
-module Parsers.DateTime where
+module Parsers.DateTime (date, time, timeZoneOffset, localDateTime, offsetDateTime,
+                         dateTime, year, day, month, hour, minute, second) where
 
 import Parser(Parser(..), check)
 import ParserCombinators (IsMatch(..), (<|>), (<#>), (|?), (|+), within)
@@ -7,29 +8,6 @@ import Parsers.Char (digit, dash, colon, plus)
 import Data.Time (Day, LocalTime(..), TimeOfDay(..), TimeZone, ZonedTime(..),
                   fromGregorian, minutesToTimeZone)
 import Data.Maybe (fromMaybe)
-
-
-year :: Parser Integer
-year = read <$> digit <#> 4
-
-day :: Parser Int
-day = check "day" (range 1 31) $ read <$> digit <#> 2
-
-month :: Parser Int
-month = check "month" (range 1 12) $ read <$> digit <#> 2
-
-hour :: Parser Int
-hour = check "hour" (range 0 23) $ read <$> digit <#> 2
-
-minute :: Parser Int
-minute = check "minute" (range 0 59) $ read <$> digit <#> 2
-
-second :: Parser Int
-second = check "second" (range 0 59) $ read <$> digit <#> 2
-
-secondDecimals :: Parser Integer
-secondDecimals = read <$> check "pico seconds" ((<= 12) . length) (digit |+)
-
 
 
 date :: Parser Day
@@ -59,6 +37,32 @@ offsetDateTime = ZonedTime <$> localDateTime <*> timeZoneOffset
 dateTime :: Parser ZonedTime
 dateTime = ((`ZonedTime` minutesToTimeZone 0) <$> localDateTime <* is 'Z') <|>
             offsetDateTime
+
+
+
+year :: Parser Integer
+year = read <$> digit <#> 4
+
+day :: Parser Int
+day = check "day" (range 1 31) $ read <$> digit <#> 2
+
+month :: Parser Int
+month = check "month" (range 1 12) $ read <$> digit <#> 2
+
+hour :: Parser Int
+hour = check "hour" (range 0 23) $ read <$> digit <#> 2
+
+minute :: Parser Int
+minute = check "minute" (range 0 59) $ read <$> digit <#> 2
+
+second :: Parser Int
+second = check "second" (range 0 59) $ read <$> digit <#> 2
+
+secondDecimals :: Parser Integer
+secondDecimals = read <$> check "pico seconds" ((<= 12) . length) (digit |+)
+
+
+
 
 
 range :: Ord a => a -> a -> a -> Bool

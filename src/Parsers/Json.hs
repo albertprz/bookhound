@@ -1,4 +1,3 @@
-
 module Parsers.Json (json, nil, number, bool, string, array, object) where
 
 import Parser(Parser, exactly)
@@ -9,6 +8,11 @@ import Parsers.Char (doubleQuote, colon)
 import Parsers.String (withinDoubleQuotes, spacing)
 import SyntaxTrees.Json (JsExpression(..))
 
+
+json :: Parser JsExpression
+json = maybeWithin spacing jsValue where
+
+  jsValue = element <|> container
 
 
 nil :: Parser JsExpression
@@ -42,10 +46,6 @@ container :: Parser JsExpression
 container = array <|> object
 
 
-json :: Parser JsExpression
-json = maybeWithin spacing jsValue where
-
-  jsValue = element <|> container
 
 
 text :: Parser String

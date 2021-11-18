@@ -1,4 +1,4 @@
-module SyntaxTrees.Xml where
+module SyntaxTrees.Xml (XmlExpression(..), literalExpression, flatten, findAll, find) where
 
 import Utils.Foldable (stringify)
 

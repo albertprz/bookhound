@@ -1,6 +1,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 
-module Operations.ToYaml where
+module Operations.ToYaml (ToYaml(..)) where
 
 import SyntaxTrees.Yaml  (YamlExpression(..), CollectionType(..))
 import SyntaxTrees.Json (JsExpression(..))

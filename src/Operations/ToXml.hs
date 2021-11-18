@@ -1,6 +1,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 
-module Operations.ToXml where
+module Operations.ToXml (ToXml(..)) where
 
 import SyntaxTrees.Xml  (XmlExpression(..), literalExpression)
 import SyntaxTrees.Json (JsExpression(..))

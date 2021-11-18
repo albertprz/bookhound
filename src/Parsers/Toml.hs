@@ -1,4 +1,5 @@
-module Parsers.Toml (toml, nil, integer, float, bool, string, array, inlineTable) where
+module Parsers.Toml (toml, nil, integer, float, bool, string,
+                     array, inlineTable) where
 
 import Parser(Parser)
 import ParserCombinators (IsMatch(..), (<|>), (>>>), (<#>), (|?), (|*), (|+),
@@ -16,7 +17,13 @@ import qualified Data.Map as Map
 import Data.Maybe (maybeToList)
 
 
--- TODO: Add support for anchors and aliases
+
+toml :: Parser TomlExpression
+toml = maybeWithin (((pure <$> whiteSpace) <|> comment) |+) topLevelTable
+
+
+
+-- TODO: Add support for table arrays
 
 nil :: Parser TomlExpression
 nil = TomlNull <$ is "null"
@@ -28,8 +35,8 @@ float :: Parser TomlExpression
 float = TomlFloat <$> double
 
 bool :: Parser TomlExpression
-bool = TomlBool <$> (True  <$ is "true")  <|>
-                    (False <$ is "false")
+bool = TomlBool <$> (True  <$ is "true"  <|>
+                     False <$ is "false")
 
 
 dateTime :: Parser TomlExpression
@@ -66,7 +73,7 @@ key = keyParser >>> ((dot >>> keyParser) |*) where
               withinDoubleQuotes (inverse doubleQuote |*) <|>
               withinQuotes (inverse quote |*)
 
-  freeText = (letter <|> digit <|> underscore <|> dash |+)
+  freeText = ((letter <|> digit <|> underscore <|> dash) |+)
 
 
 inlineTable :: Parser TomlExpression
@@ -115,7 +122,3 @@ tomlExpr :: Parser TomlExpression
 tomlExpr = maybeWithin (((pure <$> spaceOrTab) <|> comment) |+) tomlValue where
 
   tomlValue = element <|> container
-
-
-toml :: Parser TomlExpression
-toml = maybeWithin (((pure <$> whiteSpace) <|> comment) |+) topLevelTable

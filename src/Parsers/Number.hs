@@ -1,4 +1,4 @@
-module Parsers.Number where
+module Parsers.Number (int, double, posInt, negInt, unsignedInt, hexInt, octInt, intLike) where
 
 import Parser (Parser, errorParser, ParseError(..))
 import ParserCombinators (IsMatch(..), (>>>), (<|>), (|+), (|?))

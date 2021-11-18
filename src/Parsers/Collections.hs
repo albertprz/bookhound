@@ -1,4 +1,4 @@
-module Parsers.Collections where
+module Parsers.Collections (collOf, listOf, tupleOf, mapOf, csvOf) where
 
 import Parser (Parser)
 import ParserCombinators ((|*), (|?), maybeWithin)
@@ -34,4 +34,4 @@ mapOf sep p1 p2 = Map.fromList <$> collOf comma openCurly closeCurly mapEntry  w
                 pure (key, value)
 
 csvOf :: Parser a -> Parser [a]
-csvOf = collOf comma (pure "") (pure "")
+csvOf = collOf comma (pure ()) (pure ())

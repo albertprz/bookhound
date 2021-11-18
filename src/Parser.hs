@@ -1,4 +1,5 @@
-module Parser where
+module Parser (Parser(..), ParseResult(..), ParseError(..), runParser, errorParser,
+               andThen, exactly, isMatch, check, except, anyOf, allOf, char)  where
 
 import Data.Either (fromRight)
 import Data.Functor((<&>))
@@ -46,14 +47,15 @@ instance Monad Parser where
 
 
 runParser :: Parser a -> Input -> Either ParseError a
-runParser p i = toEither $ parse p i
+runParser p i = toEither $ parse p i  where
 
+  toEither = \case
+    Error pe -> Left pe
+    Result input a -> if null input then Right a
+                      else               Left $ ExpectedEof input
 
-toEither :: ParseResult a -> Either ParseError a
-toEither = \case
-  Error pe -> Left pe
-  Result input a -> if null input then Right a
-                    else               Left $ ExpectedEof input
+errorParser :: ParseError -> Parser a
+errorParser = P . const . Error
 
 
 char :: Parser Char
@@ -61,9 +63,6 @@ char = P parseIt where
   parseIt [] = Error UnexpectedEof
   parseIt (ch : rest) = Result rest ch
 
-
-errorParser :: ParseError -> Parser a
-errorParser = P . const . Error
 
 
 andThen :: Parser Input -> Parser a -> Parser a

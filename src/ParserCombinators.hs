@@ -3,12 +3,14 @@
 module ParserCombinators (IsMatch(..), satisfies, contains, notContains,
                           times, maybeTimes, anyTimes, someTimes, manyTimes,
                           within, maybeWithin, withinBoth, maybeWithinBoth,
+                          anySeparatedBy, someSeparatedBy, manySeparatedBy,
                           (<|>), (<&>), (<#>), (>>>), (|?), (|*), (|+), (|++))  where
 
 import Parser (Parser, char, isMatch, check, anyOf, allOf, except)
 import Utils.Foldable (hasSome, hasMany)
 import Utils.String (ToString(..))
 import Utils.Applicative (extract)
+import qualified Data.Foldable as Foldable
 
 import Data.Maybe (listToMaybe)
 import Data.List (isInfixOf)
@@ -82,8 +84,23 @@ withinBoth = extract
 maybeWithinBoth :: Parser a -> Parser b -> Parser c -> Parser c
 maybeWithinBoth p1 p2 = extract (p1 |?) (p2 |?)
 
--- Parser Binary Operators
 
+-- Separated by combinators
+separatedBy :: (Parser b -> Parser (Maybe b)) -> (Parser b -> Parser [b])
+                -> Parser a -> Parser b -> Parser [b]
+separatedBy freq1 freq2 sep p = (++) <$> (Foldable.toList <$> freq1 p)
+                                     <*> freq2 (sep *> p)
+
+anySeparatedBy :: Parser a -> Parser b -> Parser [b]
+anySeparatedBy = separatedBy (|?) (|*)
+
+someSeparatedBy :: Parser a -> Parser b -> Parser [b]
+someSeparatedBy = separatedBy (fmap Just) (|*)
+
+manySeparatedBy :: Parser a -> Parser b -> Parser [b]
+manySeparatedBy = separatedBy (fmap Just) (|+)
+
+-- Parser Binary Operators
 infixl 3 <|>
 (<|>) :: Parser a -> Parser a -> Parser a
 (<|>) p1 p2 = anyOf [p1, p2]

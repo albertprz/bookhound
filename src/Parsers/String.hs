@@ -1,7 +1,8 @@
 module Parsers.String where
 
 import Parser (Parser)
-import ParserCombinators (IsMatch(..), (|*), (|+), (|?), (>>>), within, withinBoth)
+import ParserCombinators (IsMatch(..), (|*), (|+), (|?), (>>>), within, withinBoth,
+                         maybeWithin, maybeWithinBoth)
 import Parsers.Char (char, digit, upper, lower, letter, alpha, alphaNum,
                      space, tab, spaceOrTab, whiteSpace, newLine, quote,
                      doubleQuote, openParens, closeParens, openSquare,
@@ -74,3 +75,23 @@ withinCurlyBrackets = withinBoth openCurly closeCurly
 
 withinAngleBrackets :: Parser b -> Parser b
 withinAngleBrackets = withinBoth openAngle closeAngle
+
+
+
+maybeWithinQuotes :: Parser b -> Parser b
+maybeWithinQuotes = maybeWithin quote
+
+maybeWithinDoubleQuotes :: Parser b -> Parser b
+maybeWithinDoubleQuotes = maybeWithin doubleQuote
+
+maybeWithinParens :: Parser b -> Parser b
+maybeWithinParens = maybeWithinBoth openParens closeParens
+
+maybeWithinSquareBrackets :: Parser b -> Parser b
+maybeWithinSquareBrackets = maybeWithinBoth openSquare closeSquare
+
+maybeWithinCurlyBrackets :: Parser b -> Parser b
+maybeWithinCurlyBrackets = maybeWithinBoth openCurly closeCurly
+
+maybeWithinAngleBrackets :: Parser b -> Parser b
+maybeWithinAngleBrackets = maybeWithinBoth openAngle closeAngle

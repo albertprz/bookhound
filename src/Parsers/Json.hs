@@ -39,8 +39,9 @@ object :: Parser JsExpression
 object = JsObject <$> mapOf colon text json
 
 
+
 element :: Parser JsExpression
-element = exactly number <|> exactly bool <|> exactly nil <|> exactly string
+element = exactly (number <|> bool <|> nil <|> string)
 
 container :: Parser JsExpression
 container = array <|> object

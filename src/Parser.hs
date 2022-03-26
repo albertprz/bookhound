@@ -1,12 +1,14 @@
-module Parser (Parser(..), ParseResult(..), ParseError(..), runParser, errorParser,
-               andThen, exactly, isMatch, check, except, anyOf, allOf, char)  where
+module Parser (Parser, ParseResult(..), ParseError(..), runParser, errorParser,
+               andThen, exactly, isMatch, check, except, anyOf, allOf, char,
+               withTransform)  where
 
 import Data.Either (fromRight)
-import Data.Functor((<&>))
 
 type Input = String
 
-newtype Parser a = P { parse :: Input -> ParseResult a}
+data Parser a = P { parse :: Input -> ParseResult a
+                  , transform :: forall b. Parser b -> Parser b
+                  }
 
 data ParseResult a = Result Input a | Error ParseError
   deriving Eq
@@ -33,66 +35,69 @@ instance Functor ParseResult where
 
 
 instance Functor Parser where
-  fmap f (P p) = P (fmap f . p)
+  fmap f (P p t) = P (fmap f . p) t
 
 instance Applicative Parser where
-  pure a = P (`Result` a)
-  (<*>) mf ma = mf >>= (ma <&>)
+  pure a = P (`Result` a) id
+  (<*>) mf ma = mf >>= (<$> ma)
 
 instance Monad Parser where
-  (>>=) (P p) f = P (
+  (>>=) (P p t) f = t $ P (
     \x -> case p x of
-      Result i a -> parse (f a) i
+      Result i a -> (.parse) (f a) i
       Error pe -> Error pe)
+    t
+
+withTransform :: (forall b. Parser b -> Parser b) -> Parser a -> Parser a
+withTransform f p = p{transform = f}
 
 
 runParser :: Parser a -> Input -> Either ParseError a
-runParser p i = toEither $ parse p i  where
+runParser p i = toEither $ (.parse) (exactly p) i where
 
   toEither = \case
     Error pe -> Left pe
-    Result input a -> if null input then Right a
-                      else               Left $ ExpectedEof input
+    Result _ a -> Right a
 
 errorParser :: ParseError -> Parser a
-errorParser = P . const . Error
+errorParser = mkParser . const . Error
 
 
 char :: Parser Char
-char = P parseIt where
+char = mkParser parseIt  where
   parseIt [] = Error UnexpectedEof
   parseIt (ch : rest) = Result rest ch
 
 
 
 andThen :: Parser Input -> Parser a -> Parser a
-andThen p1 p2 = P (\i -> parse p2 $ fromRight i $ runParser p1 i)
+andThen p1 p2@(P _ t) = t $ P (\i -> (.parse) p2 $ fromRight i $ runParser p1 i) t
 
 
 exactly :: Parser a -> Parser a
-exactly (P p) = P (
+exactly (P p t) = t $ P (
   \x -> case p x of
     result@(Result "" _) -> result
     Result i _           -> Error $ ExpectedEof i
-    err@(Error _)        -> err)
+    err@(Error _)        -> err) t
 
 
 anyOf :: [Parser a] -> Parser a
 anyOf [] = errorParser UnexpectedEof
 anyOf [x] = x
-anyOf ((P p) : rest) = P (
+anyOf ((P p t) : rest) = t $ P (
   \x -> case p x of
     result@(Result _ _) -> result
-    Error _             -> parse (anyOf rest) x)
+    Error _             -> (.parse) (anyOf rest) x) t
 
 
 allOf :: [Parser a] -> Parser a
 allOf [] = errorParser UnexpectedEof
 allOf [x] = x
-allOf ((P p) : rest) = P (
+allOf ((P p t) : rest) = t $ P (
   \x -> case p x of
-    Result i _    -> parse (allOf rest) i
-    err@(Error _) -> err)
+    Result i _    -> (.parse) (allOf rest) i
+    err@(Error _) -> err) t
 
 
 isMatch :: (Char -> Char -> Bool) -> Parser Char -> Char -> Parser Char
@@ -114,7 +119,11 @@ check condName cond parser = do
 
 
 except :: Show a => Parser a -> Parser a -> Parser a
-except alt (P p) = P (
+except alt (P p t) = t $ P (
   \x -> case p x of
     Result _ a -> Error $ UnexpectedString (show a)
-    Error _     -> parse alt x)
+    Error _     -> (.parse) alt x) t
+
+
+mkParser :: (Input -> ParseResult a) -> Parser a
+mkParser p = P {parse = p, transform = id}

@@ -3,7 +3,7 @@ module Parsers.Yaml (yaml, nil, integer, float, bool, string,
 
 
 import SyntaxTrees.Yaml (YamlExpression(..), CollectionType(..))
-import Parser(Parser(..), check, andThen, exactly)
+import Parser(Parser, check, andThen, exactly)
 import ParserCombinators (IsMatch(..), (<|>), (<#>), (>>>), (|?), (|*), (|+), (|++), maybeWithin)
 import Parsers.Number (double, hexInt, int, octInt)
 import Parsers.String (spaces, spacesOrTabs, withinDoubleQuotes, withinQuotes,
@@ -111,14 +111,10 @@ yamlWithIndent indent = maybeWithin ((blankLine <|> comment <|> directive <|>
                         yamlValue  where
 
   yamlValue = container indent <|> maybeWithin spacesOrTabs (element indent)
-
   comment = hashTag *> (inverse newLine |+) <* newLine
-
   directive = is "%" *> (inverse space *> (inverse newLine |+)) <* newLine
-
   docStart = dash <#> 3
   docEnd = dot <#> 3
-
 
 
 

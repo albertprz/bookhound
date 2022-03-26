@@ -1,37 +1,27 @@
-module Parsers.Collections (collOf, listOf, tupleOf, mapOf, csvOf) where
+module Parsers.Collections (collOf, listOf, tupleOf, mapOf) where
 
 import Parser (Parser)
-import ParserCombinators ((|*), (|?), maybeWithin)
+import ParserCombinators (maybeWithin, anySeparatedBy)
 import Parsers.Char (comma, openSquare, closeSquare, openParens,
                      closeParens, openCurly, closeCurly)
 import Parsers.String(spacing)
 
-import qualified Data.Foldable as Foldable
 import qualified Data.Map as Map
 import Data.Map(Map)
 
 
 collOf :: Parser a -> Parser b -> Parser c -> Parser d -> Parser [d]
-collOf sep start end elemParser = do start
-                                     elems <- ((maybeWithin spacing $ elemParser <* sep) |*)
-                                     element  <- maybeWithin spacing (elemParser |?)
-                                     end
-                                     pure (elems ++ Foldable.toList element)
+collOf start end sep elemParser = start *> elemsParser <* end   where
 
+  elemsParser = anySeparatedBy sep $ maybeWithin spacing elemParser
 
 listOf :: Parser a -> Parser [a]
-listOf = collOf comma openSquare closeSquare
+listOf = collOf openSquare closeSquare comma
 
 tupleOf :: Parser a -> Parser [a]
-tupleOf = collOf comma openParens closeParens
+tupleOf = collOf openParens closeParens comma
 
 mapOf :: Ord b => Parser a -> Parser b -> Parser c -> Parser (Map b c)
-mapOf sep p1 p2 = Map.fromList <$> collOf comma openCurly closeCurly mapEntry  where
+mapOf sep p1 p2 = Map.fromList <$> collOf openCurly closeCurly comma mapEntry  where
 
-  mapEntry = do key <- p1
-                maybeWithin spacing sep
-                value <- p2
-                pure (key, value)
-
-csvOf :: Parser a -> Parser [a]
-csvOf = collOf comma (pure ()) (pure ())
+  mapEntry = (,) <$> p1 <* maybeWithin spacing sep <*> p2

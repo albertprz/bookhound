@@ -1,5 +1,5 @@
 name:                bookhound
-version:             0.1.3.0
+version:             0.1.4.0
 github:              "albertprz/bookhound"
 license:             LGPL
 author:              "Alberto Perez Lopez"
@@ -10,7 +10,7 @@ extra-source-files:
 - README.md
 
 # Metadata used when publishing your package
-synopsis:            Simple Parser Combinators & Parsers for usual data formats
+synopsis:            Simple Parser Combinators & Parsers
 category:            Parsers
 
 # To avoid duplicated efforts in documentation and dealing with the
@@ -31,31 +31,46 @@ ghc-options:
 - -Wredundant-constraints
 
 default-extensions:
+# Syntax
 - LambdaCase
-- EmptyCase
-- EmptyDataDecls
 - MultiWayIf
-- ApplicativeDo
 - TupleSections
-- NamedFieldPuns
 - PostfixOperators
 
-- BangPatterns
-- PatternSynonyms
+# Types
+- RankNTypes
+- ExplicitForAll
+- ScopedTypeVariables
+- LiberalTypeSynonyms
+- InstanceSigs
+- FunctionalDependencies
 
+# Records
+- DuplicateRecordFields
+- NoFieldSelectors
+- NamedFieldPuns
+- RecordWildCards
+- OverloadedRecordDot
+
+# Type Classes
+- ConstrainedClassMethods
+- MultiParamTypeClasses
 - FlexibleContexts
 - FlexibleInstances
-- MultiParamTypeClasses
 
+# Convenience
+- ApplicativeDo
+- ParallelListComp
+- MonadComprehensions
+
+# Type Level Programming
 - GADTs
 - TypeFamilies
-- FunctionalDependencies
 - TypeFamilyDependencies
-- TypeApplications
-- ScopedTypeVariables
 - DataKinds
 - PolyKinds
 
+# Deriving
 - DeriveFunctor
 - DeriveFoldable
 - DeriveTraversable

@@ -18,10 +18,7 @@ xml = maybeWithin  ((header <|> comment) |+) $
 
 
 field :: Parser (String, String)
-field = do x <- text
-           is '='
-           y <- quotedText
-           pure (x, y) where
+field = (,) <$> text <* is '=' <*> quotedText where
 
   quotedText = withinDoubleQuotes (inverse doubleQuote |*)
 

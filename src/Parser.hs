@@ -44,7 +44,7 @@ instance Applicative Parser where
 instance Monad Parser where
   (>>=) (P p t) f = t $ P (
     \x -> case p x of
-      Result i a -> (.parse) (f a) i
+      Result i a -> (parse) (f a) i
       Error pe -> Error pe)
     t
 
@@ -53,7 +53,7 @@ withTransform f p = p{transform = f}
 
 
 runParser :: Parser a -> Input -> Either ParseError a
-runParser p i = toEither $ (.parse) (exactly p) i where
+runParser p i = toEither $ (parse) (exactly p) i where
 
   toEither = \case
     Error pe -> Left pe
@@ -71,7 +71,7 @@ char = mkParser parseIt  where
 
 
 andThen :: Parser Input -> Parser a -> Parser a
-andThen p1 p2@(P _ t) = t $ P (\i -> (.parse) p2 $ fromRight i $ runParser p1 i) t
+andThen p1 p2@(P _ t) = t $ P (\i -> (parse) p2 $ fromRight i $ runParser p1 i) t
 
 
 exactly :: Parser a -> Parser a
@@ -88,7 +88,7 @@ anyOf [x] = x
 anyOf ((P p t) : rest) = t $ P (
   \x -> case p x of
     result@(Result _ _) -> result
-    Error _             -> (.parse) (anyOf rest) x) t
+    Error _             -> (parse) (anyOf rest) x) t
 
 
 allOf :: [Parser a] -> Parser a
@@ -96,7 +96,7 @@ allOf [] = errorParser UnexpectedEof
 allOf [x] = x
 allOf ((P p t) : rest) = t $ P (
   \x -> case p x of
-    Result i _    -> (.parse) (allOf rest) i
+    Result i _    -> (parse) (allOf rest) i
     err@(Error _) -> err) t
 
 
@@ -122,7 +122,7 @@ except :: Show a => Parser a -> Parser a -> Parser a
 except alt (P p t) = t $ P (
   \x -> case p x of
     Result _ a -> Error $ UnexpectedString (show a)
-    Error _     -> (.parse) alt x) t
+    Error _     -> (parse) alt x) t
 
 
 mkParser :: (Input -> ParseResult a) -> Parser a

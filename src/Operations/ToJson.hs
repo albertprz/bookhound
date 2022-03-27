@@ -23,17 +23,17 @@ instance {-# OVERLAPPABLE #-} ToJson JsExpression where
 
 instance ToJson XmlExpression where
 
-  toJson XmlExpression { .. }
-    | tagName == "literal"  = fromRight JsNull . runParser literalParser .
+  toJson XmlExpression { tagName = tag, expressions = exprs, .. }
+    | tag == "literal"  = fromRight JsNull . runParser literalParser .
                               head . elems $ fields
-    | tagName == "array"    = JsArray $ childExprToJson <$> expressions
-    | tagName == "object"   = JsObject . Map.fromList $ (\x -> (x.tagName, childExprToJson x)) <$>
-                                        expressions
+    | tag == "array"    = JsArray $ childExprToJson <$> exprs
+    | tag == "object"   = JsObject . Map.fromList $ (\x -> (tagName x, childExprToJson x)) <$>
+                                        exprs
     | otherwise          = JsNull   where
 
         literalParser = json <|> (JsString <$> maybeWithin spacing (isNot '<' |*))
 
-        childExprToJson = toJson . head . (.expressions)
+        childExprToJson = toJson . head . (expressions)
 
 
 instance ToJson YamlExpression where

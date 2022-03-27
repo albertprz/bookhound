@@ -16,17 +16,17 @@ data XmlExpression = XmlExpression {
 
 instance Show XmlExpression where
 
-  show XmlExpression { .. }
-    | tagName == "literal" = head . elems $ fields
-    | otherwise            = "<" ++ tagName ++ flds ++ innerExprs   where
+  show XmlExpression { tagName = tag, .. }
+    | tag == "literal" = head . elems $ fields
+    | otherwise        = "<" ++ tag ++ flds ++ innerExprs   where
 
         innerExprs = if | null expressions -> "/>"
                         | otherwise        -> ">"  ++ ending
 
-        (sep, n) = if | ((.tagName) . head) expressions == "literal" -> ("", 0)
+        (sep, n) = if | ((tagName) . head) expressions == "literal" -> ("", 0)
                       | otherwise                                    -> ("\n", 2)
 
-        ending = stringify sep sep sep n (show <$> expressions) ++ "</" ++ tagName ++ ">"
+        ending = stringify sep sep sep n (show <$> expressions) ++ "</" ++ tag ++ ">"
 
         flds | null fields = ""
              | otherwise = " " ++ fieldsString where
@@ -44,7 +44,7 @@ literalExpression val = XmlExpression { tagName = "literal",
 
 
 flatten :: XmlExpression -> [XmlExpression]
-flatten expr = expr : expr.expressions >>= flatten
+flatten expr = expr : expressions expr >>= flatten
 
 
 findAll :: (XmlExpression -> Bool) -> XmlExpression -> [XmlExpression]

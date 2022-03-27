@@ -47,10 +47,10 @@ default-extensions:
 
 # Records
 - DuplicateRecordFields
-- NoFieldSelectors
 - NamedFieldPuns
 - RecordWildCards
-- OverloadedRecordDot
+# - NoFieldSelectors
+# - OverloadedRecordDot
 
 # Type Classes
 - ConstrainedClassMethods

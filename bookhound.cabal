@@ -66,10 +66,8 @@ library
       InstanceSigs
       FunctionalDependencies
       DuplicateRecordFields
-      NoFieldSelectors
       NamedFieldPuns
       RecordWildCards
-      OverloadedRecordDot
       ConstrainedClassMethods
       MultiParamTypeClasses
       FlexibleContexts

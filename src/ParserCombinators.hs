@@ -63,7 +63,7 @@ maybeTimes :: Parser a -> Parser (Maybe a)
 maybeTimes = (listToMaybe <$>) . check "maybeTimes" (not . hasMany) . anyTimes
 
 anyTimes :: Parser a -> Parser [a]
-anyTimes p = ((:) <$> p <*> anyTimes p) <|> pure []
+anyTimes parser = (parser >>= \x -> (x :) <$> anyTimes parser) <|> pure []
 
 someTimes :: Parser a -> Parser [a]
 someTimes = check "someTimes" hasSome . anyTimes

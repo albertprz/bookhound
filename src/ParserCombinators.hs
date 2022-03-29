@@ -44,25 +44,26 @@ instance {-# OVERLAPPABLE #-} (Num a, Read a, Show a) => IsMatch a where
 
 
 -- Condition combinators
-satisfies :: Parser a -> (a -> Bool) -> Parser a
-satisfies parser cond = check "satisfies" cond parser
+satisfies :: (a -> Bool) -> Parser a -> Parser a
+satisfies cond p = check "satisfies" cond p
 
-contains :: Eq a => Parser [a] -> [a] -> Parser [a]
-contains p str = check "contains" (isInfixOf str) p
+contains :: Eq a => [a] -> Parser [a] -> Parser [a]
+contains val p = check "contains" (isInfixOf val) p
 
-notContains :: Eq a => Parser [a] -> [a] -> Parser [a]
-notContains p str = check "notContains" (isInfixOf str) p
+notContains :: Eq a => [a] -> Parser [a] -> Parser [a]
+notContains val p = check "notContains" (isInfixOf val) p
 
 
--- Frequency combinators
-times :: Parser a -> Integer -> Parser [a]
-times parser n = sequence $ parser <$ [1 .. n]
+ -- Frequency combinators
+times :: Integer -> Parser a  -> Parser [a]
+times n p = sequence $ p <$ [1 .. n]
+
 
 maybeTimes :: Parser a -> Parser (Maybe a)
 maybeTimes = (listToMaybe <$>) . check "maybeTimes" (not . hasMany) . anyTimes
 
 anyTimes :: Parser a -> Parser [a]
-anyTimes parser = (parser >>= \x -> (x :) <$> anyTimes parser) <|> pure []
+anyTimes p = ((:) <$> p <*> anyTimes p) <|> pure []
 
 someTimes :: Parser a -> Parser [a]
 someTimes = check "someTimes" hasSome . anyTimes
@@ -111,11 +112,12 @@ infixl 3 <&>
 
 infixl 6 <#>
 (<#>) :: Parser a -> Integer -> Parser [a]
-(<#>) = times
+(<#>) = flip times
 
 infixl 6 >>>
 (>>>) :: (ToString a, ToString b) => Parser a -> Parser b -> Parser String
-(>>>) p1 p2 = p1 >>= (\x -> (x ++) <$> (toString <$> p2)) . toString
+(>>>) p1 p2 = (++) <$> (toString <$> p1)
+                   <*> (toString <$> p2)
 
 
 -- Parser Unary Operators

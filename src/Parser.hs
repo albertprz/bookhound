@@ -1,7 +1,8 @@
-module Parser (Parser, ParseResult(..), ParseError(..), runParser, errorParser,
+module Parser (Parser, ParseResult, ParseError(..), runParser, errorParser,
                andThen, exactly, isMatch, check, except, anyOf, allOf, char,
                withTransform) where
 
+import Control.Applicative (liftA2)
 import Control.Monad (join)
 import Data.Maybe (isJust)
 import Data.Either (fromRight)
@@ -37,29 +38,29 @@ instance Functor ParseResult where
   fmap _ (Error pe)   = Error pe
 
 instance Functor Parser where
-  fmap f (P p t) = P (fmap f . p) t
+  fmap f (P p t) = applyTransform t $ mkParser (fmap f . p)
 
 instance Applicative Parser where
   pure a      = mkParser (`Result` a)
-  (<*>) mf ma = mf >>= (<$> ma)
-
-instance Monad Parser where
-  (>>=) (P p t) f = applyTransform transf combinedParser
+  (liftA2) f (P p t) mb@(P _ t') =
+    applyTransform (findJust t t') combinedParser
     where
       combinedParser = mkParser (
         \x -> case p x of
-        Result i a -> (parse) (f a) i
+        Result i a -> parse ((f a) <$> mb) i
         Error pe -> Error pe)
 
-      transf :: Maybe (Parser a -> Parser a)
-      transf = findJust t (transform $ f undefined)
+instance Monad Parser where
+  (>>=) (P p t) f = applyTransform t combinedParser
+    where
+      combinedParser = mkParser (
+        \x -> case  p x of
+        Result i a -> parse (f a) i
+        Error pe -> Error pe)
 
-
-withTransform :: (forall b. Parser b -> Parser b) -> Parser a -> Parser a
-withTransform f p = f $ p{transform = Just f}
 
 runParser :: Parser a -> Input -> Either ParseError a
-runParser p i = toEither $ (parse) (exactly p) i where
+runParser p i = toEither $ parse (exactly p) i where
 
   toEither = \case
     Error pe -> Left pe
@@ -77,33 +78,41 @@ char = mkParser parseIt  where
 
 
 andThen :: Parser Input -> Parser a -> Parser a
-andThen p1 p2@(P _ t) = applyTransform t $ P (\i -> (parse) p2 $ fromRight i $ runParser p1 i) t
+andThen p1 p2@(P _ t) = applyTransform t $ P (\i -> parse p2 $ fromRight i $ runParser p1 i) t
 
 
 exactly :: Parser a -> Parser a
-exactly (P p t) = applyTransform t $ P (
+exactly (P p t) = applyTransform t $ mkParser (
   \x -> case p x of
     result@(Result "" _) -> result
     Result i _           -> Error $ ExpectedEof i
-    err@(Error _)        -> err) t
-
+    err@(Error _)        -> err)
 
 anyOf :: [Parser a] -> Parser a
-anyOf [] = errorParser UnexpectedEof
-anyOf [x] = x
-anyOf ((P p t) : rest) = applyTransform t $ P (
-  \x -> case p x of
-    result@(Result _ _) -> result
-    Error _             -> (parse) (anyOf rest) x) t
-
+anyOf ps = anyOfHelper ps Nothing
 
 allOf :: [Parser a] -> Parser a
-allOf [] = errorParser UnexpectedEof
-allOf [x] = x
-allOf ((P p t) : rest) = applyTransform t $ P (
-  \x -> case p x of
-    Result i _    -> (parse) (allOf rest) i
-    err@(Error _) -> err) t
+allOf ps = allOfHelper ps Nothing
+
+
+anyOfHelper :: [Parser a] -> (forall b. Maybe (Parser b -> Parser b)) -> Parser a
+anyOfHelper [] _  = errorParser $ NoMatch "anyOf"
+anyOfHelper [p] _ = p
+anyOfHelper ((P p t) : rest) t' = applyTransform (findJust t t') $ mkParser (
+   \x -> case p x of
+    result@(Result _ _) -> result
+    Error _             -> parse (anyOfHelper rest t) x)
+
+
+
+allOfHelper :: [Parser a] -> (forall b. Maybe (Parser b -> Parser b)) -> Parser a
+allOfHelper [] _ = errorParser $ NoMatch "allOf"
+allOfHelper [p] _ = p
+allOfHelper ((P p t) : rest) t' = applyTransform (findJust t t') $ mkParser (
+   \x -> case p x of
+    Result i _    -> parse (allOfHelper rest t) i
+    err@(Error _) -> err)
+
 
 
 isMatch :: (Char -> Char -> Bool) -> Parser Char -> Char -> Parser Char
@@ -112,7 +121,6 @@ isMatch cond parser c1 =
      if cond c1 c2
        then pure c2
        else errorParser $ UnexpectedChar c2
-
 
 check :: String -> (a -> Bool) -> Parser a -> Parser a
 check condName cond parser =
@@ -123,18 +131,20 @@ check condName cond parser =
 
 
 except :: Show a => Parser a -> Parser a -> Parser a
-except alt (P p t) = applyTransform t $ P (
-  \x -> case p x of
+except (P p t) (P p' _) = applyTransform t $ mkParser (
+  \x -> case p' x of
     Result _ a -> Error $ UnexpectedString (show a)
-    Error _     -> (parse) alt x) t
+    Error _     -> p x)
+
+withTransform :: (forall b. Parser b -> Parser b) -> Parser a -> Parser a
+withTransform f = applyTransform $ Just f
 
 
+applyTransform :: (forall a. Maybe (Parser a -> Parser a)) -> Parser b -> Parser b
+applyTransform f p =  maybe p (\f' -> (f' p){transform = f} ) f
 
 mkParser :: (Input -> ParseResult a) -> Parser a
 mkParser p = P {parse = p, transform = Nothing}
-
-applyTransform :: (forall a. Maybe (Parser a -> Parser a)) -> Parser b -> Parser b
-applyTransform f p = maybe id id f $ p
 
 findJust :: forall a. Maybe a -> Maybe a -> Maybe a
 findJust ma mb = join $ find isJust [ma, mb]

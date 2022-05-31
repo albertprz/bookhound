@@ -3,7 +3,7 @@
 module ParserCombinators (IsMatch(..), satisfies, contains, notContains,
                           times, maybeTimes, anyTimes, someTimes, manyTimes,
                           within, maybeWithin, withinBoth, maybeWithinBoth,
-                          anySeparatedBy, someSeparatedBy, manySeparatedBy,
+                          anySepBy, someSepBy, manySepBy, sepByOp,
                           (<|>), (<&>), (<#>), (>>>), (|?), (|*), (|+), (|++))  where
 
 import Parser (Parser, char, isMatch, check, anyOf, allOf, except)
@@ -87,19 +87,25 @@ maybeWithinBoth p1 p2 = extract (p1 |?) (p2 |?)
 
 
 -- Separated by combinators
-separatedBy :: (Parser b -> Parser (Maybe b)) -> (Parser b -> Parser [b])
+sepBy :: (Parser b -> Parser (Maybe b)) -> (Parser b -> Parser [b])
                 -> Parser a -> Parser b -> Parser [b]
-separatedBy freq1 freq2 sep p = (++) <$> (Foldable.toList <$> freq1 p)
-                                     <*> freq2 (sep *> p)
+sepBy freq1 freq2 sep p = (++) <$> (Foldable.toList <$> freq1 p)
+                               <*> freq2 (sep *> p)
 
-anySeparatedBy :: Parser a -> Parser b -> Parser [b]
-anySeparatedBy = separatedBy (|?) (|*)
+anySepBy :: Parser a -> Parser b -> Parser [b]
+anySepBy = sepBy (|?) (|*)
 
-someSeparatedBy :: Parser a -> Parser b -> Parser [b]
-someSeparatedBy = separatedBy (fmap Just) (|*)
+someSepBy :: Parser a -> Parser b -> Parser [b]
+someSepBy = sepBy (fmap Just) (|*)
 
-manySeparatedBy :: Parser a -> Parser b -> Parser [b]
-manySeparatedBy = separatedBy (fmap Just) (|+)
+manySepBy :: Parser a -> Parser b -> Parser [b]
+manySepBy = sepBy (fmap Just) (|+)
+
+sepByOp :: Parser a -> Parser b -> Parser (a, [b])
+sepByOp sep p = do x1 <- p
+                   op <- sep
+                   xs <- someSepBy sep p
+                   pure $ (op, x1 : xs)
 
 -- Parser Binary Operators
 infixl 3 <|>

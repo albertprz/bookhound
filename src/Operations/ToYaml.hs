@@ -2,11 +2,11 @@
 
 module Operations.ToYaml (ToYaml(..)) where
 
-import SyntaxTrees.Yaml  (YamlExpression(..), CollectionType(..))
-import SyntaxTrees.Json (JsExpression(..))
-import Operations.ToJson (ToJson(..))
-import Parsers.Number (intLike)
-import Parser (runParser)
+import Operations.ToJson (ToJson (..))
+import Parser            (runParser)
+import Parsers.Number    (intLike)
+import SyntaxTrees.Json  (JsExpression (..))
+import SyntaxTrees.Yaml  (CollectionType (..), YamlExpression (..))
 
 
 class ToYaml a where

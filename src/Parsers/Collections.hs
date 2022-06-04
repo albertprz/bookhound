@@ -1,13 +1,13 @@
 module Parsers.Collections (collOf, listOf, tupleOf, mapOf) where
 
-import Parser (Parser)
-import ParserCombinators (maybeWithin, anySepBy, satisfies)
-import Parsers.Char (comma, openSquare, closeSquare, openParens,
-                     closeParens, openCurly, closeCurly)
-import Parsers.String(spacing)
+import Parser            (Parser)
+import ParserCombinators (anySepBy, maybeWithin, satisfies)
+import Parsers.Char      (closeCurly, closeParens, closeSquare, comma,
+                          openCurly, openParens, openSquare)
+import Parsers.String    (spacing)
 
+import           Data.Map (Map)
 import qualified Data.Map as Map
-import Data.Map(Map)
 
 
 collOf :: Parser a -> Parser b -> Parser c -> Parser d -> Parser [d]

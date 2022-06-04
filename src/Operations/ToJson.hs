@@ -1,17 +1,17 @@
 module Operations.ToJson (ToJson(..)) where
 
-import SyntaxTrees.Json (JsExpression(..))
-import SyntaxTrees.Xml  (XmlExpression(..))
-import SyntaxTrees.Yaml (YamlExpression(..))
-import SyntaxTrees.Toml  (TomlExpression(..))
-import Parsers.Json (json)
-import Parsers.String (spacing)
-import Parser (runParser)
-import ParserCombinators (IsMatch(..), (<|>), (|*), maybeWithin)
+import Parser            (runParser)
+import ParserCombinators (IsMatch (..), maybeWithin, (<|>), (|*))
+import Parsers.Json      (json)
+import Parsers.String    (spacing)
+import SyntaxTrees.Json  (JsExpression (..))
+import SyntaxTrees.Toml  (TomlExpression (..))
+import SyntaxTrees.Xml   (XmlExpression (..))
+import SyntaxTrees.Yaml  (YamlExpression (..))
 
-import qualified Data.Map as Map
-import Data.Map (Map, elems)
-import Data.Either (fromRight)
+import           Data.Either (fromRight)
+import           Data.Map    (Map, elems)
+import qualified Data.Map    as Map
 
 
 class ToJson a where

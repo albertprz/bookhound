@@ -2,7 +2,7 @@
 
 module Utils.DateTime where
 
-import Data.Time (ZonedTime(..), LocalTime(..))
+import Data.Time (LocalTime (..), ZonedTime (..))
 
 
 instance Eq ZonedTime where

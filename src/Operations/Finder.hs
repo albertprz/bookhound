@@ -1,19 +1,20 @@
 module Operations.Finder (Finder(..)) where
 
 
-import Parser (runParser)
-import ParserCombinators (IsMatch(..), (|*), (<|>))
-import Parsers.String (withinSquareBrackets)
-import Parsers.Number (unsignedInt)
-import Parsers.Char (dot)
-import SyntaxTrees.Json(JsExpression(..))
-import SyntaxTrees.Yaml (YamlExpression(..))
-import SyntaxTrees.Toml (TomlExpression(..))
+import Parser            (runParser)
+import ParserCombinators (IsMatch (..), (<|>), (|*))
+import Parsers.Char      (dot)
+import Parsers.Number    (unsignedInt)
+import Parsers.String    (withinSquareBrackets)
+import SyntaxTrees.Json  (JsExpression (..))
+import SyntaxTrees.Toml  (TomlExpression (..))
+import SyntaxTrees.Yaml  (YamlExpression (..))
 
 
-import qualified Data.Map as Map
-import Data.Maybe (listToMaybe)
-import Data.Either (fromRight)
+import           Data.Either (fromRight)
+import           Data.Maybe  (listToMaybe)
+
+import qualified Data.Map    as Map
 
 
 

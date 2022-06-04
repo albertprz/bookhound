@@ -1,18 +1,21 @@
 module SyntaxTrees.Json (JsExpression(..)) where
 
 import Utils.Foldable (stringify)
-import Utils.Map (showMap)
+import Utils.Map      (showMap)
 
-import Data.Map (Map)
 import Data.Char (toLower)
+import Data.Map  (Map)
 
 
 
-data JsExpression = JsNumber Double | JsBool Bool |
-                    JsString String |
-                    JsArray [JsExpression] |
-                    JsObject (Map String JsExpression) |
-                    JsNull deriving (Eq, Ord)
+data JsExpression
+  = JsNumber Double
+  | JsBool Bool
+  | JsString String
+  | JsArray [JsExpression]
+  | JsObject (Map String JsExpression)
+  | JsNull
+  deriving (Eq, Ord)
 
 
 instance Show JsExpression where

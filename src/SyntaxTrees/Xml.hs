@@ -2,16 +2,19 @@ module SyntaxTrees.Xml (XmlExpression(..), literalExpression, flatten, findAll, 
 
 import Utils.Foldable (stringify)
 
-import Data.Map (Map, keys, elems)
-import qualified Data.Map as Map
-import Data.Maybe (listToMaybe)
+import           Data.Maybe (listToMaybe)
+
+import           Data.Map   (Map, elems, keys)
+import qualified Data.Map   as Map
 
 
-data XmlExpression = XmlExpression {
-    tagName     :: String
-  , fields      :: Map String String
-  , expressions :: [XmlExpression]
-  } deriving (Eq, Ord)
+data XmlExpression
+  = XmlExpression
+      { tagName     :: String
+      , fields      :: Map String String
+      , expressions :: [XmlExpression]
+      }
+  deriving (Eq, Ord)
 
 
 instance Show XmlExpression where
@@ -24,7 +27,7 @@ instance Show XmlExpression where
                         | otherwise        -> ">"  ++ ending
 
         (sep, n) = if | ((tagName) . head) expressions == "literal" -> ("", 0)
-                      | otherwise                                    -> ("\n", 2)
+                      | otherwise                                   -> ("\n", 2)
 
         ending = stringify sep sep sep n (show <$> expressions) ++ "</" ++ tag ++ ">"
 

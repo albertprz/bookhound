@@ -1,12 +1,13 @@
 module Parsers.String where
 
-import Parser (Parser)
-import ParserCombinators (IsMatch(..), (|*), (|+), (|?), (>>>), within, withinBoth,
-                         maybeWithin, maybeWithinBoth)
-import Parsers.Char (char, digit, upper, lower, letter, alpha, alphaNum,
-                     space, tab, spaceOrTab, whiteSpace, newLine, quote,
-                     doubleQuote, openParens, closeParens, openSquare,
-                     closeSquare, openCurly, closeCurly, openAngle, closeAngle)
+import Parser            (Parser)
+import ParserCombinators (IsMatch (..), maybeWithin, maybeWithinBoth, within,
+                          withinBoth, (>>>), (|*), (|+), (|?))
+import Parsers.Char      (alpha, alphaNum, char, closeAngle, closeCurly,
+                          closeParens, closeSquare, digit, doubleQuote, letter,
+                          lower, newLine, openAngle, openCurly, openParens,
+                          openSquare, quote, space, spaceOrTab, tab, upper,
+                          whiteSpace)
 
 
 string :: Parser String

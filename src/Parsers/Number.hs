@@ -1,8 +1,8 @@
 module Parsers.Number (int, double, posInt, negInt, unsignedInt, hexInt, octInt, intLike) where
 
-import Parser (Parser, errorParser, ParseError(..))
-import ParserCombinators (IsMatch(..), (>>>), (<|>), (|+), (|?))
-import Parsers.Char (digit, dot, dash, plus)
+import Parser            (ParseError (..), Parser, errorParser)
+import ParserCombinators (IsMatch (..), (<|>), (>>>), (|+), (|?))
+import Parsers.Char      (dash, digit, dot, plus)
 
 
 hexInt :: Parser Integer

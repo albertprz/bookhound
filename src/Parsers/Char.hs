@@ -1,8 +1,9 @@
 module Parsers.Char where
 
+import ParserCombinators (IsMatch (..), (<|>))
+
+import           Parser (Parser)
 import qualified Parser
-import Parser (Parser)
-import ParserCombinators (IsMatch(..), (<|>))
 
 
 char :: Parser Char

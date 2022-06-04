@@ -1,12 +1,12 @@
 module Parsers.Json (json, nil, number, bool, string, array, object) where
 
-import Parser(Parser, exactly)
-import ParserCombinators (IsMatch(..), (<|>), (|*), maybeWithin)
-import Parsers.Number (double)
+import Parser              (Parser, exactly)
+import ParserCombinators   (IsMatch (..), maybeWithin, (<|>), (|*))
+import Parsers.Char        (colon, doubleQuote)
 import Parsers.Collections (listOf, mapOf)
-import Parsers.Char (doubleQuote, colon)
-import Parsers.String (withinDoubleQuotes, spacing)
-import SyntaxTrees.Json (JsExpression(..))
+import Parsers.Number      (double)
+import Parsers.String      (spacing, withinDoubleQuotes)
+import SyntaxTrees.Json    (JsExpression (..))
 
 
 json :: Parser JsExpression

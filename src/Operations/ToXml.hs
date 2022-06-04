@@ -2,12 +2,12 @@
 
 module Operations.ToXml (ToXml(..)) where
 
-import SyntaxTrees.Xml  (XmlExpression(..), literalExpression)
-import SyntaxTrees.Json (JsExpression(..))
-import Operations.ToJson (ToJson(..))
+import Operations.ToJson (ToJson (..))
+import SyntaxTrees.Json  (JsExpression (..))
+import SyntaxTrees.Xml   (XmlExpression (..), literalExpression)
 
-import qualified Data.Map as Map
-import Data.Char (toLower)
+import           Data.Char (toLower)
+import qualified Data.Map  as Map
 
 
 class ToXml a where

@@ -3,23 +3,30 @@ module Parser (Parser, ParseResult, ParseError(..), runParser, errorParser,
                withTransform) where
 
 import Control.Applicative (liftA2)
-import Control.Monad (join)
-import Data.Maybe (isJust)
-import Data.Either (fromRight)
-import Data.List (find)
+import Control.Monad       (join)
+import Data.Either         (fromRight)
+import Data.List           (find)
+import Data.Maybe          (isJust)
 
 type Input = String
 
-data Parser a = P { parse :: Input -> ParseResult a
-                  , transform :: forall b. Maybe (Parser b -> Parser b)
-                  }
+data Parser a
+  = P
+      { parse     :: Input -> ParseResult a
+      , transform :: forall b. Maybe (Parser b -> Parser b)
+      }
 
-data ParseResult a = Result Input a | Error ParseError
-  deriving Eq
+data ParseResult a
+  = Result Input a
+  | Error ParseError
+  deriving (Eq)
 
-data ParseError = UnexpectedEof       | ExpectedEof Input       |
-                  UnexpectedChar Char | UnexpectedString String |
-                  NoMatch String
+data ParseError
+  = UnexpectedEof
+  | ExpectedEof Input
+  | UnexpectedChar Char
+  | UnexpectedString String
+  | NoMatch String
   deriving (Eq, Show)
 
 
@@ -48,7 +55,7 @@ instance Applicative Parser where
       combinedParser = mkParser (
         \x -> case p x of
         Result i a -> parse ((f a) <$> mb) i
-        Error pe -> Error pe)
+        Error pe   -> Error pe)
 
 instance Monad Parser where
   (>>=) (P p t) f = applyTransform t combinedParser
@@ -56,14 +63,14 @@ instance Monad Parser where
       combinedParser = mkParser (
         \x -> case  p x of
         Result i a -> parse (f a) i
-        Error pe -> Error pe)
+        Error pe   -> Error pe)
 
 
 runParser :: Parser a -> Input -> Either ParseError a
 runParser p i = toEither $ parse (exactly p) i where
 
   toEither = \case
-    Error pe -> Left pe
+    Error pe   -> Left pe
     Result _ a -> Right a
 
 errorParser :: ParseError -> Parser a
@@ -72,7 +79,7 @@ errorParser = mkParser . const . Error
 
 char :: Parser Char
 char = mkParser parseIt  where
-  parseIt [] = Error UnexpectedEof
+  parseIt []          = Error UnexpectedEof
   parseIt (ch : rest) = Result rest ch
 
 
@@ -134,7 +141,7 @@ except :: Show a => Parser a -> Parser a -> Parser a
 except (P p t) (P p' _) = applyTransform t $ mkParser (
   \x -> case p' x of
     Result _ a -> Error $ UnexpectedString (show a)
-    Error _     -> p x)
+    Error _    -> p x)
 
 withTransform :: (forall b. Parser b -> Parser b) -> Parser a -> Parser a
 withTransform f = applyTransform $ Just f

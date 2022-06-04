@@ -2,25 +2,35 @@ module SyntaxTrees.Toml (TomlExpression(..), TableType(..)) where
 
 import Utils.DateTime (showDateTime)
 import Utils.Foldable (stringify)
-import Utils.Map (showMap)
+import Utils.Map      (showMap)
 
-import Data.Map (Map)
-import qualified Data.Map as Map
-import Data.Time (Day, TimeOfDay, ZonedTime(..))
 import Data.Char (toLower)
+import Data.Time (Day, TimeOfDay, ZonedTime (..))
+
+import           Data.Map (Map)
+import qualified Data.Map as Map
 
 
 
-data TomlExpression = TomlInteger Integer | TomlFloat Double | TomlBool Bool |
-                      TomlString String | TomlDate Day |
-                      TomlTime TimeOfDay | TomlDateTime ZonedTime |
-                      TomlArray [TomlExpression] |
-                      TomlTable TableType (Map String TomlExpression) |
-                      TomlNull
-                    deriving (Eq, Ord)
+data TomlExpression
+  = TomlInteger Integer
+  | TomlFloat Double
+  | TomlBool Bool
+  | TomlString String
+  | TomlDate Day
+  | TomlTime TimeOfDay
+  | TomlDateTime ZonedTime
+  | TomlArray [TomlExpression]
+  | TomlTable TableType (Map String TomlExpression)
+  | TomlNull
+  deriving (Eq, Ord)
 
 
-data TableType = TopLevel | Standard | Inline deriving (Eq, Ord)
+data TableType
+  = TopLevel
+  | Standard
+  | Inline
+  deriving (Eq, Ord)
 
 
 instance Show TomlExpression where

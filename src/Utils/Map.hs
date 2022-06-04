@@ -1,6 +1,6 @@
 module Utils.Map where
 
-import Data.Map (Map, keys, elems)
+import Data.Map (Map, elems, keys)
 
 
 showMap :: String -> (String -> String) -> (a -> String) -> Map String a -> [String]

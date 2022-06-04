@@ -1,13 +1,13 @@
 module Parsers.DateTime (date, time, timeZoneOffset, localDateTime, offsetDateTime,
                          dateTime, year, day, month, hour, minute, second) where
 
-import Parser(Parser, check)
-import ParserCombinators (IsMatch(..), (<|>), (<#>), (|?), (|+), within)
-import Parsers.Char (digit, dash, colon, plus)
+import Parser            (Parser, check)
+import ParserCombinators (IsMatch (..), within, (<#>), (<|>), (|+), (|?))
+import Parsers.Char      (colon, dash, digit, plus)
 
-import Data.Time (Day, LocalTime(..), TimeOfDay(..), TimeZone, ZonedTime(..),
-                  fromGregorian, minutesToTimeZone)
 import Data.Maybe (fromMaybe)
+import Data.Time  (Day, LocalTime (..), TimeOfDay (..), TimeZone,
+                   ZonedTime (..), fromGregorian, minutesToTimeZone)
 
 
 date :: Parser Day

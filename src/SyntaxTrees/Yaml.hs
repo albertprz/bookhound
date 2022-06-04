@@ -2,24 +2,32 @@ module SyntaxTrees.Yaml (YamlExpression(..), CollectionType(..)) where
 
 import Utils.DateTime ()
 import Utils.Foldable (stringify)
-import Utils.Map (showMap)
+import Utils.Map      (showMap)
 
-import Data.Map (Map)
-import qualified Data.Map as Map
-import Data.Char (toLower)
-import Data.Time (Day, TimeOfDay, ZonedTime(..))
+import           Data.Char (toLower)
+import           Data.Map  (Map)
+import qualified Data.Map  as Map
+import           Data.Time (Day, TimeOfDay, ZonedTime (..))
 
 
 
-data YamlExpression = YamlInteger Integer | YamlFloat Double | YamlBool Bool |
-                      YamlString String | YamlDate Day |
-                      YamlTime TimeOfDay | YamlDateTime ZonedTime |
-                      YamlList CollectionType [YamlExpression] |
-                      YamlMap CollectionType (Map String YamlExpression) |
-                      YamlNull
-                    deriving (Eq, Ord)
+data YamlExpression
+  = YamlInteger Integer
+  | YamlFloat Double
+  | YamlBool Bool
+  | YamlString String
+  | YamlDate Day
+  | YamlTime TimeOfDay
+  | YamlDateTime ZonedTime
+  | YamlList CollectionType [YamlExpression]
+  | YamlMap CollectionType (Map String YamlExpression)
+  | YamlNull
+  deriving (Eq, Ord)
 
-data CollectionType = Standard | Inline deriving (Eq, Ord)
+data CollectionType
+  = Standard
+  | Inline
+  deriving (Eq, Ord)
 
 
 instance Show YamlExpression where

@@ -1,14 +1,13 @@
 module Parsers.Xml (xml, branchExpr, leafExpr, literal) where
 
-import Parser (Parser)
-import ParserCombinators (IsMatch(..), (<|>), (|*), (|+), maybeWithin)
-import Parsers.Char (doubleQuote)
-import Parsers.String (withinDoubleQuotes, withinAngleBrackets, spacing)
-import SyntaxTrees.Xml ( XmlExpression(..), literalExpression )
+import Parser            (Parser)
+import ParserCombinators (IsMatch (..), maybeWithin, (<|>), (|*), (|+))
+import Parsers.Char      (doubleQuote)
+import Parsers.String    (spacing, withinAngleBrackets, withinDoubleQuotes)
+import SyntaxTrees.Xml   (XmlExpression (..), literalExpression)
 
+import           Data.Map (Map)
 import qualified Data.Map as Map
-import Data.Map(Map)
-
 
 
 xml :: Parser XmlExpression

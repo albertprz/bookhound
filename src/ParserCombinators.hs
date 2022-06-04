@@ -6,14 +6,16 @@ module ParserCombinators (IsMatch(..), satisfies, contains, notContains,
                           anySepBy, someSepBy, manySepBy, sepByOp,
                           (<|>), (<&>), (<#>), (>>>), (|?), (|*), (|+), (|++))  where
 
-import Parser (Parser, char, isMatch, check, anyOf, allOf, except)
-import Utils.Foldable (hasSome, hasMany)
-import Utils.String (ToString(..))
-import Utils.Applicative (extract)
-import qualified Data.Foldable as Foldable
+import           Parser            (Parser, allOf, anyOf, char, check, except,
+                                    isMatch)
+import           Utils.Applicative (extract)
+import           Utils.Foldable    (hasMany, hasSome)
+import           Utils.String      (ToString (..))
 
+import Data.List  (isInfixOf)
 import Data.Maybe (listToMaybe)
-import Data.List (isInfixOf)
+
+import qualified Data.Foldable     as Foldable
 
 
 class IsMatch a where

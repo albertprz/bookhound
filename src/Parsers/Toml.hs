@@ -1,20 +1,23 @@
 module Parsers.Toml (toml, nil, integer, float, bool, string,
                      array, inlineTable) where
 
-import Parser(Parser)
-import ParserCombinators (IsMatch(..), (<|>), (>>>), (<#>), (|?), (|*), (|+),
-                          maybeWithin, within)
-import Parsers.Number (double, hexInt, int, octInt)
-import Parsers.String (blankLine, withinQuotes, withinDoubleQuotes,
-                       spacesOrTabs, withinSquareBrackets, spacing, blankLines)
-import Parsers.Char (quote, doubleQuote, whiteSpace, hashTag, newLine,
-                     dot, digit, letter, underscore, dash, equal, spaceOrTab)
-import SyntaxTrees.Toml (TomlExpression(..), TableType(..))
-import Parsers.Collections (mapOf, listOf)
+import Parser              (Parser)
+import ParserCombinators   (IsMatch (..), maybeWithin, within, (<#>), (<|>),
+                            (>>>), (|*), (|+), (|?))
+import Parsers.Char        (dash, digit, dot, doubleQuote, equal, hashTag,
+                            letter, newLine, quote, spaceOrTab, underscore,
+                            whiteSpace)
+import Parsers.Collections (listOf, mapOf)
+import Parsers.Number      (double, hexInt, int, octInt)
+import Parsers.String      (blankLine, blankLines, spacesOrTabs, spacing,
+                            withinDoubleQuotes, withinQuotes,
+                            withinSquareBrackets)
+import SyntaxTrees.Toml    (TableType (..), TomlExpression (..))
+
 import qualified Parsers.DateTime as Dt
 
-import qualified Data.Map as Map
-import Data.Maybe (maybeToList)
+import qualified Data.Map   as Map
+import           Data.Maybe (maybeToList)
 
 
 

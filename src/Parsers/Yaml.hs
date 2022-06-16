@@ -2,20 +2,18 @@ module Parsers.Yaml (yaml, nil, integer, float, bool, string,
                      list, mapping) where
 
 
-import           Parser              (Parser, andThen, check, exactly)
-import           ParserCombinators   (IsMatch (..), maybeWithin, (<#>), (<|>),
-                                      (>>>), (|*), (|+), (|++), (|?))
-import           Parsers.Char        (char, colon, dash, dot, doubleQuote,
-                                      hashTag, newLine, question, quote, space,
-                                      whiteSpace)
-import           Parsers.Collections (listOf, mapOf)
-import           Parsers.Number      (double, hexInt, int, octInt)
-import           Parsers.String      (blankLine, blankLines, spaces,
-                                      spacesOrTabs, tabs, withinDoubleQuotes,
-                                      withinQuotes)
-import           SyntaxTrees.Yaml    (CollectionType (..), YamlExpression (..))
+import Parser              (Parser, andThen, check, exactly)
+import ParserCombinators   (IsMatch (..), maybeWithin, (<#>), (<|>), (>>>),
+                            (|*), (|+), (|++), (|?))
+import Parsers.Char        (char, colon, dash, dot, doubleQuote, hashTag,
+                            newLine, question, quote, space, whiteSpace)
+import Parsers.Collections (listOf, mapOf)
+import Parsers.Number      (double, hexInt, int, octInt)
+import Parsers.String      (blankLine, blankLines, spaces, spacesOrTabs, tabs,
+                            withinDoubleQuotes, withinQuotes)
+import SyntaxTrees.Yaml    (CollectionType (..), YamlExpression (..))
 
-import qualified Parsers.DateTime    as Dt
+import qualified Parsers.DateTime as Dt
 
 import           Data.List (nub)
 import qualified Data.Map  as Map

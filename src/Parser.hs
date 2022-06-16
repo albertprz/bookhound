@@ -105,7 +105,8 @@ allOf ps = allOfHelper ps Nothing
 anyOfHelper :: [Parser a] -> (forall b. Maybe (Parser b -> Parser b)) -> Parser a
 anyOfHelper [] _  = errorParser $ NoMatch "anyOf"
 anyOfHelper [p] _ = p
-anyOfHelper ((P p t) : rest) t' = applyTransform (findJust t t') $ mkParser (
+anyOfHelper ((P p t) : rest) t' = applyTransform (findJust t t') $
+  mkParser (
    \x -> case p x of
     result@(Result _ _) -> result
     Error _             -> parse (anyOfHelper rest t) x)
@@ -115,9 +116,10 @@ anyOfHelper ((P p t) : rest) t' = applyTransform (findJust t t') $ mkParser (
 allOfHelper :: [Parser a] -> (forall b. Maybe (Parser b -> Parser b)) -> Parser a
 allOfHelper [] _ = errorParser $ NoMatch "allOf"
 allOfHelper [p] _ = p
-allOfHelper ((P p t) : rest) t' = applyTransform (findJust t t') $ mkParser (
+allOfHelper ((P p t) : rest) t' = applyTransform (findJust t t') $
+  mkParser (
    \x -> case p x of
-    Result i _    -> parse (allOfHelper rest t) i
+    Result _ _    -> parse (allOfHelper rest t) x
     err@(Error _) -> err)
 
 

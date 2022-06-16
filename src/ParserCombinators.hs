@@ -1,29 +1,29 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module ParserCombinators (IsMatch(..), satisfies, contains, notContains,
+                          containsAnyOf, containsNoneOf,
                           times, maybeTimes, anyTimes, someTimes, manyTimes,
                           within, maybeWithin, withinBoth, maybeWithinBoth,
                           anySepBy, someSepBy, manySepBy, sepByOp,
                           (<|>), (<&>), (<#>), (>>>), (|?), (|*), (|+), (|++))  where
 
-import           Parser            (Parser, allOf, anyOf, char, check, except,
-                                    isMatch)
-import           Utils.Applicative (extract)
-import           Utils.Foldable    (hasMany, hasSome)
-import           Utils.String      (ToString (..))
+import Parser            (Parser, allOf, anyOf, char, check, except, isMatch)
+import Utils.Applicative (extract)
+import Utils.Foldable    (hasMany, hasSome)
+import Utils.String      (ToString (..))
 
 import Data.List  (isInfixOf)
 import Data.Maybe (listToMaybe)
 
-import qualified Data.Foldable     as Foldable
+import qualified Data.Foldable as Foldable
 
 
 class IsMatch a where
   is      :: a -> Parser a
   isNot   :: a -> Parser a
+  inverse :: Parser a -> Parser a
   oneOf   :: [a] -> Parser a
   noneOf  :: [a] -> Parser a
-  inverse :: Parser a -> Parser a
 
   oneOf xs  = anyOf $ is <$> xs
   noneOf xs = allOf $ isNot <$> xs
@@ -52,8 +52,14 @@ satisfies cond p = check "satisfies" cond p
 contains :: Eq a => [a] -> Parser [a] -> Parser [a]
 contains val p = check "contains" (isInfixOf val) p
 
+containsAnyOf :: (Foldable t, Eq a) => t [a] -> Parser [a] -> Parser [a]
+containsAnyOf x y = foldr contains y x
+
 notContains :: Eq a => [a] -> Parser [a] -> Parser [a]
 notContains val p = check "notContains" (isInfixOf val) p
+
+containsNoneOf :: (Foldable t, Eq a) => t [a] -> Parser [a] -> Parser [a]
+containsNoneOf x y = foldr notContains y x
 
 
  -- Frequency combinators

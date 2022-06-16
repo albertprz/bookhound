@@ -1,6 +1,6 @@
 module Parsers.Json (json, nil, number, bool, string, array, object) where
 
-import Parser              (Parser, exactly)
+import Parser              (Parser)
 import ParserCombinators   (IsMatch (..), maybeWithin, (<|>), (|*))
 import Parsers.Char        (colon, doubleQuote)
 import Parsers.Collections (listOf, mapOf)

@@ -11,10 +11,10 @@ import SyntaxTrees.Toml  (TomlExpression (..))
 import SyntaxTrees.Yaml  (YamlExpression (..))
 
 
-import           Data.Either (fromRight)
-import           Data.Maybe  (listToMaybe)
+import Data.Either (fromRight)
+import Data.Maybe  (listToMaybe)
 
-import qualified Data.Map    as Map
+import qualified Data.Map as Map
 
 
 

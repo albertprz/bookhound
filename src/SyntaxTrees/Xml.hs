@@ -2,10 +2,10 @@ module SyntaxTrees.Xml (XmlExpression(..), literalExpression, flatten, findAll, 
 
 import Utils.Foldable (stringify)
 
-import           Data.Maybe (listToMaybe)
+import Data.Maybe (listToMaybe)
 
-import           Data.Map   (Map, elems, keys)
-import qualified Data.Map   as Map
+import           Data.Map (Map, elems, keys)
+import qualified Data.Map as Map
 
 
 data XmlExpression

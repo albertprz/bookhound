@@ -22,13 +22,17 @@ dependencies:
 - base >= 4.7 && < 5
 - containers >= 0.6 && < 1
 - time >= 1.9 && < 2
+- text >= 2.0 && < 3
 
 ghc-options:
 - -Wall
 - -Wcompat
+- -Widentities
 - -Wincomplete-record-updates
+- -Wpartial-fields
 - -Wincomplete-uni-patterns
 - -Wredundant-constraints
+- -Werror
 
 default-extensions:
 # Syntax

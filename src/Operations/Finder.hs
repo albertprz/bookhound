@@ -14,7 +14,8 @@ import SyntaxTrees.Yaml  (YamlExpression (..))
 import Data.Either (fromRight)
 import Data.Maybe  (listToMaybe)
 
-import qualified Data.Map as Map
+import qualified Data.Map  as Map
+import           Data.Text (pack)
 
 
 
@@ -37,7 +38,7 @@ class Finder a where
 
   findByPath path = findByKeys pathSeq where
 
-    pathSeq = fromRight [] $ runParser parsePath path
+    pathSeq = fromRight [] $ runParser parsePath $ pack path
     parsePath = is '$' *> ((index <|> key) |*)
 
     index = show <$> withinSquareBrackets unsignedInt

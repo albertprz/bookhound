@@ -5,9 +5,10 @@ module ParserCombinators (IsMatch(..), satisfies, contains, notContains,
                           times, maybeTimes, anyTimes, someTimes, manyTimes,
                           within, maybeWithin, withinBoth, maybeWithinBoth,
                           anySepBy, someSepBy, manySepBy, sepByOp,
-                          (<|>), (<&>), (<#>), (>>>), (|?), (|*), (|+), (|++))  where
+                          (<|>), (<?>), (<#>), (>>>), (|?), (|*), (|+), (|++))  where
 
-import Parser            (Parser, allOf, anyOf, char, check, except, isMatch)
+import Parser            (Parser, allOf, anyOf, char, check, except, isMatch,
+                          withError)
 import Utils.Applicative (extract)
 import Utils.Foldable    (hasMany, hasSome)
 import Utils.String      (ToString (..))
@@ -29,14 +30,14 @@ class IsMatch a where
   noneOf xs = allOf $ isNot <$> xs
 
 
-instance IsMatch Char where
+instance   IsMatch Char where
   is      = isMatch (==) char
   isNot   = isMatch (/=) char
   inverse = except char
 
-instance IsMatch String where
-  is      = traverse is
-  isNot   = traverse isNot
+instance   IsMatch String where
+  is      = traverse (isMatch (==) char)
+  isNot   = traverse (isMatch (/=) char)
   inverse = except (char |*)
 
 instance {-# OVERLAPPABLE #-} (Num a, Read a, Show a) => IsMatch a where
@@ -115,14 +116,15 @@ sepByOp sep p = do x1 <- p
                    xs <- someSepBy sep p
                    pure $ (op, x1 : xs)
 
+
 -- Parser Binary Operators
 infixl 3 <|>
 (<|>) :: Parser a -> Parser a -> Parser a
 (<|>) p1 p2 = anyOf [p1, p2]
 
-infixl 3 <&>
-(<&>) :: Parser a -> Parser a -> Parser a
-(<&>) p1 p2 = allOf [p1, p2]
+infixl 6 <?>
+(<?>) :: Parser a -> String -> Parser a
+(<?>) = flip withError
 
 infixl 6 <#>
 (<#>) :: Parser a -> Integer -> Parser [a]
@@ -130,7 +132,7 @@ infixl 6 <#>
 
 infixl 6 >>>
 (>>>) :: (ToString a, ToString b) => Parser a -> Parser b -> Parser String
-(>>>) p1 p2 = (++) <$> (toString <$> p1)
+(>>>) p1 p2 = (<>) <$> (toString <$> p1)
                    <*> (toString <$> p2)
 
 

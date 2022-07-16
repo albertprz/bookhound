@@ -1,14 +1,15 @@
 module Parser (Parser, ParseResult, ParseError(..), runParser, errorParser,
                andThen, exactly, isMatch, check, except, anyOf, allOf, char,
-               withTransform) where
+               withTransform, withError) where
 
 import Control.Applicative (liftA2)
 import Control.Monad       (join)
 import Data.Either         (fromRight)
 import Data.List           (find)
 import Data.Maybe          (isJust)
+import Data.Text           (Text, pack, uncons, unpack)
 
-type Input = String
+type Input = Text
 
 data Parser a
   = P
@@ -31,18 +32,20 @@ data ParseError
 
 
 instance Show a => Show (ParseResult a) where
-  show (Result i a)                 = "Pending: " ++ " >" ++ i ++ "< " ++
-                                      "\n\nResult: \n" ++ show a
+  show (Result i a)                 = "Pending: " <> " >" <> unpack i <> "< " <>
+                                      "\n\nResult: \n" <> show a
   show (Error UnexpectedEof)        = "Unexpected end of stream"
-  show (Error (ExpectedEof i))      = "Expected end of stream, but got >" ++ i ++ "<"
-  show (Error (UnexpectedChar c))   = "Unexpected char: "   ++ "[" ++ show c ++ "]"
-  show (Error (UnexpectedString s)) = "Unexpected string: " ++ "[" ++ show s ++ "]"
-  show (Error (NoMatch s))          = "Did not match condition: " ++ s
+  show (Error (ExpectedEof i))      = "Expected end of stream, but got >"
+                                       <> unpack i <> "<"
+  show (Error (UnexpectedChar c))   = "Unexpected char: "   <> "[" <> show c <> "]"
+  show (Error (UnexpectedString s)) = "Unexpected string: " <> "[" <> show s <> "]"
+  show (Error (NoMatch s))          = "Did not match condition: " <> s
 
 
 instance Functor ParseResult where
   fmap f (Result i a) = Result i (f a)
   fmap _ (Error pe)   = Error pe
+
 
 instance Functor Parser where
   fmap f (P p t) = applyTransform t $ mkParser (fmap f . p)
@@ -78,22 +81,21 @@ errorParser = mkParser . const . Error
 
 
 char :: Parser Char
-char = mkParser parseIt  where
-  parseIt []          = Error UnexpectedEof
-  parseIt (ch : rest) = Result rest ch
+char = mkParser $
+   maybe (Error UnexpectedEof) (\(ch, rest) -> Result rest ch) . uncons
 
 
-
-andThen :: Parser Input -> Parser a -> Parser a
-andThen p1 p2@(P _ t) = applyTransform t $ P (\i -> parse p2 $ fromRight i $ runParser p1 i) t
+andThen :: Parser String -> Parser a -> Parser a
+andThen p1 p2@(P _ t) = applyTransform t $
+  P (\i -> parse p2 $ fromRight i $ pack <$> runParser p1 i) t
 
 
 exactly :: Parser a -> Parser a
 exactly (P p t) = applyTransform t $ mkParser (
   \x -> case p x of
-    result@(Result "" _) -> result
-    Result i _           -> Error $ ExpectedEof i
-    err@(Error _)        -> err)
+    result@(Result i _) | i == mempty -> result
+    Result i _                        -> Error $ ExpectedEof i
+    err@(Error _)                     -> err)
 
 anyOf :: [Parser a] -> Parser a
 anyOf ps = anyOfHelper ps Nothing
@@ -145,6 +147,13 @@ except (P p t) (P p' _) = applyTransform t $ mkParser (
     Result _ a -> Error $ UnexpectedString (show a)
     Error _    -> p x)
 
+withError :: String -> Parser a -> Parser a
+withError str parser@(P p _) = parser { parse =
+  \i -> case p i of
+    r@(Result _ _) -> r
+    Error _        -> Error $ NoMatch str
+  }
+
 withTransform :: (forall b. Parser b -> Parser b) -> Parser a -> Parser a
 withTransform f = applyTransform $ Just f
 
@@ -156,4 +165,4 @@ mkParser :: (Input -> ParseResult a) -> Parser a
 mkParser p = P {parse = p, transform = Nothing}
 
 findJust :: forall a. Maybe a -> Maybe a -> Maybe a
-findJust ma mb = join $ find isJust [ma, mb]
+findJust ma mb = join $ find isJust ([ma, mb] :: [Maybe a])

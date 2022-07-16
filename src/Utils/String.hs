@@ -1,5 +1,7 @@
 module Utils.String where
+
 import Data.List (intercalate)
+import Data.Text (Text, unpack)
 
 
 class ToString a where
@@ -10,6 +12,9 @@ instance ToString Char where
 
 instance ToString Int where
   toString = show
+
+instance ToString Text where
+  toString = unpack
 
 instance ToString Integer where
   toString = show

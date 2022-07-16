@@ -1,7 +1,7 @@
 module Parsers.Toml (toml, nil, integer, float, bool, string,
                      array, inlineTable) where
 
-import Parser              (Parser)
+import Parser              (Parser, withError)
 import ParserCombinators   (IsMatch (..), maybeWithin, within, (<#>), (<|>),
                             (>>>), (|*), (|+), (|?))
 import Parsers.Char        (dash, digit, dot, doubleQuote, equal, hashTag,
@@ -29,82 +29,93 @@ toml = maybeWithin (((pure <$> whiteSpace) <|> comment) |+) topLevelTable
 -- TODO: Add support for table arrays
 
 nil :: Parser TomlExpression
-nil = TomlNull <$ is "null"
+nil = withError "Toml Null"
+  $ TomlNull <$ is "null"
 
 integer :: Parser TomlExpression
-integer = TomlInteger <$> (hexInt <|> octInt <|> int)
+integer = withError "Toml Integer"
+  $ TomlInteger <$> (hexInt <|> octInt <|> int)
 
 float :: Parser TomlExpression
-float = TomlFloat <$> double
+float = withError "Toml Float"
+  $ TomlFloat <$> double
 
 bool :: Parser TomlExpression
-bool = TomlBool <$> (True  <$ is "true"  <|>
-                     False <$ is "false")
+bool = withError "Toml Bool"
+  $ TomlBool <$> (True  <$ is "true"  <|>
+                False <$ is "false")
 
 
 dateTime :: Parser TomlExpression
-dateTime = TomlDateTime <$> Dt.dateTime
+dateTime = withError "Toml DateTime"
+  $ TomlDateTime <$> Dt.dateTime
 
 date :: Parser TomlExpression
-date = TomlDate <$> Dt.date
+date = withError "Toml Date"
+  $ TomlDate <$> Dt.date
 
 time :: Parser TomlExpression
-time = TomlTime <$> Dt.time
+time = withError "Toml Time"
+  $ TomlTime <$> Dt.time
 
 
 string :: Parser TomlExpression
-string = TomlString <$> text where
+string = withError "Toml String"
+  $ TomlString <$> text
+  where
+    text = within (doubleQuote <#> 3) (multiline (inverse doubleQuote |*)) <|>
+           within  (quote <#> 3)      (multiline (inverse quote |*))       <|>
+           withinDoubleQuotes         (inverse doubleQuote |*)             <|>
+           withinQuotes               (inverse quote       |*)
 
-  text = within (doubleQuote <#> 3) (multiline (inverse doubleQuote |*)) <|>
-         within  (quote <#> 3)      (multiline (inverse quote |*))       <|>
-         withinDoubleQuotes         (inverse doubleQuote |*)             <|>
-         withinQuotes               (inverse quote       |*)
+    multiline parser = mconcat <$> (((blankLine |?) *> line parser) |*)
 
-  multiline parser = mconcat <$> (((blankLine |?) *> line parser) |*)
-
-  line parser = is "\\" *> (whiteSpace |*) *> parser
+    line parser = is "\\" *> (whiteSpace |*) *> parser
 
 
 array :: Parser TomlExpression
-array = TomlArray <$> listOf (maybeWithin spacing tomlExpr)
+array = withError "Toml Array"
+  $ TomlArray <$> listOf (maybeWithin spacing tomlExpr)
 
 
 key :: Parser String
-key = keyParser >>> ((dot >>> keyParser) |*) where
+key = keyParser >>> ((dot >>> keyParser) |*)
+  where
+    keyParser = maybeWithin spacesOrTabs $ freeText      <|>
+                withinDoubleQuotes (inverse doubleQuote |*) <|>
+                withinQuotes (inverse quote |*)
 
-  keyParser = maybeWithin spacesOrTabs $ freeText      <|>
-              withinDoubleQuotes (inverse doubleQuote |*) <|>
-              withinQuotes (inverse quote |*)
-
-  freeText = ((letter <|> digit <|> underscore <|> dash) |+)
+    freeText = ((letter <|> digit <|> underscore <|> dash) |+)
 
 
 inlineTable :: Parser TomlExpression
-inlineTable = TomlTable Inline <$> mapOf equal key tomlExpr
+inlineTable = withError "Toml Table"
+  $ TomlTable Inline <$> mapOf equal key tomlExpr
 
 
 topLevelTable :: Parser TomlExpression
-topLevelTable = TomlTable TopLevel . Map.fromList <$> maybeWithin spacing tables where
+topLevelTable = withError "Toml Table"
+  $ TomlTable TopLevel . Map.fromList <$> maybeWithin spacing tables
+  where
+    tables = do xs <- keyValueSeqParser
+                ys <- (tableParser |*)
+                pure (ys ++ [("", TomlTable Standard . Map.fromList $ xs)])
 
-  tables = do xs <- keyValueSeqParser
-              ys <- (tableParser |*)
-              pure (ys ++ [("", TomlTable Standard . Map.fromList $ xs)])
+    tableParser = do k <- withinSquareBrackets key
+                     v <- maybeWithin spacing standardTable
+                     pure (k, v)
 
-  tableParser = do k <- withinSquareBrackets key
-                   v <- maybeWithin spacing standardTable
-                   pure (k, v)
-
-  standardTable = TomlTable Standard . Map.fromList <$> keyValueSeqParser
+    standardTable = TomlTable Standard . Map.fromList <$> keyValueSeqParser
 
 
-  keyValueSeqParser = do xs <- ((keyValueParser <* (blankLine *> (blankLines |?))) |*)
-                         x  <- (keyValueParser |?)
-                         pure  (xs ++ maybeToList x)
+    keyValueSeqParser = do xs <- ((keyValueParser <* (blankLine *> (blankLines |?))) |*)
+                           x  <- (keyValueParser |?)
+                           pure  (xs ++ maybeToList x)
 
-  keyValueParser = do k <- key
-                      maybeWithin spacesOrTabs equal
-                      v <- tomlExpr
-                      pure (k, v)
+    keyValueParser = do k <- key
+                        maybeWithin spacesOrTabs equal
+                        v <- tomlExpr
+                        pure (k, v)
 
 
 
@@ -122,6 +133,6 @@ comment = hashTag *> (inverse newLine |+) <* newLine
 
 
 tomlExpr :: Parser TomlExpression
-tomlExpr = maybeWithin (((pure <$> spaceOrTab) <|> comment) |+) tomlValue where
-
-  tomlValue = element <|> container
+tomlExpr = maybeWithin (((pure <$> spaceOrTab) <|> comment) |+) tomlValue
+  where
+    tomlValue = element <|> container

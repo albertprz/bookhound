@@ -2,6 +2,7 @@
 
 module Operations.ToYaml (ToYaml(..)) where
 
+import Data.Text         (pack)
 import Operations.ToJson (ToJson (..))
 import Parser            (runParser)
 import Parsers.Number    (intLike)
@@ -22,7 +23,8 @@ instance ToYaml JsExpression where
 
   toYaml = \case
     JsNull       -> YamlNull
-    JsNumber n   -> either (const (YamlFloat n)) YamlInteger $ runParser intLike $ show n
+    JsNumber n   -> either (const (YamlFloat n)) YamlInteger $
+      runParser intLike $ pack $ show n
     JsBool bool  -> YamlBool bool
     JsString str -> YamlString str
     JsArray arr  -> YamlList Standard $ toYaml <$> arr

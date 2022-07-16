@@ -2,4 +2,5 @@ packages:
 - .
 resolver:
   compiler: ghc-9.2.1
-extra-deps: []
+extra-deps:
+  - text-2.0

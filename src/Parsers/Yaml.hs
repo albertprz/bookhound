@@ -2,7 +2,7 @@ module Parsers.Yaml (yaml, nil, integer, float, bool, string,
                      list, mapping) where
 
 
-import Parser              (Parser, andThen, check, exactly)
+import Parser              (Parser, andThen, check, exactly, withError)
 import ParserCombinators   (IsMatch (..), maybeWithin, (<#>), (<|>), (>>>),
                             (|*), (|+), (|++), (|?))
 import Parsers.Char        (char, colon, dash, dot, doubleQuote, hashTag,
@@ -29,35 +29,44 @@ yaml =  normalize `andThen` yamlWithIndent (-1)
 -- TODO: Add support for anchors and aliases
 
 nil :: Parser YamlExpression
-nil = YamlNull <$ oneOf ["null", "Null", "NULL"]
+nil = withError "Yaml Null"
+  $ YamlNull <$ oneOf ["null", "Null", "NULL"]
 
 integer :: Parser YamlExpression
-integer = YamlInteger <$> (hexInt <|> octInt <|> int)
+integer = withError "Yaml Integer"
+  $ YamlInteger <$> (hexInt <|> octInt <|> int)
 
 float :: Parser YamlExpression
-float = YamlFloat <$> double
+float = withError "Yaml Float"
+  $ YamlFloat <$> double
 
 bool :: Parser YamlExpression
-bool = YamlBool <$> (True  <$ oneOf ["true", "True", "TRUE"]    <|>
-                     False <$ oneOf ["false", "False", "FALSE"])
+bool = withError "Yaml Bool"
+  $ YamlBool <$> (True  <$ oneOf ["true", "True", "TRUE"]    <|>
+                  False <$ oneOf ["false", "False", "FALSE"])
 
 
 dateTime :: Parser YamlExpression
-dateTime = YamlDateTime <$> Dt.dateTime
+dateTime = withError "Yaml DateTime"
+  $ YamlDateTime <$> Dt.dateTime
 
 date :: Parser YamlExpression
-date = YamlDate <$> Dt.date
+date = withError "Yaml Date"
+  $ YamlDate <$> Dt.date
 
 time :: Parser YamlExpression
-time = YamlTime <$> Dt.time
+time = withError "Yaml Time"
+  $ YamlTime <$> Dt.time
 
 
 string :: Int -> Parser YamlExpression
-string indent = YamlString <$> text indent
+string indent = withError "Yaml String"
+  $ YamlString <$> text indent
 
 
 sequential :: Parser a -> Int -> Parser [YamlExpression]
-sequential sep indent = listParser where
+sequential sep indent = listParser
+  where
 
   listParser = indentationCheck elemParser indent
 
@@ -68,32 +77,35 @@ sequential sep indent = listParser where
 
 
 list :: Int -> Parser YamlExpression
-list indent = (YamlList Inline <$> jsonList) <|>
-              (YamlList Standard <$> yamlList)  where
-
-  yamlList = sequential dash indent
-  jsonList = maybeWithin spacesOrTabs $ listOf $ yamlWithIndent (-1)
+list indent = withError "Json List"
+  $   (YamlList Inline   <$> jsonList)
+  <|> (YamlList Standard <$> yamlList)
+  where
+    yamlList = sequential dash indent
+    jsonList = maybeWithin spacesOrTabs $ listOf $ yamlWithIndent (-1)
 
 
 set :: Int -> Parser YamlExpression
-set indent = YamlList Standard . nub <$> sequential question indent
+set indent = withError "Yaml Set"
+  $ YamlList Standard . nub <$> sequential question indent
 
 
 mapping :: Int -> Parser YamlExpression
-mapping indent = (YamlMap Inline <$> jsonMap) <|>
-                 (YamlMap Standard <$> yamlMap)  where
+mapping indent = withError "Yaml Mapping"
+  $   (YamlMap Inline   <$> jsonMap)
+  <|> (YamlMap Standard <$> yamlMap)
+  where
+    yamlMap = Map.fromList <$> mapParser
+    jsonMap = maybeWithin spacesOrTabs $ mapOf colon (text 100) $ yamlWithIndent (-1)
 
-  yamlMap = Map.fromList <$> mapParser
-  jsonMap = maybeWithin spacesOrTabs $ mapOf colon (text 100) $ yamlWithIndent (-1)
+    mapParser = indentationCheck keyValueParser indent
 
-  mapParser = indentationCheck keyValueParser indent
-
-  keyValueParser = do n <- length <$> (space |*)
-                      key <- show <$> element indent
-                      (spacesOrTabs |?)
-                      colon *> whiteSpace
-                      value <- yamlWithIndent n
-                      pure (n, (key, value))
+    keyValueParser = do n <- length <$> (space |*)
+                        key <- show <$> element indent
+                        (spacesOrTabs |?)
+                        colon *> whiteSpace
+                        value <- yamlWithIndent n
+                        pure (n, (key, value))
 
 
 
@@ -110,13 +122,13 @@ container indent = list indent <|> mapping indent <|> set indent
 yamlWithIndent :: Int -> Parser YamlExpression
 yamlWithIndent indent = maybeWithin ((blankLine <|> comment <|> directive <|>
                                       docStart <|> docEnd) |+)
-                        yamlValue  where
-
-  yamlValue = container indent <|> maybeWithin spacesOrTabs (element indent)
-  comment = hashTag *> (inverse newLine |+) <* newLine
-  directive = is "%" *> (inverse space *> (inverse newLine |+)) <* newLine
-  docStart = dash <#> 3
-  docEnd = dot <#> 3
+                        yamlValue
+  where
+    yamlValue = container indent <|> maybeWithin spacesOrTabs (element indent)
+    comment = hashTag *> (inverse newLine |+) <* newLine
+    directive = is "%" *> (inverse space *> (inverse newLine |+)) <* newLine
+    docStart = dash <#> 3
+    docEnd = dot <#> 3
 
 
 
@@ -128,26 +140,26 @@ text indent = withinDoubleQuotes (quotedParser (inverse doubleQuote |*))        
               plainTextParser foldingLineParser
   where
 
-  quotedParser parser = mconcat <$> ((snd <$> foldingLineParser parser) |*)
+    quotedParser parser = mconcat <$> ((snd <$> foldingLineParser parser) |*)
 
-  plainTextParser styleParser = allowedStart >>> allowedString >>>
-                                (indentationCheck (styleParser allowedString) indent |*)
+    plainTextParser styleParser = allowedStart >>> allowedString >>>
+                                  (indentationCheck (styleParser allowedString) indent |*)
 
-  foldingLineParser parser = do sep <- ("\n" <$ newLine <* blankLines) <|> (" " <$ newLine)
-                                n   <- maybeWithin tabs $ length <$> (space |*)
-                                str <- parser
-                                pure (n, sep ++ str)
+    foldingLineParser parser = do sep <- ("\n" <$ newLine <* blankLines) <|> (" " <$ newLine)
+                                  n   <- maybeWithin tabs $ length <$> (space |*)
+                                  str <- parser
+                                  pure (n, sep ++ str)
 
-  literalLineParser parser = do sep <- pure <$> newLine
-                                n   <- length <$> (space |*)
-                                str <- parser
-                                pure (n, sep ++ replicate (n - indent) ' ' ++ str)
+    literalLineParser parser = do sep <- pure <$> newLine
+                                  n   <- length <$> (space |*)
+                                  str <- parser
+                                  pure (n, sep ++ replicate (n - indent) ' ' ++ str)
 
-  allowedStart = noneOf $ forbiddenChar ++ ['>', '|', ':', '!']
+    allowedStart = noneOf $ forbiddenChar ++ ['>', '|', ':', '!']
 
-  allowedString = (noneOf forbiddenChar |*)
+    allowedString = (noneOf forbiddenChar |*)
 
-  forbiddenChar = ['\n', '#', '&', '*', ',', '?', '-', ':', '[', ']', '{', '}']
+    forbiddenChar = ['\n', '#', '&', '*', ',', '?', '-', ':', '[', ']', '{', '}']
 
 
 
@@ -157,40 +169,42 @@ indentationCheck parser indent = ((snd <$> check "indentation"
 
 
 normalize :: Parser String
-normalize = (parserActions >>> normalize) <|> (char |*) where
+normalize = withError "Normalize Yaml"
+  $ (parserActions >>> normalize) <|> (char |*)
+  where
 
-  parserActions = spreadDashes     <|>
-                  spreadDashKey    <|>
-                  spreadKeyDash    <|>
-                  next
+    parserActions = spreadDashes     <|>
+                    spreadDashKey    <|>
+                    spreadKeyDash    <|>
+                    next
 
-  next = pure <$> char
+    next = pure <$> char
 
-  spreadDashes = (++ "- ") . genDashes <$> dashesParser
+    spreadDashes = (++ "- ") . genDashes <$> dashesParser
 
-  genDashes (offset, n) = concatMap (\x -> "- " ++ replicate (offset + 2 * x) ' ')
-                                    [1 .. n - 1]
+    genDashes (offset, n) = concatMap (\x -> "- " ++ replicate (offset + 2 * x) ' ')
+                                      [1 .. n - 1]
 
-  dashesParser = do offset <- length <$> (spaces |?)
-                    n <- length <$> ((dash <* spacesOrTabs) |++)
-                    pure (offset, n)
-
-
-  spreadDashKey = (\(offset, key) -> replicate offset ' ' ++ "- " ++
-                                     replicate (offset + 2) ' ' ++ key ++ ": ")
-                  <$> dashKeyParser
-
-  dashKeyParser = do offset <- length <$> (spaces |?)
-                     dash <* spacesOrTabs
-                     key <- text 100 <* maybeWithin spacesOrTabs colon
-                     pure (offset, key)
+    dashesParser = do offset <- length <$> (spaces |?)
+                      n <- length <$> ((dash <* spacesOrTabs) |++)
+                      pure (offset, n)
 
 
-  spreadKeyDash = (\(offset, key) -> replicate offset ' ' ++ key ++ ": " ++
-                                     replicate (offset + 2) ' ' ++ "- ")
-                  <$> keyDashParser
+    spreadDashKey = (\(offset, key) -> replicate offset ' ' ++ "- " ++
+                                      replicate (offset + 2) ' ' ++ key ++ ": ")
+                    <$> dashKeyParser
 
-  keyDashParser = do offset <- length <$> (spaces |?)
-                     key <- text 100 <* maybeWithin spacesOrTabs colon
-                     dash <* spacesOrTabs
-                     pure (offset, key)
+    dashKeyParser = do offset <- length <$> (spaces |?)
+                       dash <* spacesOrTabs
+                       key <- text 100 <* maybeWithin spacesOrTabs colon
+                       pure (offset, key)
+
+
+    spreadKeyDash = (\(offset, key) -> replicate offset ' ' ++ key ++ ": " ++
+                                      replicate (offset + 2) ' ' ++ "- ")
+                    <$> keyDashParser
+
+    keyDashParser = do offset <- length <$> (spaces |?)
+                       key <- text 100 <* maybeWithin spacesOrTabs colon
+                       dash <* spacesOrTabs
+                       pure (offset, key)

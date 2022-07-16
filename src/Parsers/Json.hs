@@ -1,6 +1,6 @@
 module Parsers.Json (json, nil, number, bool, string, array, object) where
 
-import Parser              (Parser)
+import Parser              (Parser, withError)
 import ParserCombinators   (IsMatch (..), maybeWithin, (<|>), (|*))
 import Parsers.Char        (colon, doubleQuote)
 import Parsers.Collections (listOf, mapOf)
@@ -10,33 +10,39 @@ import SyntaxTrees.Json    (JsExpression (..))
 
 
 json :: Parser JsExpression
-json = maybeWithin spacing jsValue where
-
-  jsValue = element <|> container
+json = maybeWithin spacing jsValue
+  where
+    jsValue = element <|> container
 
 
 nil :: Parser JsExpression
-nil = JsNull <$ is "null"
+nil = withError "Json Null"
+  $ JsNull <$ is "null"
 
 number :: Parser JsExpression
-number = JsNumber <$> double
+number = withError "Json Number"
+  $ JsNumber <$> double
 
 
 bool :: Parser JsExpression
-bool = JsBool <$> (True  <$ is "true" <|>
-                   False <$ is "false")
+bool = withError "Json Bool"
+  $ JsBool <$> (True  <$ is "true" <|>
+                False <$ is "false")
 
 
 string :: Parser JsExpression
-string = JsString <$> text
+string = withError "Json String"
+  $ JsString <$> text
 
 
 array :: Parser JsExpression
-array = JsArray <$> listOf json
+array = withError "Json Array"
+  $ JsArray <$> listOf json
 
 
 object :: Parser JsExpression
-object = JsObject <$> mapOf colon text json
+object = withError "Json Object"
+  $ JsObject <$> mapOf colon text json
 
 
 
@@ -45,7 +51,6 @@ element = number <|> bool <|> nil <|> string
 
 container :: Parser JsExpression
 container = array <|> object
-
 
 
 

@@ -9,9 +9,11 @@ import SyntaxTrees.Toml  (TomlExpression (..))
 import SyntaxTrees.Xml   (XmlExpression (..))
 import SyntaxTrees.Yaml  (YamlExpression (..))
 
-import           Data.Either (fromRight)
-import           Data.Map    (Map, elems)
-import qualified Data.Map    as Map
+import Data.Either (fromRight)
+import Data.Text   (pack)
+
+import           Data.Map (Map, elems)
+import qualified Data.Map as Map
 
 
 class ToJson a where
@@ -25,7 +27,7 @@ instance ToJson XmlExpression where
 
   toJson XmlExpression { tagName = tag, expressions = exprs, .. }
     | tag == "literal"  = fromRight JsNull . runParser literalParser .
-                              head . elems $ fields
+                              pack . head . elems $ fields
     | tag == "array"    = JsArray $ childExprToJson <$> exprs
     | tag == "object"   = JsObject . Map.fromList $ (\x -> (tagName x, childExprToJson x)) <$>
                                         exprs

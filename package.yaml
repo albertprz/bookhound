@@ -10,7 +10,7 @@ extra-source-files:
 - README.md
 
 # Metadata used when publishing your package
-synopsis:            Simple Parser Combinators & Parsers
+synopsis:            Simple Parser Combinators
 category:            Parsers
 
 # To avoid duplicated efforts in documentation and dealing with the

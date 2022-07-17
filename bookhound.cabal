@@ -6,7 +6,7 @@ cabal-version: 1.12
 
 name:           bookhound
 version:        0.1.10.0
-synopsis:       Simple Parser Combinators & Parsers
+synopsis:       Simple Parser Combinators
 description:    Please see the README on GitHub at <https://github.com/albertprz/bookhound#readme>
 category:       Parsers
 homepage:       https://github.com/albertprz/bookhound#readme
@@ -31,25 +31,13 @@ library
       Bookhound.Internal.Foldable
       Bookhound.Internal.Map
       Bookhound.Internal.String
-      Bookhound.Operations.Finder
-      Bookhound.Operations.ToJson
-      Bookhound.Operations.ToXml
-      Bookhound.Operations.ToYaml
       Bookhound.Parser
       Bookhound.ParserCombinators
       Bookhound.Parsers.Char
       Bookhound.Parsers.Collections
       Bookhound.Parsers.DateTime
-      Bookhound.Parsers.Json
       Bookhound.Parsers.Number
       Bookhound.Parsers.String
-      Bookhound.Parsers.Toml
-      Bookhound.Parsers.Xml
-      Bookhound.Parsers.Yaml
-      Bookhound.SyntaxTrees.Json
-      Bookhound.SyntaxTrees.Toml
-      Bookhound.SyntaxTrees.Xml
-      Bookhound.SyntaxTrees.Yaml
   other-modules:
       Paths_bookhound
   hs-source-dirs:

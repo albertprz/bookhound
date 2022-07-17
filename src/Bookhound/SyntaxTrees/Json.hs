@@ -1,7 +1,7 @@
-module SyntaxTrees.Json (JsExpression(..)) where
+module Bookhound.SyntaxTrees.Json (JsExpression(..)) where
 
-import Utils.Foldable (stringify)
-import Utils.Map      (showMap)
+import Bookhound.Internal.Foldable (stringify)
+import Bookhound.Internal.Map      (showMap)
 
 import Data.Char (toLower)
 import Data.Map  (Map)

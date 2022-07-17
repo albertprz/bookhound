@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Utils.DateTime where
+module Bookhound.Internal.DateTime where
 
 import Data.Time (LocalTime (..), ZonedTime (..))
 
@@ -14,5 +14,6 @@ instance Ord ZonedTime where
 
 
 showDateTime :: ZonedTime -> String
-showDateTime (ZonedTime (LocalTime date time) offset) = show date <> "T" <> show time <>
-                                    take 3 (show offset) <> ":" <> drop 3 (show offset)
+showDateTime (ZonedTime (LocalTime date time) offset) =
+  show date <> "T" <> show time
+  <> take 3 (show offset) <> ":" <> drop 3 (show offset)

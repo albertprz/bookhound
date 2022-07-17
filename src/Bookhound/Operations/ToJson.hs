@@ -1,13 +1,13 @@
-module Operations.ToJson (ToJson(..)) where
+module Bookhound.Operations.ToJson (ToJson(..)) where
 
-import Parser            (runParser)
-import ParserCombinators (IsMatch (..), maybeWithin, (<|>), (|*))
-import Parsers.Json      (json)
-import Parsers.String    (spacing)
-import SyntaxTrees.Json  (JsExpression (..))
-import SyntaxTrees.Toml  (TomlExpression (..))
-import SyntaxTrees.Xml   (XmlExpression (..))
-import SyntaxTrees.Yaml  (YamlExpression (..))
+import Bookhound.Parser            (runParser)
+import Bookhound.ParserCombinators (IsMatch (..), maybeWithin, (<|>), (|*))
+import Bookhound.Parsers.Json      (json)
+import Bookhound.Parsers.String    (spacing)
+import Bookhound.SyntaxTrees.Json  (JsExpression (..))
+import Bookhound.SyntaxTrees.Toml  (TomlExpression (..))
+import Bookhound.SyntaxTrees.Xml   (XmlExpression (..))
+import Bookhound.SyntaxTrees.Yaml  (YamlExpression (..))
 
 import Data.Either (fromRight)
 import Data.Text   (pack)

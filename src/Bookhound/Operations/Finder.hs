@@ -1,14 +1,14 @@
-module Operations.Finder (Finder(..)) where
+module Bookhound.Operations.Finder (Finder(..)) where
 
 
-import Parser            (runParser)
-import ParserCombinators (IsMatch (..), (<|>), (|*))
-import Parsers.Char      (dot)
-import Parsers.Number    (unsignedInt)
-import Parsers.String    (withinSquareBrackets)
-import SyntaxTrees.Json  (JsExpression (..))
-import SyntaxTrees.Toml  (TomlExpression (..))
-import SyntaxTrees.Yaml  (YamlExpression (..))
+import Bookhound.Parser            (runParser)
+import Bookhound.ParserCombinators (IsMatch (..), (<|>), (|*))
+import Bookhound.Parsers.Char      (dot)
+import Bookhound.Parsers.Number    (unsignedInt)
+import Bookhound.Parsers.String    (withinSquareBrackets)
+import Bookhound.SyntaxTrees.Json  (JsExpression (..))
+import Bookhound.SyntaxTrees.Toml  (TomlExpression (..))
+import Bookhound.SyntaxTrees.Yaml  (YamlExpression (..))
 
 
 import Data.Either (fromRight)

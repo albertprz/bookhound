@@ -1,13 +1,14 @@
-module Parsers.String where
+module Bookhound.Parsers.String where
 
-import Parser            (Parser)
-import ParserCombinators (IsMatch (..), maybeWithin, maybeWithinBoth, within,
-                          withinBoth, (>>>), (|*), (|+), (|?))
-import Parsers.Char      (alpha, alphaNum, char, closeAngle, closeCurly,
-                          closeParens, closeSquare, digit, doubleQuote, letter,
-                          lower, newLine, openAngle, openCurly, openParens,
-                          openSquare, quote, space, spaceOrTab, tab, upper,
-                          whiteSpace)
+import Bookhound.Parser            (Parser)
+import Bookhound.ParserCombinators (IsMatch (..), maybeWithin, maybeWithinBoth,
+                                    within, withinBoth, (>>>), (|*), (|+), (|?))
+import Bookhound.Parsers.Char      (alpha, alphaNum, char, closeAngle,
+                                    closeCurly, closeParens, closeSquare, digit,
+                                    doubleQuote, letter, lower, newLine,
+                                    openAngle, openCurly, openParens,
+                                    openSquare, quote, space, spaceOrTab, tab,
+                                    upper, whiteSpace)
 
 
 string :: Parser String

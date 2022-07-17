@@ -1,8 +1,9 @@
-module Parsers.Number (int, double, posInt, negInt, unsignedInt, hexInt, octInt, intLike) where
+module Bookhound.Parsers.Number (int, double, posInt, negInt, unsignedInt, hexInt, octInt, intLike) where
 
-import Parser            (ParseError (..), Parser, errorParser, withError)
-import ParserCombinators (IsMatch (..), (<|>), (>>>), (|+), (|?))
-import Parsers.Char      (dash, digit, dot, plus)
+import Bookhound.Parser            (ParseError (..), Parser, errorParser,
+                                    withError)
+import Bookhound.ParserCombinators (IsMatch (..), (<|>), (>>>), (|+), (|?))
+import Bookhound.Parsers.Char      (dash, digit, dot, plus)
 
 
 hexInt :: Parser Integer

@@ -1,8 +1,8 @@
-module SyntaxTrees.Toml (TomlExpression(..), TableType(..)) where
+module Bookhound.SyntaxTrees.Toml (TomlExpression(..), TableType(..)) where
 
-import Utils.DateTime (showDateTime)
-import Utils.Foldable (stringify)
-import Utils.Map      (showMap)
+import Bookhound.Internal.DateTime (showDateTime)
+import Bookhound.Internal.Foldable (stringify)
+import Bookhound.Internal.Map      (showMap)
 
 import Data.Char (toLower)
 import Data.Time (Day, TimeOfDay, ZonedTime (..))

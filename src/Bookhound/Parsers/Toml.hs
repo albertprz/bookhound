@@ -1,20 +1,20 @@
-module Parsers.Toml (toml, nil, integer, float, bool, string,
+module Bookhound.Parsers.Toml (toml, nil, integer, float, bool, string,
                      array, inlineTable) where
 
-import Parser              (Parser, withError)
-import ParserCombinators   (IsMatch (..), maybeWithin, within, (<#>), (<|>),
-                            (>>>), (|*), (|+), (|?))
-import Parsers.Char        (dash, digit, dot, doubleQuote, equal, hashTag,
-                            letter, newLine, quote, spaceOrTab, underscore,
-                            whiteSpace)
-import Parsers.Collections (listOf, mapOf)
-import Parsers.Number      (double, hexInt, int, octInt)
-import Parsers.String      (blankLine, blankLines, spacesOrTabs, spacing,
-                            withinDoubleQuotes, withinQuotes,
-                            withinSquareBrackets)
-import SyntaxTrees.Toml    (TableType (..), TomlExpression (..))
+import Bookhound.Parser              (Parser, withError)
+import Bookhound.ParserCombinators   (IsMatch (..), maybeWithin, within, (<#>),
+                                      (<|>), (>>>), (|*), (|+), (|?))
+import Bookhound.Parsers.Char        (dash, digit, dot, doubleQuote, equal,
+                                      hashTag, letter, newLine, quote,
+                                      spaceOrTab, underscore, whiteSpace)
+import Bookhound.Parsers.Collections (listOf, mapOf)
+import Bookhound.Parsers.Number      (double, hexInt, int, octInt)
+import Bookhound.Parsers.String      (blankLine, blankLines, spacesOrTabs,
+                                      spacing, withinDoubleQuotes, withinQuotes,
+                                      withinSquareBrackets)
+import Bookhound.SyntaxTrees.Toml    (TableType (..), TomlExpression (..))
 
-import qualified Parsers.DateTime as Dt
+import qualified Bookhound.Parsers.DateTime as Dt
 
 import qualified Data.Map   as Map
 import           Data.Maybe (maybeToList)

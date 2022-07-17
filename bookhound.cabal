@@ -26,30 +26,30 @@ source-repository head
 
 library
   exposed-modules:
-      Operations.Finder
-      Operations.ToJson
-      Operations.ToXml
-      Operations.ToYaml
-      Parser
-      ParserCombinators
-      Parsers.Char
-      Parsers.Collections
-      Parsers.DateTime
-      Parsers.Json
-      Parsers.Number
-      Parsers.String
-      Parsers.Toml
-      Parsers.Xml
-      Parsers.Yaml
-      SyntaxTrees.Json
-      SyntaxTrees.Toml
-      SyntaxTrees.Xml
-      SyntaxTrees.Yaml
-      Utils.Applicative
-      Utils.DateTime
-      Utils.Foldable
-      Utils.Map
-      Utils.String
+      Bookhound.Internal.Applicative
+      Bookhound.Internal.DateTime
+      Bookhound.Internal.Foldable
+      Bookhound.Internal.Map
+      Bookhound.Internal.String
+      Bookhound.Operations.Finder
+      Bookhound.Operations.ToJson
+      Bookhound.Operations.ToXml
+      Bookhound.Operations.ToYaml
+      Bookhound.Parser
+      Bookhound.ParserCombinators
+      Bookhound.Parsers.Char
+      Bookhound.Parsers.Collections
+      Bookhound.Parsers.DateTime
+      Bookhound.Parsers.Json
+      Bookhound.Parsers.Number
+      Bookhound.Parsers.String
+      Bookhound.Parsers.Toml
+      Bookhound.Parsers.Xml
+      Bookhound.Parsers.Yaml
+      Bookhound.SyntaxTrees.Json
+      Bookhound.SyntaxTrees.Toml
+      Bookhound.SyntaxTrees.Xml
+      Bookhound.SyntaxTrees.Yaml
   other-modules:
       Paths_bookhound
   hs-source-dirs:

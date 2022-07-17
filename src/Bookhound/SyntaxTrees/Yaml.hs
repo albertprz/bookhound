@@ -1,8 +1,8 @@
-module SyntaxTrees.Yaml (YamlExpression(..), CollectionType(..)) where
+module Bookhound.SyntaxTrees.Yaml (YamlExpression(..), CollectionType(..)) where
 
-import Utils.DateTime ()
-import Utils.Foldable (stringify)
-import Utils.Map      (showMap)
+import Bookhound.Internal.DateTime ()
+import Bookhound.Internal.Foldable (stringify)
+import Bookhound.Internal.Map      (showMap)
 
 import           Data.Char (toLower)
 import           Data.Map  (Map)

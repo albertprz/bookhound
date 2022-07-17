@@ -1,6 +1,6 @@
-module SyntaxTrees.Xml (XmlExpression(..), literalExpression, flatten, findAll, find) where
+module Bookhound.SyntaxTrees.Xml (XmlExpression(..), literalExpression, flatten, findAll, find) where
 
-import Utils.Foldable (stringify)
+import Bookhound.Internal.Foldable (stringify)
 
 import Data.Maybe (listToMaybe)
 

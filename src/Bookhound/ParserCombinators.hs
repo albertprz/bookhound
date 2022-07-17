@@ -1,22 +1,23 @@
 {-# LANGUAGE UndecidableInstances #-}
 
-module ParserCombinators (IsMatch(..), satisfies, contains, notContains,
+module Bookhound.ParserCombinators (IsMatch(..), satisfies, contains, notContains,
                           containsAnyOf, containsNoneOf,
                           times, maybeTimes, anyTimes, someTimes, manyTimes,
                           within, maybeWithin, withinBoth, maybeWithinBoth,
                           anySepBy, someSepBy, manySepBy, sepByOp,
                           (<|>), (<?>), (<#>), (>>>), (|?), (|*), (|+), (|++))  where
 
-import Parser            (Parser, allOf, anyOf, char, check, except, isMatch,
-                          withError)
-import Utils.Applicative (extract)
-import Utils.Foldable    (hasMany, hasSome)
-import Utils.String      (ToString (..))
+import Bookhound.Internal.Applicative (extract)
+import Bookhound.Internal.Foldable    (hasMany, hasSome)
+import Bookhound.Internal.String      (ToString (..))
+import Bookhound.Parser               (Parser, allOf, anyOf, char, check,
+                                       except, isMatch, withError)
 
 import Data.List  (isInfixOf)
 import Data.Maybe (listToMaybe)
 
-import qualified Data.Foldable as Foldable
+import           Data.Bifunctor (Bifunctor (first))
+import qualified Data.Foldable  as Foldable
 
 
 class IsMatch a where
@@ -53,11 +54,11 @@ satisfies cond p = check "satisfies" cond p
 contains :: Eq a => [a] -> Parser [a] -> Parser [a]
 contains val p = check "contains" (isInfixOf val) p
 
-containsAnyOf :: (Foldable t, Eq a) => t [a] -> Parser [a] -> Parser [a]
-containsAnyOf x y = foldr contains y x
-
 notContains :: Eq a => [a] -> Parser [a] -> Parser [a]
 notContains val p = check "notContains" (isInfixOf val) p
+
+containsAnyOf :: (Foldable t, Eq a) => t [a] -> Parser [a] -> Parser [a]
+containsAnyOf x y = foldr contains y x
 
 containsNoneOf :: (Foldable t, Eq a) => t [a] -> Parser [a] -> Parser [a]
 containsNoneOf x y = foldr notContains y x
@@ -98,7 +99,7 @@ maybeWithinBoth p1 p2 = extract (p1 |?) (p2 |?)
 -- Separated by combinators
 sepBy :: (Parser b -> Parser (Maybe b)) -> (Parser b -> Parser [b])
                 -> Parser a -> Parser b -> Parser [b]
-sepBy freq1 freq2 sep p = ((<>)) <$> (Foldable.toList <$> freq1 p)
+sepBy freq1 freq2 sep p = (<>) <$> (Foldable.toList <$> freq1 p)
                                <*> freq2 (sep *> p)
 
 anySepBy :: Parser a -> Parser b -> Parser [b]
@@ -110,11 +111,13 @@ someSepBy = sepBy (fmap Just) (|*)
 manySepBy :: Parser a -> Parser b -> Parser [b]
 manySepBy = sepBy (fmap Just) (|+)
 
+sepByOps :: Parser a -> Parser b -> Parser ([a], [b])
+sepByOps sep p = do x <-  p
+                    y <- (((,) <$> sep <*> p) |+)
+                    pure $ (fst <$> y, x : (snd <$> y))
+
 sepByOp :: Parser a -> Parser b -> Parser (a, [b])
-sepByOp sep p = do x1 <- p
-                   op <- sep
-                   xs <- someSepBy sep p
-                   pure $ (op, x1 : xs)
+sepByOp sep p = first head <$> sepByOps sep p
 
 
 -- Parser Binary Operators

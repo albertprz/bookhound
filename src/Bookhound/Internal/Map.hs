@@ -1,4 +1,4 @@
-module Utils.Map where
+module Bookhound.Internal.Map where
 
 import Data.Map (Map, elems, keys)
 

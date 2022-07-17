@@ -1,4 +1,4 @@
-module Parser (Parser, ParseResult, ParseError(..), runParser, errorParser,
+module Bookhound.Parser (Parser, ParseResult, ParseError(..), runParser, errorParser,
                andThen, exactly, isMatch, check, except, anyOf, allOf, char,
                withTransform, withError) where
 

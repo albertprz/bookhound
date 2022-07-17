@@ -1,10 +1,10 @@
 {-# LANGUAGE UndecidableInstances #-}
 
-module Operations.ToXml (ToXml(..)) where
+module Bookhound.Operations.ToXml (ToXml(..)) where
 
-import Operations.ToJson (ToJson (..))
-import SyntaxTrees.Json  (JsExpression (..))
-import SyntaxTrees.Xml   (XmlExpression (..), literalExpression)
+import Bookhound.Operations.ToJson (ToJson (..))
+import Bookhound.SyntaxTrees.Json  (JsExpression (..))
+import Bookhound.SyntaxTrees.Xml   (XmlExpression (..), literalExpression)
 
 import           Data.Char (toLower)
 import qualified Data.Map  as Map

@@ -1,10 +1,10 @@
-module Parsers.Collections (collOf, listOf, tupleOf, mapOf) where
+module Bookhound.Parsers.Collections (collOf, listOf, tupleOf, mapOf) where
 
-import Parser            (Parser, withError)
-import ParserCombinators (anySepBy, maybeWithin, satisfies)
-import Parsers.Char      (closeCurly, closeParens, closeSquare, comma,
-                          openCurly, openParens, openSquare)
-import Parsers.String    (spacing)
+import Bookhound.Parser            (Parser, withError)
+import Bookhound.ParserCombinators (anySepBy, maybeWithin, satisfies)
+import Bookhound.Parsers.Char      (closeCurly, closeParens, closeSquare, comma,
+                                    openCurly, openParens, openSquare)
+import Bookhound.Parsers.String    (spacing)
 
 import           Data.Map (Map)
 import qualified Data.Map as Map

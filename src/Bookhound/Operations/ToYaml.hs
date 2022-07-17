@@ -1,13 +1,14 @@
 {-# LANGUAGE UndecidableInstances #-}
 
-module Operations.ToYaml (ToYaml(..)) where
+module Bookhound.Operations.ToYaml (ToYaml(..)) where
 
-import Data.Text         (pack)
-import Operations.ToJson (ToJson (..))
-import Parser            (runParser)
-import Parsers.Number    (intLike)
-import SyntaxTrees.Json  (JsExpression (..))
-import SyntaxTrees.Yaml  (CollectionType (..), YamlExpression (..))
+import Bookhound.Operations.ToJson (ToJson (..))
+import Bookhound.Parser            (runParser)
+import Bookhound.Parsers.Number    (intLike)
+import Bookhound.SyntaxTrees.Json  (JsExpression (..))
+import Bookhound.SyntaxTrees.Yaml  (CollectionType (..), YamlExpression (..))
+import Data.Text                   (pack)
+
 
 
 class ToYaml a where

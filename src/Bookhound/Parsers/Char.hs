@@ -1,9 +1,9 @@
-module Parsers.Char where
+module Bookhound.Parsers.Char where
 
-import ParserCombinators (IsMatch (..), (<|>))
+import Bookhound.ParserCombinators (IsMatch (..), (<|>))
 
-import           Parser (Parser)
-import qualified Parser
+import           Bookhound.Parser (Parser)
+import qualified Bookhound.Parser as Parser
 
 
 char :: Parser Char

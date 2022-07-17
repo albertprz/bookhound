@@ -1,10 +1,12 @@
-module Parsers.Xml (xml, branchExpr, leafExpr, literal) where
+module Bookhound.Parsers.Xml (xml, branchExpr, leafExpr, literal) where
 
-import Parser            (Parser, withError)
-import ParserCombinators (IsMatch (..), maybeWithin, (<|>), (|*), (|+))
-import Parsers.Char      (doubleQuote)
-import Parsers.String    (spacing, withinAngleBrackets, withinDoubleQuotes)
-import SyntaxTrees.Xml   (XmlExpression (..), literalExpression)
+import Bookhound.Parser            (Parser, withError)
+import Bookhound.ParserCombinators (IsMatch (..), maybeWithin, (<|>), (|*),
+                                    (|+))
+import Bookhound.Parsers.Char      (doubleQuote)
+import Bookhound.Parsers.String    (spacing, withinAngleBrackets,
+                                    withinDoubleQuotes)
+import Bookhound.SyntaxTrees.Xml   (XmlExpression (..), literalExpression)
 
 import           Data.Map (Map)
 import qualified Data.Map as Map

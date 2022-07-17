@@ -1,9 +1,9 @@
-module Parsers.DateTime (date, time, timeZoneOffset, localDateTime, offsetDateTime,
-                         dateTime, year, day, month, hour, minute, second) where
+module Bookhound.Parsers.DateTime (date, time, timeZoneOffset, localDateTime, offsetDateTime, dateTime, year, day, month, hour, minute, second) where
 
-import Parser            (Parser, check, withError)
-import ParserCombinators (IsMatch (..), within, (<#>), (<|>), (|+), (|?))
-import Parsers.Char      (colon, dash, digit, plus)
+import Bookhound.Parser            (Parser, check, withError)
+import Bookhound.ParserCombinators (IsMatch (..), within, (<#>), (<|>), (|+),
+                                    (|?))
+import Bookhound.Parsers.Char      (colon, dash, digit, plus)
 
 import Data.Maybe (fromMaybe)
 import Data.Time  (Day, LocalTime (..), TimeOfDay (..), TimeZone,

@@ -1,43 +1,49 @@
 module Parsers.Number (int, double, posInt, negInt, unsignedInt, hexInt, octInt, intLike) where
 
-import Parser            (ParseError (..), Parser, errorParser)
+import Parser            (ParseError (..), Parser, errorParser, withError)
 import ParserCombinators (IsMatch (..), (<|>), (>>>), (|+), (|?))
 import Parsers.Char      (dash, digit, dot, plus)
 
 
 hexInt :: Parser Integer
-hexInt = read <$> (is "0x" >>> ((digit <|> oneOf ['A' .. 'F'] <|> oneOf ['a' .. 'f']) |+))
+hexInt = withError "Hex Int"
+ $ read <$> (is "0x" >>> ((digit <|> oneOf ['A' .. 'F'] <|> oneOf ['a' .. 'f']) |+))
 
 octInt :: Parser Integer
-octInt = read <$> (is "0o" >>> (oneOf ['0' .. '7'] |+))
+octInt = withError "Oct Int"
+  $ read <$> (is "0o" >>> (oneOf ['0' .. '7'] |+))
 
 unsignedInt :: Parser Integer
-unsignedInt = read <$> (digit |+)
+unsignedInt = withError "Unsigned Int"
+  $ read <$> (digit |+)
 
 posInt :: Parser Integer
-posInt = read <$> (plus |?) >>> (digit |+)
+posInt = withError "Positive Int"
+  $ read <$> (plus |?) >>> (digit |+)
 
 negInt :: Parser Integer
-negInt = read <$> dash >>> (digit |+)
+negInt = withError "Negative Int"
+  $ read <$> dash >>> (digit |+)
 
 int :: Parser Integer
-int = negInt <|> posInt
+int = withError "Int" $ negInt <|> posInt
 
 intLike :: Parser Integer
-intLike = parser <|> int  where
+intLike = parser <|> int
+  where
+    parser = do n1      <- show <$> int
+                n2      <- show <$> (dot *> unsignedInt)
+                expNum  <- oneOf ['e', 'E'] *> int
 
-  parser = do n1      <- show <$> int
-              n2      <- show <$> (dot *> unsignedInt)
-              expNum  <- oneOf ['e', 'E'] *> int
-
-              if length n1 + length n2 <= fromInteger expNum then
-                pure . read $ n1 ++ "." ++ n2 ++ "E" ++ show expNum
-              else
-                errorParser $ NoMatch "intLike"
+                if length n1 + length n2 <= fromInteger expNum then
+                  pure . read $ n1 ++ "." ++ n2 ++ "E" ++ show expNum
+                else
+                  errorParser $ NoMatch "Int Like"
 
 
 double :: Parser Double
-double = read <$> int >>> (decimals |?) >>> (expn |?) where
+double = withError "Double"
+  $ read <$> int >>> (decimals |?) >>> (expn |?) where
 
   decimals = dot >>> unsignedInt
   expn      = oneOf ['e', 'E'] >>> int

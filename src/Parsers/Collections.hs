@@ -17,10 +17,12 @@ collOf start end sep elemParser = withError "Collection"
     elemsParser = anySepBy sep $ maybeWithin spacing elemParser
 
 listOf :: Parser a -> Parser [a]
-listOf = withError "List" . collOf openSquare closeSquare comma
+listOf = withError "List"
+  . collOf openSquare closeSquare comma
 
 tupleOf :: Parser a -> Parser [a]
-tupleOf = withError "Tuple" . satisfies ((>= 2) . length)
+tupleOf = withError "Tuple"
+  . satisfies ((>= 2) . length)
   . collOf openParens closeParens comma
 
 mapOf :: Ord b => Parser a -> Parser b -> Parser c -> Parser (Map b c)

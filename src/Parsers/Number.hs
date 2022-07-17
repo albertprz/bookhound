@@ -36,7 +36,7 @@ intLike = parser <|> int
                 expNum  <- oneOf ['e', 'E'] *> int
 
                 if length n1 + length n2 <= fromInteger expNum then
-                  pure . read $ n1 ++ "." ++ n2 ++ "E" ++ show expNum
+                  pure . read $ n1 <> "." <> n2 <> "E" <> show expNum
                 else
                   errorParser $ NoMatch "Int Like"
 

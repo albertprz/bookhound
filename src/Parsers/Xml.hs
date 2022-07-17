@@ -34,7 +34,7 @@ branchExpr :: Parser XmlExpression
 branchExpr = withError "Xml Branch Expression" $
   do (tag, flds) <- withinAngleBrackets fullTag
      exprs       <- (xml |+) <|> literal
-     maybeWithin spacing (is ("</" ++ tag ++ ">"))
+     maybeWithin spacing (is ("</" <> tag <> ">"))
      pure $ XmlExpression { tagName = tag, fields = flds, expressions = exprs }
 
 

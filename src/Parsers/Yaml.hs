@@ -148,14 +148,14 @@ text indent = withinDoubleQuotes (quotedParser (inverse doubleQuote |*))        
     foldingLineParser parser = do sep <- ("\n" <$ newLine <* blankLines) <|> (" " <$ newLine)
                                   n   <- maybeWithin tabs $ length <$> (space |*)
                                   str <- parser
-                                  pure (n, sep ++ str)
+                                  pure (n, sep <> str)
 
     literalLineParser parser = do sep <- pure <$> newLine
                                   n   <- length <$> (space |*)
                                   str <- parser
-                                  pure (n, sep ++ replicate (n - indent) ' ' ++ str)
+                                  pure (n, sep <> replicate (n - indent) ' ' <> str)
 
-    allowedStart = noneOf $ forbiddenChar ++ ['>', '|', ':', '!']
+    allowedStart = noneOf $ forbiddenChar <> ['>', '|', ':', '!']
 
     allowedString = (noneOf forbiddenChar |*)
 
@@ -180,9 +180,9 @@ normalize = withError "Normalize Yaml"
 
     next = pure <$> char
 
-    spreadDashes = (++ "- ") . genDashes <$> dashesParser
+    spreadDashes = ((<>) "- ") . genDashes <$> dashesParser
 
-    genDashes (offset, n) = concatMap (\x -> "- " ++ replicate (offset + 2 * x) ' ')
+    genDashes (offset, n) = concatMap (\x -> "- " <> replicate (offset + 2 * x) ' ')
                                       [1 .. n - 1]
 
     dashesParser = do offset <- length <$> (spaces |?)
@@ -190,8 +190,8 @@ normalize = withError "Normalize Yaml"
                       pure (offset, n)
 
 
-    spreadDashKey = (\(offset, key) -> replicate offset ' ' ++ "- " ++
-                                      replicate (offset + 2) ' ' ++ key ++ ": ")
+    spreadDashKey = (\(offset, key) -> replicate offset ' ' <> "- " <>
+                                      replicate (offset + 2) ' ' <> key <> ": ")
                     <$> dashKeyParser
 
     dashKeyParser = do offset <- length <$> (spaces |?)
@@ -200,8 +200,8 @@ normalize = withError "Normalize Yaml"
                        pure (offset, key)
 
 
-    spreadKeyDash = (\(offset, key) -> replicate offset ' ' ++ key ++ ": " ++
-                                      replicate (offset + 2) ' ' ++ "- ")
+    spreadKeyDash = (\(offset, key) -> replicate offset ' ' <> key <> ": " <>
+                                      replicate (offset + 2) ' ' <> "- ")
                     <$> keyDashParser
 
     keyDashParser = do offset <- length <$> (spaces |?)

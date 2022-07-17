@@ -16,7 +16,7 @@ hasMany xs = all hasSome $ [id, tail] <*> [Foldable.toList xs]
 
 
 stringify :: (Foldable m) => String -> String -> String -> Int -> m String -> String
-stringify sep start end n xs = start ++ indent n str ++ end where
+stringify sep start end n xs = start <> indent n str <> end where
 
   str = intercalate sep list
   list = toList xs

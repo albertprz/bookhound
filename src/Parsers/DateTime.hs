@@ -21,7 +21,7 @@ time = withError "Time"
        m <- colon *> minute
        s <- colon *> second
        decimals <- fromMaybe 0 <$> ((colon *> secondDecimals) |?)
-       pure $ TimeOfDay h m $ read (show s ++ "." ++ show decimals)
+       pure $ TimeOfDay h m $ read (show s <> "." <> show decimals)
 
 
 timeZoneOffset :: Parser TimeZone

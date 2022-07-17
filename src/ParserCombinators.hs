@@ -98,7 +98,7 @@ maybeWithinBoth p1 p2 = extract (p1 |?) (p2 |?)
 -- Separated by combinators
 sepBy :: (Parser b -> Parser (Maybe b)) -> (Parser b -> Parser [b])
                 -> Parser a -> Parser b -> Parser [b]
-sepBy freq1 freq2 sep p = (++) <$> (Foldable.toList <$> freq1 p)
+sepBy freq1 freq2 sep p = ((<>)) <$> (Foldable.toList <$> freq1 p)
                                <*> freq2 (sep *> p)
 
 anySepBy :: Parser a -> Parser b -> Parser [b]

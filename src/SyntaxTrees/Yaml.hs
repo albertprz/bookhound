@@ -40,13 +40,13 @@ instance Show YamlExpression where
     YamlTime time              -> show time
     YamlDateTime dateTime      -> show dateTime
     YamlString str             -> showStr str
-    YamlList Standard list     -> stringify "\n" "\n" "" 2 $ ("- " ++) . show <$> list
+    YamlList Standard list     -> stringify "\n" "\n" "" 2 $ ("- " <>) . show <$> list
     YamlMap  Standard mapping  -> stringify "\n" "\n" "" 2 $ showMap ": " id show mapping
 
-    YamlList Inline   list     -> stringify (", " ++ sep) ("[ " ++ sep) (" ]" ++ sep) n $ show <$> list where
+    YamlList Inline   list     -> stringify (", " <> sep) ("[ " <> sep) (" ]" <> sep) n $ show <$> list where
       (sep, n) = if (length . mconcat) (show <$> list) >= 80 then ("\n", 2) else ("", 0)
 
-    YamlMap  Inline   mapping  -> stringify (", " ++ sep) ("{ " ++ sep) (" }" ++ sep) n $
+    YamlMap  Inline   mapping  -> stringify (", " <> sep) ("{ " <> sep) (" }" <> sep) n $
                                     showMap ": " id show mapping where
       (sep, n) = if (length . mconcat) (show <$> Map.toList mapping) >= 80 then ("\n", 2) else ("", 0)
 
@@ -56,14 +56,14 @@ showStr :: String -> String
 showStr str = (if (length (lines str) > 1) && not (any (`elem` str) forbiddenChar)
                     then "| \n"
                     else if length (lines str) > 1 then "\n"
-                    else "") ++
+                    else "") <>
 
                    (if not $ any (`elem` str) forbiddenChar  then str
-                   else if '"' `elem` str  then "'"  ++ indented 3 ++ "'"
-                   else                         "\"" ++ indented 3) ++ "\""  where
+                   else if '"' `elem` str  then "'"  <> indented 3 <> "'"
+                   else                         "\"" <> indented 3) <> "\""  where
 
-  indented n = head (lines str) ++
-               mconcat ((("\n" ++ replicate n ' ') ++) <$> tail (lines str))
+  indented n = head (lines str) <>
+               mconcat ((("\n" <> replicate n ' ') <>) <$> tail (lines str))
 
-  forbiddenChar = ['#', '&', '*', ',', '?', '-', ':', '[', ']', '{', '}'] ++
+  forbiddenChar = ['#', '&', '*', ',', '?', '-', ':', '[', ']', '{', '}'] <>
                   ['>', '|', ':', '!']

@@ -99,7 +99,7 @@ topLevelTable = withError "Toml Table"
   where
     tables = do xs <- keyValueSeqParser
                 ys <- (tableParser |*)
-                pure (ys ++ [("", TomlTable Standard . Map.fromList $ xs)])
+                pure (ys <> [("", TomlTable Standard . Map.fromList $ xs)])
 
     tableParser = do k <- withinSquareBrackets key
                      v <- maybeWithin spacing standardTable
@@ -110,7 +110,7 @@ topLevelTable = withError "Toml Table"
 
     keyValueSeqParser = do xs <- ((keyValueParser <* (blankLine *> (blankLines |?))) |*)
                            x  <- (keyValueParser |?)
-                           pure  (xs ++ maybeToList x)
+                           pure  (xs <> maybeToList x)
 
     keyValueParser = do k <- key
                         maybeWithin spacesOrTabs equal

@@ -47,11 +47,11 @@ instance Show TomlExpression where
     TomlTable Standard table   -> stringify "\n" "" "" 0 $ showMap " = " id show table
 
     TomlTable TopLevel table   -> stringify "\n\n" "\n" "\n" 0 $ showMap "" showTableHeader show table where
-      showTableHeader header = if header /= "" then "[" ++ header ++ "]" ++ "\n"  else ""
+      showTableHeader header = if header /= "" then "[" <> header <> "]" <> "\n"  else ""
 
-    TomlTable Inline table     -> stringify (", " ++ sep) ("{ " ++ sep) (" }" ++ sep) n $
+    TomlTable Inline table     -> stringify (", " <> sep) ("{ " <> sep) (" }" <> sep) n $
                                     showMap " = " id show table where
       (sep, n) = if (length . mconcat) (show <$> Map.toList table) >= 80 then ("\n", 2) else ("", 0)
 
-    TomlArray arr              -> stringify (", " ++ sep) ("[ " ++ sep) (" ]" ++ sep) n $ show <$> arr where
+    TomlArray arr              -> stringify (", " <> sep) ("[ " <> sep) (" ]" <> sep) n $ show <$> arr where
       (sep, n) = if (length . mconcat) (show <$> arr) >= 80 then ("\n", 2) else ("", 0)

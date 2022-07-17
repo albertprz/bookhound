@@ -31,5 +31,6 @@ instance (ToString a, Foldable m) => ToString (m a) where
 
 
 indent :: Int -> String -> String
-indent n str = intercalate "\n" $ indentLine <$> lines str where
-  indentLine = (concat (replicate n " ") ++)
+indent n str = intercalate "\n" $ indentLine <$> lines str
+  where
+    indentLine = (concat (replicate n " ") <>)

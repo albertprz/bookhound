@@ -1,6 +1,6 @@
-module Bookhound.Internal.Foldable where
+module Bookhound.Utils.Foldable where
 
-import Bookhound.Internal.String (indent)
+import Bookhound.Utils.String (indent)
 import Data.Foldable             as Foldable (Foldable (toList))
 import Data.List                 (intercalate)
 

@@ -7,9 +7,9 @@ module Bookhound.ParserCombinators (IsMatch(..), satisfies, contains, notContain
                           anySepBy, someSepBy, multipleSepBy, sepByOp,
                           (<|>), (<?>), (<#>), (->>-), (|?), (|*), (|+), (|++))  where
 
-import Bookhound.Internal.Applicative (extract)
-import Bookhound.Internal.Foldable    (hasMultiple, hasSome)
-import Bookhound.Internal.String      (ToString (..))
+import Bookhound.Utils.Applicative (extract)
+import Bookhound.Utils.Foldable    (hasMultiple, hasSome)
+import Bookhound.Utils.String      (ToString (..))
 import Bookhound.Parser               (Parser, allOf, anyOf, char, check,
                                        except, isMatch, withError)
 

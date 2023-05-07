@@ -1,4 +1,4 @@
-module Bookhound.Internal.Applicative where
+module Bookhound.Utils.Applicative where
 
 
 extract :: Applicative m => m a1 -> m a2 -> m b -> m b

@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Bookhound.Internal.DateTime where
+module Bookhound.Utils.DateTime where
 
 import Data.Time (LocalTime (..), ZonedTime (..))
 

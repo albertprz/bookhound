@@ -68,7 +68,6 @@ instance Monad Parser where
         Result i a -> parse (f a) i
         Error pe   -> Error pe)
 
-
 runParser :: Parser a -> Input -> Either ParseError a
 runParser p i = toEither $ parse (exactly p) i where
 

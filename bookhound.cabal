@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -8,7 +8,7 @@ name:           bookhound
 version:        0.1.11.0
 synopsis:       Simple Parser Combinators
 description:    Please see the README on GitHub at <https://github.com/albertprz/bookhound#readme>
-category:       Parsers
+category:       Parser Combinators
 homepage:       https://github.com/albertprz/bookhound#readme
 bug-reports:    https://github.com/albertprz/bookhound/issues
 author:         Alberto Perez Lopez
@@ -26,11 +26,6 @@ source-repository head
 
 library
   exposed-modules:
-      Bookhound.Internal.Applicative
-      Bookhound.Internal.DateTime
-      Bookhound.Internal.Foldable
-      Bookhound.Internal.Map
-      Bookhound.Internal.String
       Bookhound.Parser
       Bookhound.ParserCombinators
       Bookhound.Parsers.Char
@@ -38,6 +33,11 @@ library
       Bookhound.Parsers.DateTime
       Bookhound.Parsers.Number
       Bookhound.Parsers.String
+      Bookhound.Utils.Applicative
+      Bookhound.Utils.DateTime
+      Bookhound.Utils.Foldable
+      Bookhound.Utils.Map
+      Bookhound.Utils.String
   other-modules:
       Paths_bookhound
   hs-source-dirs:

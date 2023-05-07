@@ -2,7 +2,7 @@ module Bookhound.Parsers.String where
 
 import Bookhound.Parser            (Parser)
 import Bookhound.ParserCombinators (IsMatch (..), maybeWithin, maybeWithinBoth,
-                                    within, withinBoth, (>>>), (|*), (|+), (|?))
+                                    within, withinBoth, (->>-), (|*), (|+), (|?))
 import Bookhound.Parsers.Char      (alpha, alphaNum, char, closeAngle,
                                     closeCurly, closeParens, closeSquare, digit,
                                     doubleQuote, letter, lower, newLine,
@@ -53,7 +53,7 @@ spacing :: Parser String
 spacing = (whiteSpace |+)
 
 blankLine :: Parser String
-blankLine = (spacesOrTabs |?) >>> newLine
+blankLine = (spacesOrTabs |?) ->>- newLine
 
 blankLines :: Parser String
 blankLines = mconcat <$> (blankLine |+)

@@ -11,8 +11,8 @@ hasNone = null
 hasSome :: Foldable m => m a -> Bool
 hasSome = not . hasNone
 
-hasMany :: Foldable m => m a -> Bool
-hasMany xs = all hasSome $ [id, tail] <*> [Foldable.toList xs]
+hasMultiple :: Foldable m => m a -> Bool
+hasMultiple xs = all hasSome $ [id, tail] <*> [Foldable.toList xs]
 
 
 stringify :: (Foldable m) => String -> String -> String -> Int -> m String -> String

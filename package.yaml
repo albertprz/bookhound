@@ -1,5 +1,5 @@
 name:                bookhound
-version:             0.1.11.0
+version:             0.1.12.0
 github:              "albertprz/bookhound"
 license:             LGPL
 author:              "Alberto Perez Lopez"
@@ -11,7 +11,7 @@ extra-source-files:
 
 # Metadata used when publishing your package
 synopsis:            Simple Parser Combinators
-category:            Parsers
+category:            Parser Combinators
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is

@@ -2,13 +2,13 @@
 
 module Bookhound.ParserCombinators (IsMatch(..), satisfies, contains, notContains,
                           containsAnyOf, containsNoneOf,
-                          times, maybeTimes, anyTimes, someTimes, manyTimes,
+                          times, maybeTimes, anyTimes, someTimes, multipleTimes,
                           within, maybeWithin, withinBoth, maybeWithinBoth,
-                          anySepBy, someSepBy, manySepBy, sepByOp,
-                          (<|>), (<?>), (<#>), (>>>), (|?), (|*), (|+), (|++))  where
+                          anySepBy, someSepBy, multipleSepBy, sepByOp,
+                          (<|>), (<?>), (<#>), (->>-), (|?), (|*), (|+), (|++))  where
 
 import Bookhound.Internal.Applicative (extract)
-import Bookhound.Internal.Foldable    (hasMany, hasSome)
+import Bookhound.Internal.Foldable    (hasMultiple, hasSome)
 import Bookhound.Internal.String      (ToString (..))
 import Bookhound.Parser               (Parser, allOf, anyOf, char, check,
                                        except, isMatch, withError)
@@ -70,7 +70,7 @@ times n p = sequence $ p <$ [1 .. n]
 
 
 maybeTimes :: Parser a -> Parser (Maybe a)
-maybeTimes = (listToMaybe <$>) . check "maybeTimes" (not . hasMany) . anyTimes
+maybeTimes = (listToMaybe <$>) . check "maybeTimes" (not . hasMultiple) . anyTimes
 
 anyTimes :: Parser a -> Parser [a]
 anyTimes parser = (parser >>= \x -> (x :) <$> anyTimes parser) <|> pure []
@@ -78,8 +78,8 @@ anyTimes parser = (parser >>= \x -> (x :) <$> anyTimes parser) <|> pure []
 someTimes :: Parser a -> Parser [a]
 someTimes = check "someTimes" hasSome . anyTimes
 
-manyTimes :: Parser a -> Parser [a]
-manyTimes = check "manyTimes" hasMany . anyTimes
+multipleTimes :: Parser a -> Parser [a]
+multipleTimes = check "multipleTimes" hasMultiple . anyTimes
 
 
 -- Within combinators
@@ -108,8 +108,8 @@ anySepBy = sepBy (|?) (|*)
 someSepBy :: Parser a -> Parser b -> Parser [b]
 someSepBy = sepBy (fmap Just) (|*)
 
-manySepBy :: Parser a -> Parser b -> Parser [b]
-manySepBy = sepBy (fmap Just) (|+)
+multipleSepBy :: Parser a -> Parser b -> Parser [b]
+multipleSepBy = sepBy (fmap Just) (|+)
 
 sepByOps :: Parser a -> Parser b -> Parser ([a], [b])
 sepByOps sep p = do x <-  p
@@ -125,18 +125,18 @@ infixl 3 <|>
 (<|>) :: Parser a -> Parser a -> Parser a
 (<|>) p1 p2 = anyOf [p1, p2]
 
-infixl 6 <?>
-(<?>) :: Parser a -> String -> Parser a
-(<?>) = flip withError
-
 infixl 6 <#>
 (<#>) :: Parser a -> Integer -> Parser [a]
 (<#>) = flip times
 
-infixl 6 >>>
-(>>>) :: (ToString a, ToString b) => Parser a -> Parser b -> Parser String
-(>>>) p1 p2 = (<>) <$> (toString <$> p1)
-                   <*> (toString <$> p2)
+infixl 6 <?>
+(<?>) :: Parser a -> String -> Parser a
+(<?>) = flip withError
+
+infixl 6 ->>-
+(->>-) :: (ToString a, ToString b) => Parser a -> Parser b -> Parser String
+(->>-) p1 p2 = (<>) <$> (toString <$> p1)
+                 <*> (toString <$> p2)
 
 
 -- Parser Unary Operators
@@ -150,4 +150,4 @@ infixl 6 >>>
 (|+) = someTimes
 
 (|++) :: Parser a -> Parser [a]
-(|++) = manyTimes
+(|++) = multipleTimes

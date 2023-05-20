@@ -47,6 +47,7 @@ library
       MultiWayIf
       TupleSections
       PostfixOperators
+      BlockArguments
       RankNTypes
       ExplicitForAll
       ScopedTypeVariables

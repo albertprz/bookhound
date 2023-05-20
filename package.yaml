@@ -39,6 +39,7 @@ default-extensions:
 - MultiWayIf
 - TupleSections
 - PostfixOperators
+- BlockArguments
 
 # Types
 - RankNTypes

@@ -1,6 +1,6 @@
 module Bookhound.Parser (Parser, ParseResult, ParseError(..), runParser, errorParser,
                andThen, exactly, isMatch, check, anyOf, allOf, char,
-               withTransform, withError, withErrorFrom, except) where
+               withTransform, withError, except) where
 
 import Bookhound.Utils.Foldable (findJust)
 import Control.Applicative      (liftA2)
@@ -65,22 +65,22 @@ instance Applicative Parser where
     where
       combinedParser = mkParser \x ->
         case p x of
+          Error pe   -> Error $ fromMaybe pe e
           Result i a -> parse ((f a) <$> mb) i
-          Error pe   -> Error pe
 
 instance Monad Parser where
-  (>>=) (P p t e) f = applyTransformError t e combinedParser
-    where
-      combinedParser = mkParser \x ->
-        case p x of
-          Result i a -> parse (f a) i
-          Error pe   -> Error pe
+  (>>=) (P p t e) f = mkParser \x ->
+      case p x of
+        Error pe   -> Error $ fromMaybe pe e
+        Result i a -> parse (applyTransformsErrors [t', t] [e', e] p2) i
+          where
+            p2@(P _ t' e') = f a
 
 runParser :: Parser a -> Input -> Either ParseError a
-runParser p@(P _ _ err) i = toEither $ parse (exactly p) i
+runParser p@(P _ _ e) i = toEither $ parse (exactly p) i
   where
     toEither = \case
-      Error pe   -> Left $ fromMaybe pe err
+      Error pe   -> Left $ fromMaybe pe e
       Result _ a -> Right a
 
 errorParser :: ParseError -> Parser a
@@ -165,11 +165,6 @@ except (P p t e) (P p' _ _) = applyTransformError t e $ mkParser (
 
 withError :: String -> Parser a -> Parser a
 withError = applyError . pure . ErrorAt
-
-withErrorFrom :: (a -> String) -> Parser a -> Parser a
-withErrorFrom errFn p =
-  do val <- p
-     withError (errFn val) p
 
 withTransform :: (forall b. Parser b -> Parser b) -> Parser a -> Parser a
 withTransform t = applyTransform $ Just t

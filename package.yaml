@@ -1,5 +1,5 @@
 name:                bookhound
-version:             0.1.13.0
+version:             0.1.14.0
 github:              "albertprz/bookhound"
 license:             LGPL
 author:              "Alberto Perez Lopez"
@@ -25,6 +25,7 @@ dependencies:
 - text >= 2.0 && < 3
 
 ghc-options:
+- -Werror
 - -Wall
 - -Wcompat
 - -Widentities

@@ -1,6 +1,6 @@
 module Bookhound.Parser (Parser, ParseResult, ParseError(..), runParser, errorParser,
                andThen, exactly, isMatch, check, anyOf, allOf, char,
-               withTransform, withError, withErrorN, withErrorFrom, except) where
+               withTransform, withError, withErrorN, withErrorFrom, withErrorNFrom, except) where
 
 import           Bookhound.Utils.Foldable (findJust)
 import           Control.Applicative      (liftA2)
@@ -69,7 +69,8 @@ instance Applicative Parser where
     )
 
 instance Monad Parser where
-  (>>=) (P p t e) f = applyTransform t $ mkParser (\x ->
+  (>>=) (P p t e) f =
+    applyTransformError t e $ mkParser (\x ->
       case p x of
         Error pe   -> Error pe
         Result i a -> parse (applyError (e <> e') p2) i
@@ -156,7 +157,7 @@ check condName cond parser =
   do c2 <- parser
      if cond c2
        then pure c2
-       else  errorParser $ NoMatch condName
+       else errorParser $ NoMatch condName
 
 
 except :: Parser a -> Parser a -> Parser a

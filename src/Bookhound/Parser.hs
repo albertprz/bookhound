@@ -1,6 +1,6 @@
 module Bookhound.Parser (Parser, ParseResult, ParseError(..), runParser, errorParser,
                andThen, exactly, isMatch, check, anyOf, allOf, char,
-               withTransform, withError, except) where
+               withTransform, withError, withErrorFrom, except) where
 
 import Bookhound.Utils.Foldable (findJust)
 import Control.Applicative      (liftA2)
@@ -29,19 +29,24 @@ data ParseError
   | UnexpectedString String
   | NoMatch String
   | ErrorAt String
-  deriving (Eq, Show)
+  deriving (Eq)
 
 
 instance Show a => Show (ParseResult a) where
-  show (Result i a)                 = "Pending: " <> " >" <> unpack i <> "< " <>
-                                      "\n\nResult: \n" <> show a
-  show (Error UnexpectedEof)        = "Unexpected end of stream"
-  show (Error (ExpectedEof i))      = "Expected end of stream, but got >"
-                                       <> unpack i <> "<"
-  show (Error (UnexpectedChar c))   = "Unexpected char: "   <> "[" <> show c <> "]"
-  show (Error (UnexpectedString s)) = "Unexpected string: " <> "[" <> show s <> "]"
-  show (Error (NoMatch s))          = "Did not match condition: " <> s
-  show (Error (ErrorAt s))          = "Error at " <> s
+  show (Result i a) = "Pending: " <> " >" <> unpack i <> "< "
+                                  <> "\n\nResult: \n" <> show a
+  show (Error err)  = show err
+
+instance Show ParseError where
+  show UnexpectedEof        = "Unexpected end of stream"
+  show (ExpectedEof i)      = "Expected end of stream, but got "
+                               <> ">" <> unpack i <> "<"
+  show (UnexpectedChar c)   = "Unexpected char: "
+                               <> "[" <> show c <> "]"
+  show (UnexpectedString s) = "Unexpected string: "
+                               <> "[" <> s <> "]"
+  show (NoMatch s)          = "Did not match condition: " <> s
+  show (ErrorAt s)          = "Error at " <> s
 
 
 instance Functor ParseResult where
@@ -160,6 +165,11 @@ except (P p t e) (P p' _ _) = applyTransformError t e $ mkParser (
 
 withError :: String -> Parser a -> Parser a
 withError = applyError . pure . ErrorAt
+
+withErrorFrom :: (a -> String) -> Parser a -> Parser a
+withErrorFrom errFn p =
+  do val <- p
+     withError (errFn val) p
 
 withTransform :: (forall b. Parser b -> Parser b) -> Parser a -> Parser a
 withTransform t = applyTransform $ Just t

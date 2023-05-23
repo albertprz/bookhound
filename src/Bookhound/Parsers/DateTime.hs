@@ -1,6 +1,6 @@
 module Bookhound.Parsers.DateTime (date, time, timeZoneOffset, localDateTime, offsetDateTime, dateTime, year, day, month, hour, minute, second) where
 
-import Bookhound.Parser            (Parser, check, withError)
+import Bookhound.Parser            (Parser, check, withErrorN)
 import Bookhound.ParserCombinators (IsMatch (..), within, (<#>), (<|>), (|+),
                                     (|?))
 import Bookhound.Parsers.Char      (colon, dash, digit, plus)
@@ -11,38 +11,41 @@ import Data.Time  (Day, LocalTime (..), TimeOfDay (..), TimeZone,
 
 
 date :: Parser Day
-date = withError "Date"
-  $ fromGregorian <$> year <*> within dash month <*> day
+date = withErrorN (-1) "Date" $
+  fromGregorian <$> year <*> within dash month <*> day
 
 
 time :: Parser TimeOfDay
-time = withError "Time"
-  $ do h <- hour
-       m <- colon *> minute
-       s <- colon *> second
-       decimals <- fromMaybe 0 <$> ((colon *> secondDecimals) |?)
-       pure $ TimeOfDay h m $ read (show s <> "." <> show decimals)
+time = withErrorN (-1) "Time" $
+  do h <- hour
+     m <- colon *> minute
+     s <- colon *> second
+     decimals <- fromMaybe 0 <$> ((colon *> secondDecimals) |?)
+     pure $ TimeOfDay h m $ read (show s <> "." <> show decimals)
 
 
 timeZoneOffset :: Parser TimeZone
-timeZoneOffset = withError "Timezone Offset"
-  $ do pos <- (True <$ plus) <|> (False <$ dash)
-       h <- hour
-       m <- fromMaybe 0 <$> ((colon *> minute) |?)
-       pure $ minutesToTimeZone $ (if pos then 1 else (-1)) * (h * 60 + m)
+timeZoneOffset = withErrorN (-1) "Timezone Offset" $
+  do pos <- (True <$ plus) <|> (False <$ dash)
+     h <- hour
+     m <- fromMaybe 0 <$> ((colon *> minute) |?)
+     pure $ minutesToTimeZone $ (if pos then 1 else (-1)) * (h * 60 + m)
+
 
 localDateTime :: Parser LocalTime
-localDateTime = withError "Local DateTime"
-  $ LocalTime <$> (date <* oneOf ['T', 't']) <*> time
+localDateTime = withErrorN (-1) "Local DateTime" $
+  LocalTime <$> (date <* oneOf ['T', 't']) <*> time
+
 
 offsetDateTime :: Parser ZonedTime
-offsetDateTime = withError "Offset DateTime"
-  $ ZonedTime <$> localDateTime <*> timeZoneOffset
+offsetDateTime = withErrorN (-1) "Offset DateTime" $
+  ZonedTime <$> localDateTime <*> timeZoneOffset
+
 
 dateTime :: Parser ZonedTime
-dateTime = withError "DateTime"
-  $ ((`ZonedTime` minutesToTimeZone 0) <$> localDateTime <* is 'Z') <|>
-            offsetDateTime
+dateTime = withErrorN (-1) "DateTime" $
+  ((`ZonedTime` minutesToTimeZone 0) <$> localDateTime <* is 'Z')
+  <|> offsetDateTime
 
 
 

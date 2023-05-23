@@ -1,34 +1,34 @@
 module Bookhound.Parsers.Number (int, double, posInt, negInt, unsignedInt, hexInt, octInt, intLike) where
 
 import Bookhound.Parser            (ParseError (..), Parser, errorParser,
-                                    withError)
+                                    withErrorN)
 import Bookhound.ParserCombinators (IsMatch (..), (->>-), (<|>), (|+), (|?))
 import Bookhound.Parsers.Char      (dash, digit, dot, plus)
 
 
 hexInt :: Parser Integer
-hexInt = withError "Hex Int"
+hexInt = withErrorN (-1) "Hex Int"
  $ read <$> (is "0x" ->>-
              ((digit <|> oneOf ['A' .. 'F'] <|> oneOf ['a' .. 'f']) |+))
 
 octInt :: Parser Integer
-octInt = withError "Oct Int"
+octInt = withErrorN (-1) "Oct Int"
   $ read <$> (is "0o" ->>- (oneOf ['0' .. '7'] |+))
 
 unsignedInt :: Parser Integer
-unsignedInt = withError "Unsigned Int"
+unsignedInt = withErrorN (-1) "Unsigned Int"
   $ read <$> (digit |+)
 
 posInt :: Parser Integer
-posInt = withError "Positive Int"
+posInt = withErrorN (-1) "Positive Int"
   $ read <$> (plus |?) ->>- (digit |+)
 
 negInt :: Parser Integer
-negInt = withError "Negative Int"
+negInt = withErrorN (-1) "Negative Int"
   $ read <$> dash ->>- (digit |+)
 
 int :: Parser Integer
-int = withError "Int" $ negInt <|> posInt
+int = withErrorN (-1) "Int" $ negInt <|> posInt
 
 intLike :: Parser Integer
 intLike = parser <|> int
@@ -44,7 +44,7 @@ intLike = parser <|> int
 
 
 double :: Parser Double
-double = withError "Double"
+double = withErrorN (-1) "Double"
   $ read <$> int ->>- (decimals |?) ->>- (expn |?) where
 
   decimals = dot ->>- unsignedInt

@@ -1,12 +1,13 @@
 module Bookhound.Parser (Parser, ParseResult, ParseError(..), runParser, errorParser,
                andThen, exactly, isMatch, check, anyOf, allOf, char,
-               withTransform, withError, except) where
+               withTransform, withError, withErrorN, withErrorFrom, except) where
 
-import Bookhound.Utils.Foldable (findJust)
-import Control.Applicative      (liftA2)
-import Data.Either              (fromRight)
-import Data.Maybe               (fromMaybe)
-import Data.Text                (Text, pack, uncons, unpack)
+import           Bookhound.Utils.Foldable (findJust)
+import           Control.Applicative      (liftA2)
+import           Data.Either              (fromRight)
+import           Data.Set                 (Set)
+import qualified Data.Set                 as Set
+import           Data.Text                (Text, pack, uncons, unpack)
 
 type Input = Text
 
@@ -14,7 +15,7 @@ data Parser a
   = P
       { parse     :: Input -> ParseResult a
       , transform :: forall b. Maybe (Parser b -> Parser b)
-      , error     :: Maybe ParseError
+      , errors    :: Set (Int, ParseError)
       }
 
 data ParseResult a
@@ -29,7 +30,7 @@ data ParseError
   | UnexpectedString String
   | NoMatch String
   | ErrorAt String
-  deriving (Eq)
+  deriving (Eq, Ord)
 
 
 instance Show a => Show (ParseResult a) where
@@ -61,27 +62,27 @@ instance Functor Parser where
 instance Applicative Parser where
   pure a      = mkParser (`Result` a)
   liftA2 f (P p t e) mb@(P _ t' e') =
-    applyTransformsErrors [t, t'] [e, e'] combinedParser
-    where
-      combinedParser = mkParser \x ->
-        case p x of
-          Error pe   -> Error $ fromMaybe pe e
-          Result i a -> parse ((f a) <$> mb) i
+    applyTransformsErrors [t, t'] [e, e'] $ mkParser (\x ->
+      case p x of
+        Result i a -> parse ((f a) <$> mb) i
+        Error pe   -> Error pe
+    )
 
 instance Monad Parser where
-  (>>=) (P p t e) f = mkParser \x ->
+  (>>=) (P p t e) f = applyTransform t $ mkParser (\x ->
       case p x of
-        Error pe   -> Error $ fromMaybe pe e
-        Result i a -> parse (applyTransformsErrors [t', t] [e', e] p2) i
+        Error pe   -> Error pe
+        Result i a -> parse (applyError (e <> e') p2) i
           where
-            p2@(P _ t' e') = f a
+            p2@(P _ _ e') = f a
+    )
 
-runParser :: Parser a -> Input -> Either ParseError a
+runParser :: Parser a -> Input -> Either [ParseError] a
 runParser p@(P _ _ e) i = toEither $ parse (exactly p) i
   where
     toEither = \case
-      Error pe   -> Left $ fromMaybe pe e
       Result _ a -> Right a
+      Error pe   -> Left $ (snd <$> reverse (Set.toList e)) <> [pe]
 
 errorParser :: ParseError -> Parser a
 errorParser = mkParser . const . Error
@@ -105,39 +106,41 @@ exactly (P p t e) = applyTransformError t e $
     )
 
 anyOf :: [Parser a] -> Parser a
-anyOf ps = anyOfHelper ps Nothing Nothing
+anyOf ps = anyOfHelper ps Nothing mempty
 
 allOf :: [Parser a] -> Parser a
-allOf ps = allOfHelper ps Nothing Nothing
+allOf ps = allOfHelper ps Nothing mempty
 
 
 anyOfHelper :: [Parser a]
             -> (forall b. Maybe (Parser b -> Parser b))
-            -> Maybe ParseError
+            -> Set (Int, ParseError)
             -> Parser a
 anyOfHelper [] _ _  = errorParser $ NoMatch "anyOf"
 anyOfHelper [p] _ _ = p
-anyOfHelper ((P p t e) : rest) t' e' = applyTransformsErrors [t, t'] [e, e'] $
-  mkParser (\x ->
-    case p x of
-      result@(Result _ _) -> result
-      Error _             -> parse (anyOfHelper rest t e) x
-    )
+anyOfHelper ((P p t e) : rest) t' e' =
+  applyTransformsErrors [t, t'] [e, e'] $
+    mkParser (\x ->
+      case p x of
+        result@(Result _ _) -> result
+        Error _             -> parse (anyOfHelper rest t e) x
+      )
 
 
 
 allOfHelper :: [Parser a]
             -> (forall b. Maybe (Parser b -> Parser b))
-            -> Maybe ParseError
+            -> Set (Int, ParseError)
             -> Parser a
 allOfHelper [] _ _ = errorParser $ NoMatch "allOf"
 allOfHelper [p] _ _ = p
-allOfHelper ((P p t e) : rest) t' e' = applyTransformsErrors [t, t'] [e, e'] $
-  mkParser (\x ->
-    case p x of
-      Result _ _    -> parse (allOfHelper rest t e) x
-      err@(Error _) -> err
-    )
+allOfHelper ((P p t e) : rest) t' e' =
+  applyTransformsErrors [t, t'] [e, e'] $
+    mkParser (\x ->
+      case p x of
+        Result _ _    -> parse (allOfHelper rest t e) x
+        err@(Error _) -> err
+      )
 
 
 
@@ -164,32 +167,45 @@ except (P p t e) (P p' _ _) = applyTransformError t e $ mkParser (
   )
 
 withError :: String -> Parser a -> Parser a
-withError = applyError . pure . ErrorAt
+withError = withErrorN 0
+
+withErrorN :: Int -> String -> Parser a -> Parser a
+withErrorN n str = applyError . Set.singleton $ (n, ErrorAt str)
+
+withErrorFrom :: (a -> String) -> Parser a -> Parser a
+withErrorFrom = withErrorNFrom 0
+
+withErrorNFrom :: Int -> (a -> String) -> Parser a -> Parser a
+withErrorNFrom n errFn p =
+  do value <- p
+     withErrorN n (errFn value) $ pure $ value
 
 withTransform :: (forall b. Parser b -> Parser b) -> Parser a -> Parser a
 withTransform t = applyTransform $ Just t
 
 
+
+applyTransformsErrors :: (forall b. [Maybe (Parser b -> Parser b)])
+                      -> [Set (Int, ParseError)]
+                      -> Parser a
+                      -> Parser a
+applyTransformsErrors ts es =
+  applyTransformError (findJust ts) (mconcat es)
+
+
 applyTransformError :: (forall b. Maybe (Parser b -> Parser b))
-                    -> Maybe ParseError
+                    -> Set (Int, ParseError)
                     -> Parser a
                     -> Parser a
 applyTransformError t e = applyTransform t . applyError e
 
 
-applyTransformsErrors :: (forall b. [Maybe (Parser b -> Parser b)])
-                      -> [Maybe ParseError]
-                      -> Parser a
-                      -> Parser a
-applyTransformsErrors ts es =
-  applyTransformError (findJust ts) (findJust es)
-
 
 applyTransform :: (forall b. Maybe (Parser b -> Parser b)) -> Parser a -> Parser a
 applyTransform f p =  maybe p (\f' -> (f' p) {transform = f}) f
 
-applyError :: Maybe ParseError -> Parser a -> Parser a
-applyError e p = maybe p (\_ -> p {error = e}) e
+applyError :: Set (Int, ParseError) -> Parser a -> Parser a
+applyError e p@(P _ _ e') = p {errors = e <> e'}
 
 mkParser :: (Input -> ParseResult a) -> Parser a
-mkParser p = P {parse = p, transform = Nothing, error = Nothing}
+mkParser p = P {parse = p, transform = Nothing, errors = Set.empty}

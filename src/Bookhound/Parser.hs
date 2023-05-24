@@ -1,6 +1,6 @@
 module Bookhound.Parser (Parser, ParseResult, ParseError(..), runParser, errorParser,
                andThen, exactly, isMatch, check, anyOf, allOf, char,
-               withTransform, withError, withErrorN, withErrorFrom, withErrorNFrom, except) where
+               withTransform, withError, withErrorN, withErrorFrom, mapError, except) where
 
 import           Bookhound.Utils.Foldable (findJust)
 import           Control.Applicative      (liftA2)
@@ -52,7 +52,7 @@ instance Show ParseError where
 
 instance Functor ParseResult where
   fmap f (Result i a) = Result i (f a)
-  fmap _ (Error pe)   = Error pe
+  fmap _ (Error pe)   = (Error pe)
 
 
 instance Functor Parser where
@@ -72,10 +72,8 @@ instance Monad Parser where
   (>>=) (P p t e) f =
     applyTransformError t e $ mkParser (\x ->
       case p x of
+        Result i a -> parse (f a) i
         Error pe   -> Error pe
-        Result i a -> parse (applyError (e <> e') p2) i
-          where
-            p2@(P _ _ e') = f a
     )
 
 runParser :: Parser a -> Input -> Either [ParseError] a
@@ -83,7 +81,13 @@ runParser p@(P _ _ e) i = toEither $ parse (exactly p) i
   where
     toEither = \case
       Result _ a -> Right a
-      Error pe   -> Left $ (snd <$> reverse (Set.toList e)) <> [pe]
+      Error pe   -> Left $ filter (hasPriorityError)   [pe]   <>
+                          (snd <$> reverse (Set.toList e))   <>
+                          filter (not . hasPriorityError) [pe]
+
+hasPriorityError :: ParseError -> Bool
+hasPriorityError (ErrorAt _) = True
+hasPriorityError _           = False
 
 errorParser :: ParseError -> Parser a
 errorParser = mkParser . const . Error
@@ -103,7 +107,7 @@ exactly (P p t e) = applyTransformError t e $
     case p x of
       result@(Result i _) | i == mempty -> result
       Result i _                        -> Error $ ExpectedEof i
-      err@(Error _)                     -> err
+      err                               -> err
     )
 
 anyOf :: [Parser a] -> Parser a
@@ -123,10 +127,9 @@ anyOfHelper ((P p t e) : rest) t' e' =
   applyTransformsErrors [t, t'] [e, e'] $
     mkParser (\x ->
       case p x of
-        result@(Result _ _) -> result
-        Error _             -> parse (anyOfHelper rest t e) x
+        Error _ -> parse (anyOfHelper rest t e) x
+        result  -> result
       )
-
 
 
 allOfHelper :: [Parser a]
@@ -139,10 +142,9 @@ allOfHelper ((P p t e) : rest) t' e' =
   applyTransformsErrors [t, t'] [e, e'] $
     mkParser (\x ->
       case p x of
-        Result _ _    -> parse (allOfHelper rest t e) x
-        err@(Error _) -> err
+        Result _ _ -> parse (allOfHelper rest t e) x
+        err        -> err
       )
-
 
 
 isMatch :: (Char -> Char -> Bool) -> Parser Char -> Char -> Parser Char
@@ -174,12 +176,17 @@ withErrorN :: Int -> String -> Parser a -> Parser a
 withErrorN n str = applyError . Set.singleton $ (n, ErrorAt str)
 
 withErrorFrom :: (a -> String) -> Parser a -> Parser a
-withErrorFrom = withErrorNFrom 0
-
-withErrorNFrom :: Int -> (a -> String) -> Parser a -> Parser a
-withErrorNFrom n errFn p =
+withErrorFrom errFn p =
   do value <- p
-     withErrorN n (errFn value) $ pure $ value
+     mapError (const $ ErrorAt $ errFn value) $ pure value
+
+mapError :: (ParseError -> ParseError) -> Parser a -> Parser a
+mapError f (P p t e) = applyTransformError t e $ mkParser (
+  \x -> case p x of
+    Error pe -> Error $ f pe
+    result   -> result
+  )
+
 
 withTransform :: (forall b. Parser b -> Parser b) -> Parser a -> Parser a
 withTransform t = applyTransform $ Just t

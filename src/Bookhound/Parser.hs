@@ -1,6 +1,6 @@
 module Bookhound.Parser (Parser, ParseResult, ParseError(..), runParser, errorParser,
                andThen, exactly, isMatch, check, anyOf, allOf, char,
-               withTransform, withError, withErrorN, withErrorFrom, mapError, except) where
+               withTransform, withError, withErrorN, except) where
 
 import           Bookhound.Utils.Foldable (findJust)
 import           Control.Applicative      (liftA2)
@@ -174,18 +174,6 @@ withError = withErrorN 0
 
 withErrorN :: Int -> String -> Parser a -> Parser a
 withErrorN n str = applyError . Set.singleton $ (n, ErrorAt str)
-
-withErrorFrom :: (a -> String) -> Parser a -> Parser a
-withErrorFrom errFn p =
-  do value <- p
-     mapError (const $ ErrorAt $ errFn value) $ pure value
-
-mapError :: (ParseError -> ParseError) -> Parser a -> Parser a
-mapError f (P p t e) = applyTransformError t e $ mkParser (
-  \x -> case p x of
-    Error pe -> Error $ f pe
-    result   -> result
-  )
 
 
 withTransform :: (forall b. Parser b -> Parser b) -> Parser a -> Parser a

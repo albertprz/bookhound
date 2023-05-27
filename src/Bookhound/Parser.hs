@@ -94,7 +94,7 @@ errorParser = mkParser . const . Error
 
 andThen :: Parser String -> Parser a -> Parser a
 andThen p1 p2@(P _ t e) = applyTransformError t e $
-  P (\i -> parse p2 $ fromRight i $ pack <$> runParser p1 i) t e
+  mkParser (\i -> parse p2 $ fromRight i $ pack <$> runParser p1 i)
 
 char :: Parser Char
 char = mkParser $

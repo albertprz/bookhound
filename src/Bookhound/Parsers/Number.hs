@@ -21,7 +21,7 @@ unsignedInt = withErrorN (-1) "Unsigned Int"
 
 posInt :: Parser Integer
 posInt = withErrorN (-1) "Positive Int"
-  $ read <$> (plus |?) ->>- (digit |+)
+  $ read <$> ((plus |?) *> (digit |+))
 
 negInt :: Parser Integer
 negInt = withErrorN (-1) "Negative Int"

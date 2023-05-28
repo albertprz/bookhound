@@ -87,6 +87,7 @@ library:
 
 tests:
   test:
+    build-tools: hspec-discover
     source-dirs: test
     main: Spec.hs
     dependencies:

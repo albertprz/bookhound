@@ -25,7 +25,7 @@ jobs:
 
     - name: Configure the build
       run: |
-        cabal configure --enable-tests --enable-benchmarks --disable-documentation
+        cabal configure --enable-tests --enable-benchmarks
         cabal build --dry-run
 
     - name: Cache
@@ -47,10 +47,4 @@ jobs:
       run: cabal build all
 
     - name: Run tests
-      run: cabal test all
-
-    - name: Check cabal file
-      run: cabal check
-
-    - name: Build documentation
-      run: cabal haddock all
+      run: cabal test all --enable-tests

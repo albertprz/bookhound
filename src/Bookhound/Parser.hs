@@ -1,4 +1,4 @@
-module Bookhound.Parser (Parser, ParseResult, ParseError(..), runParser, errorParser,
+module Bookhound.Parser (Parser(parse), ParseResult(..), ParseError(..), runParser, errorParser,
                andThen, exactly, isMatch, check, anyOf, allOf, char,
                withTransform, withError, withErrorN, except) where
 
@@ -33,23 +33,6 @@ data ParseError
   deriving (Eq, Ord)
 
 
-instance Show a => Show (ParseResult a) where
-  show (Result i a) = "Pending: " <> " >" <> unpack i <> "< "
-                                  <> "\n\nResult: \n" <> show a
-  show (Error err)  = show err
-
-instance Show ParseError where
-  show UnexpectedEof        = "Unexpected end of stream"
-  show (ExpectedEof i)      = "Expected end of stream, but got "
-                               <> ">" <> unpack i <> "<"
-  show (UnexpectedChar c)   = "Unexpected char: "
-                               <> "[" <> show c <> "]"
-  show (UnexpectedString s) = "Unexpected string: "
-                               <> "[" <> s <> "]"
-  show (NoMatch s)          = "Did not match condition: " <> s
-  show (ErrorAt s)          = "Error at " <> s
-
-
 instance Functor ParseResult where
   fmap f (Result i a) = Result i (f a)
   fmap _ (Error pe)   = (Error pe)
@@ -81,13 +64,9 @@ runParser p@(P _ _ e) i = toEither $ parse (exactly p) i
   where
     toEither = \case
       Result _ a -> Right a
-      Error pe   -> Left $ filter (hasPriorityError)   [pe]   <>
+      Error pe   -> Left $ filter (hasPriorityError)     [pe] <>
                           (snd <$> reverse (Set.toList e))   <>
                           filter (not . hasPriorityError) [pe]
-
-hasPriorityError :: ParseError -> Bool
-hasPriorityError (ErrorAt _) = True
-hasPriorityError _           = False
 
 errorParser :: ParseError -> Parser a
 errorParser = mkParser . const . Error
@@ -179,6 +158,23 @@ withErrorN n str = applyError . Set.singleton $ (n, ErrorAt str)
 withTransform :: (forall b. Parser b -> Parser b) -> Parser a -> Parser a
 withTransform t = applyTransform $ Just t
 
+instance Show a => Show (ParseResult a) where
+  show (Result i a) = "Pending: " <> " >" <> unpack i <> "< "
+                                  <> "\n\nResult: \n" <> show a
+  show (Error err)  = show err
+
+instance Show ParseError where
+  show UnexpectedEof        = "Unexpected end of stream"
+  show (ExpectedEof i)      = "Expected end of stream, but got "
+                               <> ">" <> unpack i <> "<"
+  show (UnexpectedChar c)   = "Unexpected char: "
+                               <> "[" <> show c <> "]"
+  show (UnexpectedString s) = "Unexpected string: "
+                               <> "[" <> s <> "]"
+  show (NoMatch s)          = "Did not match condition: " <> s
+  show (ErrorAt s)          = "Error at " <> s
+
+
 
 
 applyTransformsErrors :: (forall b. [Maybe (Parser b -> Parser b)])
@@ -205,3 +201,8 @@ applyError e p@(P _ _ e') = p {errors = e <> e'}
 
 mkParser :: (Input -> ParseResult a) -> Parser a
 mkParser p = P {parse = p, transform = Nothing, errors = Set.empty}
+
+
+hasPriorityError :: ParseError -> Bool
+hasPriorityError (ErrorAt _) = True
+hasPriorityError _           = False

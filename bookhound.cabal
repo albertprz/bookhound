@@ -78,6 +78,58 @@ library
   build-depends:
       base >=4.7 && <5
     , containers >=0.6 && <1
-    , text >=2.0 && <3
+    , text
+    , time >=1.9 && <2
+  default-language: Haskell2010
+
+test-suite test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Bookhound.ParserSpec
+      Utils.ArbitraryInstances
+      Paths_bookhound
+  hs-source-dirs:
+      test
+  default-extensions:
+      LambdaCase
+      MultiWayIf
+      TupleSections
+      PostfixOperators
+      BlockArguments
+      RankNTypes
+      ExplicitForAll
+      ScopedTypeVariables
+      LiberalTypeSynonyms
+      InstanceSigs
+      FunctionalDependencies
+      DuplicateRecordFields
+      NamedFieldPuns
+      RecordWildCards
+      ConstrainedClassMethods
+      MultiParamTypeClasses
+      FlexibleContexts
+      FlexibleInstances
+      ApplicativeDo
+      ParallelListComp
+      MonadComprehensions
+      GADTs
+      TypeFamilies
+      TypeFamilyDependencies
+      DataKinds
+      PolyKinds
+      DeriveFunctor
+      DeriveFoldable
+      DeriveTraversable
+      DeriveGeneric
+      GeneralizedNewtypeDeriving
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wpartial-fields -Wincomplete-uni-patterns -Wredundant-constraints -Wno-orphans
+  build-depends:
+      QuickCheck
+    , base >=4.7 && <5
+    , bookhound
+    , containers >=0.6 && <1
+    , hspec
+    , text
     , time >=1.9 && <2
   default-language: Haskell2010

@@ -22,7 +22,7 @@ dependencies:
 - base >= 4.7 && < 5
 - containers >= 0.6 && < 1
 - time >= 1.9 && < 2
-- text >= 2.0 && < 3
+- text
 
 ghc-options:
 - -Werror
@@ -84,3 +84,15 @@ default-extensions:
 
 library:
   source-dirs: src
+
+tests:
+  test:
+    source-dirs: test
+    main: Spec.hs
+    dependencies:
+    - hspec
+    - QuickCheck
+    - bookhound
+    - text
+    ghc-options:
+    - -Wno-orphans

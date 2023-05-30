@@ -1,10 +1,12 @@
 {-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use optional" #-}
 
 module Bookhound.ParserCombinators (IsMatch(..), satisfies, contains, notContains,
                           containsAnyOf, containsNoneOf,
                           times, maybeTimes, anyTimes, someTimes, multipleTimes,
                           within, maybeWithin, withinBoth, maybeWithinBoth,
-                          anySepBy, someSepBy, multipleSepBy, sepByOp,
+                          anySepBy, someSepBy, multipleSepBy, sepByOps, sepByOp,
                           (<|>), (<?>), (<#>), (->>-), (|?), (|*), (|+), (|++))  where
 
 import Bookhound.Parser            (Parser, allOf, anyOf, char, check, except,
@@ -13,8 +15,7 @@ import Bookhound.Utils.Applicative (extract)
 import Bookhound.Utils.Foldable    (hasMultiple, hasSome)
 import Bookhound.Utils.String      (ToString (..))
 
-import Data.List  (isInfixOf)
-import Data.Maybe (listToMaybe)
+import Data.List (isInfixOf)
 
 import           Data.Bifunctor (Bifunctor (first))
 import qualified Data.Foldable  as Foldable
@@ -49,13 +50,13 @@ instance {-# OVERLAPPABLE #-} (Num a, Read a, Show a) => IsMatch a where
 
 -- Condition combinators
 satisfies :: (a -> Bool) -> Parser a -> Parser a
-satisfies cond p = check "satisfies" cond p
+satisfies = check "satisfies"
 
 contains :: Eq a => [a] -> Parser [a] -> Parser [a]
-contains val p = check "contains" (isInfixOf val) p
+contains val = check "contains" (isInfixOf val)
 
 notContains :: Eq a => [a] -> Parser [a] -> Parser [a]
-notContains val p = check "notContains" (isInfixOf val) p
+notContains val = check "notContains" (isInfixOf val)
 
 containsAnyOf :: (Foldable t, Eq a) => t [a] -> Parser [a] -> Parser [a]
 containsAnyOf x y = foldr contains y x
@@ -65,15 +66,15 @@ containsNoneOf x y = foldr notContains y x
 
 
  -- Frequency combinators
-times :: Integer -> Parser a  -> Parser [a]
+times :: Int -> Parser a  -> Parser [a]
 times n p = sequence $ p <$ [1 .. n]
 
 
 maybeTimes :: Parser a -> Parser (Maybe a)
-maybeTimes = (listToMaybe <$>) . check "maybeTimes" (not . hasMultiple) . anyTimes
+maybeTimes p = Just <$> p <|> pure Nothing
 
 anyTimes :: Parser a -> Parser [a]
-anyTimes parser = (parser >>= \x -> (x :) <$> anyTimes parser) <|> pure []
+anyTimes p = (p >>= \x -> (x :) <$> anyTimes p) <|> pure []
 
 someTimes :: Parser a -> Parser [a]
 someTimes = check "someTimes" hasSome . anyTimes
@@ -83,17 +84,17 @@ multipleTimes = check "multipleTimes" hasMultiple . anyTimes
 
 
 -- Within combinators
-within :: Parser a -> Parser b -> Parser b
-within p = extract p p
-
-maybeWithin :: Parser a -> Parser b -> Parser b
-maybeWithin p = within (p |?)
-
 withinBoth :: Parser a -> Parser b -> Parser c -> Parser c
 withinBoth = extract
 
 maybeWithinBoth :: Parser a -> Parser b -> Parser c -> Parser c
-maybeWithinBoth p1 p2 = extract (p1 |?) (p2 |?)
+maybeWithinBoth p1 p2 = withinBoth (p1 |?) (p2 |?)
+
+within :: Parser a -> Parser b -> Parser b
+within p = withinBoth p p
+
+maybeWithin :: Parser a -> Parser b -> Parser b
+maybeWithin p = within (p |?)
 
 
 -- Separated by combinators
@@ -114,7 +115,7 @@ multipleSepBy = sepBy (fmap Just) (|+)
 sepByOps :: Parser a -> Parser b -> Parser ([a], [b])
 sepByOps sep p = do x <-  p
                     y <- (((,) <$> sep <*> p) |+)
-                    pure $ (fst <$> y, x : (snd <$> y))
+                    pure (fst <$> y, x : (snd <$> y))
 
 sepByOp :: Parser a -> Parser b -> Parser (a, [b])
 sepByOp sep p = first head <$> sepByOps sep p
@@ -126,7 +127,7 @@ infixl 3 <|>
 (<|>) p1 p2 = anyOf [p1, p2]
 
 infixl 6 <#>
-(<#>) :: Parser a -> Integer -> Parser [a]
+(<#>) :: Parser a -> Int -> Parser [a]
 (<#>) = flip times
 
 infixl 6 <?>

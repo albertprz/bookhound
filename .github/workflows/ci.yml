@@ -6,45 +6,53 @@ on:
   pull_request:
     branches: [ "master" ]
 
-permissions:
-  contents: read
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  stack:
+
+    name: ${{ matrix.os }} / ghc ${{ matrix.ghc }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        stack: [latest]
+        ghc: ["9.2.7"]
 
     steps:
-    - uses: actions/checkout@v3
 
-    - name: Set up GHC
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Restore from cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.stack
+          ~/.ghcup
+        key: ${{ runner.os }}-${{ matrix.ghc }}-stack${{ matrix.stack }}
+
+    - name: Setup GHC
       uses: haskell/actions/setup@v2
       with:
-        ghc-version: '9.2.7'
-        cabal-version: '3.6.2'
-        cabal-update: true
-
-    - name: Configure the build
-      run: |
-        cabal configure --enable-tests --enable-benchmarks
-        cabal build --dry-run
-
-    - name: Cache
-      uses: actions/cache@v3
-      env:
-        cache-name: cache-cabal
-      with:
-        path: ~/.cabal
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.cabal') }}-${{ hashFiles('**/cabal.project') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
+        ghc-version: ${{ matrix.ghc }}
+        stack-version: ${{ matrix.stack }}
+        enable-stack: true
 
     - name: Install dependencies
-      run: cabal build all --only-dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      timeout-minutes: 15
+      run: |
+        stack build --system-ghc --test --no-run-tests --only-dependencies
 
     - name: Build
-      run: cabal build all
+      timeout-minutes: 15
+      run: |
+        stack build --system-ghc --test --no-run-tests
 
     - name: Run tests
-      run: cabal test all --enable-tests
+      timeout-minutes: 15
+      run: |
+        stack test --system-ghc --test --fast

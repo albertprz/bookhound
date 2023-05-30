@@ -36,6 +36,7 @@ library
       Bookhound.Utils.Applicative
       Bookhound.Utils.DateTime
       Bookhound.Utils.Foldable
+      Bookhound.Utils.List
       Bookhound.Utils.Map
       Bookhound.Utils.String
   other-modules:
@@ -86,8 +87,11 @@ test-suite test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Bookhound.ParserCombinatorsSpec
+      Bookhound.Parsers.CollectionsSpec
+      Bookhound.Parsers.DateTimeSpec
+      Bookhound.Parsers.NumberSpec
       Bookhound.ParserSpec
-      Utils.ArbitraryInstances
       Paths_bookhound
   hs-source-dirs:
       test
@@ -132,6 +136,7 @@ test-suite test
     , bookhound
     , containers >=0.6 && <1
     , hspec
+    , quickcheck-instances
     , text
     , time >=1.9 && <2
   default-language: Haskell2010

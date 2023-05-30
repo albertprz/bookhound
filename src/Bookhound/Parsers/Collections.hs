@@ -6,8 +6,9 @@ import Bookhound.Parsers.Char      (closeCurly, closeParens, closeSquare, comma,
                                     openCurly, openParens, openSquare)
 import Bookhound.Parsers.String    (spacing)
 
-import           Data.Map (Map)
-import qualified Data.Map as Map
+import           Bookhound.Utils.Foldable (hasMultiple)
+import           Data.Map                 (Map)
+import qualified Data.Map                 as Map
 
 
 collOf :: Parser a -> Parser b -> Parser c -> Parser d -> Parser [d]
@@ -24,7 +25,7 @@ listOf = withErrorN (-1) "List"
 
 tupleOf :: Parser a -> Parser [a]
 tupleOf = withErrorN (-1) "Tuple"
-  . satisfies ((>= 2) . length)
+  . satisfies hasMultiple
   . collOf openParens closeParens comma
 
 

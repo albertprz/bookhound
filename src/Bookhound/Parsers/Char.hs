@@ -2,12 +2,8 @@ module Bookhound.Parsers.Char where
 
 import Bookhound.ParserCombinators (IsMatch (..), (<|>))
 
-import           Bookhound.Parser (Parser)
-import qualified Bookhound.Parser as Parser
+import Bookhound.Parser (Parser)
 
-
-char :: Parser Char
-char = Parser.char
 
 digit :: Parser Char
 digit = oneOf ['0' .. '9']

@@ -35,7 +35,7 @@ data ParseError
 
 instance Functor ParseResult where
   fmap f (Result i a) = Result i (f a)
-  fmap _ (Error pe)   = (Error pe)
+  fmap _ (Error pe)   = Error pe
 
 
 instance Functor Parser where
@@ -47,7 +47,7 @@ instance Applicative Parser where
   liftA2 f (P p t e) mb@(P _ t' e') =
     applyTransformsErrors [t, t'] [e, e'] $ mkParser (\x ->
       case p x of
-        Result i a -> parse ((f a) <$> mb) i
+        Result i a -> parse (f a <$> mb) i
         Error pe   -> Error pe
     )
 
@@ -64,7 +64,7 @@ runParser p@(P _ _ e) i = toEither $ parse (exactly p) i
   where
     toEither = \case
       Result _ a -> Right a
-      Error pe   -> Left $ filter (hasPriorityError)     [pe] <>
+      Error pe   -> Left $ filter hasPriorityError       [pe] <>
                           (snd <$> reverse (Set.toList e))   <>
                           filter (not . hasPriorityError) [pe]
 

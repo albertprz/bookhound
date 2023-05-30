@@ -94,6 +94,6 @@ tests:
     - hspec
     - QuickCheck
     - bookhound
-    - text
+    - quickcheck-instances
     ghc-options:
     - -Wno-orphans

@@ -28,7 +28,8 @@ negInt = withErrorN (-1) "Negative Int"
   $ read <$> dash ->>- (digit |+)
 
 int :: Parser Integer
-int = withErrorN (-1) "Int" $ negInt <|> posInt
+int = withErrorN (-1) "Int"
+  $ negInt <|> posInt
 
 intLike :: Parser Integer
 intLike = parser <|> int
@@ -45,7 +46,7 @@ intLike = parser <|> int
 
 double :: Parser Double
 double = withErrorN (-1) "Double"
-  $ read <$> int ->>- (decimals |?) ->>- (expn |?) where
+  $ read <$> (dash |?) ->>- posInt ->>- (decimals |?) ->>- (expn |?) where
 
-  decimals = dot ->>- unsignedInt
+  decimals = dot ->>- (digit |+)
   expn      = oneOf ['e', 'E'] ->>- int

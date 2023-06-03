@@ -6,7 +6,8 @@ import Test.QuickCheck.Instances.Text ()
 
 import Bookhound.Parser
 import Data.Char
-import Data.Text        (pack, unpack)
+import Data.Text                (pack, unpack)
+import Test.QuickCheck.Property ((===))
 
 
 
@@ -17,12 +18,12 @@ spec = do
 
     prop "Identity" $
       \x -> parse (id <$> char) x
-          `shouldBe`
+           ===
            parse char x
 
     prop "Composition" $
       \x -> parse ((isLower . toUpper) <$> char) x
-          `shouldBe`
+           ===
            parse ((isLower <$>) . (toUpper <$>) $ char) x
 
 
@@ -30,17 +31,17 @@ spec = do
 
     prop "Identity" $
       \x -> parse (pure id <*> char) x
-          `shouldBe`
+           ===
            parse char x
 
     prop "Homomorphism" $
       \x (y :: [Int]) -> parse (pure sum <*> pure y) x
-          `shouldBe`
+           ===
            parse (pure (sum y)) x
 
     prop "Interchange" $
       \x (y :: [Int])  -> parse (pure length <*> pure y) x
-          `shouldBe`
+           ===
            parse (pure ($ y) <*> pure length) x
 
 
@@ -48,25 +49,25 @@ spec = do
 
     prop "Left identity" $
       \x -> parse (pure 'a' >>= isMatch (==) char) x
-          `shouldBe`
+           ===
            parse (isMatch (==) char 'a') x
 
     prop "Right identity" $
       \x -> parse (char >>= pure) x
-          `shouldBe`
+           ===
            parse char x
 
     prop "Associativity" $
       \x -> parse
            (char >>= (\y -> isMatch (<) char y >>= isMatch (>) char)) x
-          `shouldBe`
+           ===
            parse ((char >>= isMatch (<) char) >>= isMatch (>) char) x
 
   describe "char" $
 
     prop "parses a single char" $
       \x -> parse char x
-          `shouldBe`
+           ===
            case unpack x of
              (ch : rest) -> Result (pack rest) ch
              []          -> Error UnexpectedEof
@@ -75,7 +76,7 @@ spec = do
 
     prop "works for ==" $
       \x y -> parse (isMatch (==) char y) x
-            `shouldBe`
+             ===
              case unpack x of
                (ch : rest)
                  | ch == y    -> Result (pack rest) ch
@@ -84,7 +85,7 @@ spec = do
 
     prop "works for /=" $
       \x y -> parse (isMatch (/=) char y) x
-            `shouldBe`
+             ===
              case unpack x of
                (ch : rest)
                  | ch /= y    -> Result (pack rest) ch
@@ -95,7 +96,7 @@ spec = do
 
     prop "performs a check on the parse result" $
       \x -> parse (check "digit" isDigit char) x
-          `shouldBe`
+           ===
            case unpack x of
              (ch : rest)
                | isDigit ch -> Result (pack rest) ch
@@ -107,7 +108,7 @@ spec = do
     context "when the second parser fails" $
       prop "the first parser then runs" $
         \x -> parse (except char (char *> char)) x
-            `shouldBe`
+             ===
              case unpack x of
                [ch]    -> Result (pack "") ch
                (_ : _) -> Error $ NoMatch "except"
@@ -121,7 +122,7 @@ spec = do
                          "secondSuccess" <$ char,
                          errorParser $ ErrorAt "secondError",
                          errorParser $ ErrorAt "lastError"]) x
-          `shouldBe`
+           ===
            case unpack x of
              (_ : rest) -> Result (pack rest) "firstSuccess"
              []         -> Error $ ErrorAt "lastError"
@@ -133,7 +134,7 @@ spec = do
         \x -> parse (allOf ["firstSuccess"  <$ char,
                            "secondSuccess" <$ char,
                            errorParser $ ErrorAt "firstError"]) x
-            `shouldBe`
+             ===
              case unpack x of
                (_ : _) -> Error $ ErrorAt "firstError"
                []      -> Error UnexpectedEof
@@ -143,7 +144,7 @@ spec = do
         \x -> parse (allOf ["firstSuccess"  <$ char,
                            "secondSuccess" <$ char,
                            "thirdSuccess"  <$ char]) x
-            `shouldBe`
+             ===
              case unpack x of
                (_ : rest) -> Result (pack rest) "thirdSuccess"
                []         -> Error UnexpectedEof
@@ -152,7 +153,7 @@ spec = do
 
     prop "returns an error when some chars remain after parsing" $
       \x -> parse (exactly char) x
-          `shouldBe`
+           ===
            case unpack x of
              [ch]       -> Result (pack []) ch
              (_ : rest) -> Error $ ExpectedEof (pack rest)
@@ -162,7 +163,7 @@ spec = do
 
     prop "parses exactly and wraps the result into an either" $
       \x -> runParser char x
-          `shouldBe`
+           ===
            toEither (parse (exactly char) x)
 
 
@@ -171,21 +172,21 @@ spec = do
     prop "includes error labels in order when running the parser" $
       \x -> runParser ((,) <$> withErrorN 2 "firstErr" char
                           <*> withErrorN 1 "secondErr" char) x
-          `shouldBe`
-             case unpack x of
-               [ch1, ch2] -> Right (ch1, ch2)
-               (_ : _ : rest)   -> Left [ErrorAt "firstErr",
-                                        ErrorAt "secondErr",
-                                        ExpectedEof (pack rest)]
-               _                -> Left [ErrorAt "firstErr",
-                                        ErrorAt "secondErr",
-                                        UnexpectedEof]
+           ===
+           case unpack x of
+             [ch1, ch2] -> Right (ch1, ch2)
+             (_ : _ : rest)   -> Left [ErrorAt "firstErr",
+                                      ErrorAt "secondErr",
+                                      ExpectedEof (pack rest)]
+             _                -> Left [ErrorAt "firstErr",
+                                      ErrorAt "secondErr",
+                                      UnexpectedEof]
 
   describe "withTransform" $
 
     prop "transforms current parser with provided fn" $
       \x -> parse (withTransform (\p -> char *> p <* char) char) x
-          `shouldBe`
+           ===
            parse (char *> char <* char) x
 
 

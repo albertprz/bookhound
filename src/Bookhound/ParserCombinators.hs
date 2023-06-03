@@ -38,8 +38,8 @@ instance   IsMatch Char where
   inverse = except char
 
 instance   IsMatch String where
-  is      = traverse (isMatch (==) char)
-  isNot   = traverse (isMatch (/=) char)
+  is      = traverse is
+  isNot   = traverse is
   inverse = except (char |*)
 
 instance {-# OVERLAPPABLE #-} (Num a, Read a, Show a) => IsMatch a where

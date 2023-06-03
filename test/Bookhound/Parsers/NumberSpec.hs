@@ -9,6 +9,7 @@ import Test.QuickCheck.Instances.Text ()
 import Bookhound.Parser
 import Bookhound.Parsers.Number
 import Data.Text                (pack)
+import Test.QuickCheck.Property ((===))
 
 
 
@@ -20,7 +21,7 @@ spec = do
     prop "parses a positive Int" $
       \(x :: Integer) -> x > 0 ==>
         runParser posInt (pack $ show x)
-       `shouldBe`
+        ===
         Right x
 
   describe "negInt" $
@@ -28,7 +29,7 @@ spec = do
     prop "parses a negative Int" $
       \(x :: Integer) -> x < 0 ==>
         runParser negInt (pack $ show x)
-       `shouldBe`
+        ===
         Right x
 
   describe "int" $
@@ -36,7 +37,7 @@ spec = do
     prop "parses an Int" $
       \(x :: Integer) ->
         runParser int (pack $ show x)
-       `shouldBe`
+        ===
         Right x
 
 
@@ -45,5 +46,5 @@ spec = do
     prop "parses a Double" $
       \(x :: Double) ->
         runParser double (pack $ show x)
-       `shouldBe`
+        ===
         Right x

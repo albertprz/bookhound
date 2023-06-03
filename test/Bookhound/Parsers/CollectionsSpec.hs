@@ -13,6 +13,7 @@ import           Data.List                     (intercalate)
 import qualified Data.Map                      as Map
 import           Data.Text                     (pack)
 import           Test.QuickCheck               ((==>))
+import           Test.QuickCheck.Property      ((===))
 
 
 
@@ -27,7 +28,7 @@ spec = do
         (pack ("[" <>
                intercalate ", " (pure <$> filter isAlpha' x)
                <> "]"))
-       `shouldBe`
+        ===
         Right (filter isAlpha' x)
 
   describe "tupleOf" $
@@ -38,24 +39,24 @@ spec = do
         (pack ("(" <>
                intercalate ", " (pure <$> filter isAlpha' x)
                <> ")"))
-       `shouldBe`
+        ===
         Right (filter isAlpha' x)
 
   describe "mapOf" $
 
     prop "parses a map provided the key and value parsers" $
       \(x :: [(Char, Char)]) ->
-        runParser (mapOf (is "->") alpha alpha)
+        runParser (mapOf (is ":") alpha alpha)
         (pack ("{" <>
                intercalate ", " (showMapEntry <$> filter areAlpha' x)
                <> "}"))
-       `shouldBe`
+        ===
         Right (Map.fromList $ filter areAlpha' x)
 
 
 
 showMapEntry :: (Char, Char) -> String
-showMapEntry (x, y) = pure x <> " -> " <> pure y
+showMapEntry (x, y) = pure x <> ": " <> pure y
 
 areAlpha' :: (Char, Char) -> Bool
 areAlpha' (x, y) = isAlpha' x && isAlpha' y

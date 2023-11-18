@@ -1,6 +1,6 @@
 module Bookhound.Parsers.String where
 
-import Bookhound.Parser            (Parser, char)
+import Bookhound.Parser            (Parser, anyChar)
 import Bookhound.ParserCombinators (IsMatch (..), maybeWithin, maybeWithinBoth,
                                     within, withinBoth, (->>-), (|*), (|+),
                                     (|?))
@@ -13,7 +13,7 @@ import Bookhound.Parsers.Char      (alpha, alphaNum, closeAngle, closeCurly,
 
 
 string :: Parser String
-string = (char |*)
+string = (anyChar |*)
 
 word :: Parser String
 word = (inverse whiteSpace |+)

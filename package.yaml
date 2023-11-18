@@ -19,10 +19,11 @@ category:            Parser Combinators
 description: Please see the README on GitHub at <https://github.com/albertprz/bookhound#readme>
 
 dependencies:
-- base >= 4.7 && < 5
-- containers >= 0.6 && < 1
-- time >= 1.9 && < 2
+- base
+- containers
 - text
+- time
+- mtl
 
 ghc-options:
 - -Werror

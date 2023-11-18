@@ -1,21 +1,20 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use optional" #-}
 
-module Bookhound.ParserCombinators (IsMatch(..), satisfies, contains, notContains,
-                          containsAnyOf, containsNoneOf,
+module Bookhound.ParserCombinators (IsMatch(..), satisfy,
                           times, maybeTimes, anyTimes, someTimes, multipleTimes,
                           within, maybeWithin, withinBoth, maybeWithinBoth,
                           anySepBy, someSepBy, multipleSepBy, sepByOps, sepByOp,
-                          (<|>), (<?>), (<#>), (->>-), (|?), (|*), (|+), (|++))  where
+                          (<?>), (<#>), (->>-), (|?), (|*), (|+), (|++))  where
 
-import Bookhound.Parser            (Parser, allOf, anyOf, char, check, except,
-                                    isMatch, withError)
+import Bookhound.Parser (ParseError (..), Parser, allOf, anyChar, anyOf, except,
+                         satisfy, withError)
+
 import Bookhound.Utils.Applicative (extract)
-import Bookhound.Utils.Foldable    (hasMultiple, hasSome)
+import Bookhound.Utils.List        (hasMultiple, hasSome)
 import Bookhound.Utils.String      (ToString (..))
-
-import Data.List (isInfixOf)
+import Control.Applicative
+import Control.Monad.Error.Class   (MonadError (..))
 
 import           Data.Bifunctor (Bifunctor (first))
 import qualified Data.Foldable  as Foldable
@@ -33,14 +32,14 @@ class IsMatch a where
 
 
 instance   IsMatch Char where
-  is      = isMatch (==) char
-  isNot   = isMatch (/=) char
-  inverse = except char
+  is      = isMatch (==) anyChar
+  isNot   = isMatch (/=) anyChar
+  inverse = except anyChar
 
 instance   IsMatch String where
   is      = traverse is
   isNot   = traverse is
-  inverse = except (char |*)
+  inverse = except (anyChar |*)
 
 instance {-# OVERLAPPABLE #-} (Num a, Read a, Show a) => IsMatch a where
   is n      = read <$> (is . show) n
@@ -48,39 +47,29 @@ instance {-# OVERLAPPABLE #-} (Num a, Read a, Show a) => IsMatch a where
   inverse p = read <$> inverse (show <$> p)
 
 
--- Condition combinators
-satisfies :: (a -> Bool) -> Parser a -> Parser a
-satisfies = check "satisfies"
-
-contains :: Eq a => [a] -> Parser [a] -> Parser [a]
-contains val = check "contains" (isInfixOf val)
-
-notContains :: Eq a => [a] -> Parser [a] -> Parser [a]
-notContains val = check "notContains" (isInfixOf val)
-
-containsAnyOf :: (Foldable t, Eq a) => t [a] -> Parser [a] -> Parser [a]
-containsAnyOf x y = foldr contains y x
-
-containsNoneOf :: (Foldable t, Eq a) => t [a] -> Parser [a] -> Parser [a]
-containsNoneOf x y = foldr notContains y x
+isMatch :: (Char -> Char -> Bool) -> Parser Char -> Char -> Parser Char
+isMatch cond parser c1 =
+  do c2 <- parser
+     if cond c1 c2
+       then pure c2
+       else throwError $ UnexpectedChar c2
 
 
  -- Frequency combinators
 times :: Int -> Parser a  -> Parser [a]
 times n p = sequence $ p <$ [1 .. n]
 
-
 maybeTimes :: Parser a -> Parser (Maybe a)
-maybeTimes p = Just <$> p <|> pure Nothing
+maybeTimes = optional
 
 anyTimes :: Parser a -> Parser [a]
 anyTimes p = (p >>= \x -> (x :) <$> anyTimes p) <|> pure []
 
 someTimes :: Parser a -> Parser [a]
-someTimes = check "someTimes" hasSome . anyTimes
+someTimes = satisfy hasSome . anyTimes
 
 multipleTimes :: Parser a -> Parser [a]
-multipleTimes = check "multipleTimes" hasMultiple . anyTimes
+multipleTimes = satisfy hasMultiple . anyTimes
 
 
 -- Within combinators
@@ -122,10 +111,6 @@ sepByOp sep p = first head <$> sepByOps sep p
 
 
 -- Parser Binary Operators
-infixl 3 <|>
-(<|>) :: Parser a -> Parser a -> Parser a
-(<|>) p1 p2 = anyOf [p1, p2]
-
 infixl 6 <#>
 (<#>) :: Parser a -> Int -> Parser [a]
 (<#>) = flip times

@@ -17,22 +17,22 @@ spec = do
   describe "Functor laws" $ do
 
     prop "Identity" $
-      \x -> parse (id <$> char) x
+      \x -> parse (id <$> anyChar) x
            ===
-           parse char x
+           parse anyChar x
 
     prop "Composition" $
-      \x -> parse ((isLower . toUpper) <$> char) x
+      \x -> parse ((isLower . toUpper) <$> anyChar) x
            ===
-           parse ((isLower <$>) . (toUpper <$>) $ char) x
+           parse ((isLower <$>) . (toUpper <$>) $ anyChar) x
 
 
   describe "Applicative laws" $ do
 
     prop "Identity" $
-      \x -> parse (pure id <*> char) x
+      \x -> parse (pure id <*> anyChar) x
            ===
-           parse char x
+           parse anyChar x
 
     prop "Homomorphism" $
       \x (y :: [Int]) -> parse (pure sum <*> pure y) x
@@ -48,25 +48,25 @@ spec = do
   describe "Monad laws" $ do
 
     prop "Left identity" $
-      \x -> parse (pure 'a' >>= isMatch (==) char) x
+      \x -> parse (pure 'a' >>= isMatch (==) anyChar) x
            ===
-           parse (isMatch (==) char 'a') x
+           parse (isMatch (==) anyChar 'a') x
 
     prop "Right identity" $
-      \x -> parse (char >>= pure) x
+      \x -> parse (anyChar >>= pure) x
            ===
-           parse char x
+           parse anyChar x
 
     prop "Associativity" $
       \x -> parse
-           (char >>= (\y -> isMatch (<) char y >>= isMatch (>) char)) x
+           (anyChar >>= (\y -> isMatch (<) anyChar y >>= isMatch (>) anyChar)) x
            ===
-           parse ((char >>= isMatch (<) char) >>= isMatch (>) char) x
+           parse ((anyChar >>= isMatch (<) anyChar) >>= isMatch (>) anyChar) x
 
-  describe "char" $
+  describe "anyChar" $
 
-    prop "parses a single char" $
-      \x -> parse char x
+    prop "parses a single anyChar" $
+      \x -> parse anyChar x
            ===
            case unpack x of
              (ch : rest) -> Result (pack rest) ch
@@ -75,7 +75,7 @@ spec = do
   describe "isMatch" $ do
 
     prop "works for ==" $
-      \x y -> parse (isMatch (==) char y) x
+      \x y -> parse (isMatch (==) anyChar y) x
              ===
              case unpack x of
                (ch : rest)
@@ -84,7 +84,7 @@ spec = do
                []            -> Error UnexpectedEof
 
     prop "works for /=" $
-      \x y -> parse (isMatch (/=) char y) x
+      \x y -> parse (isMatch (/=) anyChar y) x
              ===
              case unpack x of
                (ch : rest)
@@ -92,22 +92,22 @@ spec = do
                  | otherwise -> Error $ UnexpectedChar ch
                []            -> Error UnexpectedEof
 
-  describe "check" $
+  describe "satisfy" $
 
     prop "performs a check on the parse result" $
-      \x -> parse (check "digit" isDigit char) x
+      \x -> parse (satisfy isDigit anyChar) x
            ===
            case unpack x of
              (ch : rest)
                | isDigit ch -> Result (pack rest) ch
-               | otherwise  -> Error $ NoMatch "digit"
+               | otherwise  -> Error $ ExpectedEof $ pack rest
              []             -> Error UnexpectedEof
 
   describe "except" $
 
     context "when the second parser fails" $
       prop "the first parser then runs" $
-        \x -> parse (except char (char *> char)) x
+        \x -> parse (except anyChar (anyChar *> anyChar)) x
              ===
              case unpack x of
                [ch]    -> Result (pack "") ch
@@ -117,11 +117,11 @@ spec = do
   describe "anyOf" $
 
     prop "returns first parser success or last parser error if all fail" $
-      \x -> parse (anyOf [errorParser $ ErrorAt "firstError",
-                         "firstSuccess"  <$ char,
-                         "secondSuccess" <$ char,
-                         errorParser $ ErrorAt "secondError",
-                         errorParser $ ErrorAt "lastError"]) x
+      \x -> parse (anyOf [throwError $ ErrorAt "firstError",
+                         "firstSuccess"  <$ anyChar,
+                         "secondSuccess" <$ anyChar,
+                         throwError $ ErrorAt "secondError",
+                         throwError $ ErrorAt "lastError"]) x
            ===
            case unpack x of
              (_ : rest) -> Result (pack rest) "firstSuccess"
@@ -131,9 +131,9 @@ spec = do
 
     context "when any parser fails" $
       prop "returns first parser error" $
-        \x -> parse (allOf ["firstSuccess"  <$ char,
-                           "secondSuccess" <$ char,
-                           errorParser $ ErrorAt "firstError"]) x
+        \x -> parse (allOf ["firstSuccess"  <$ anyChar,
+                           "secondSuccess" <$ anyChar,
+                           throwError $ ErrorAt "firstError"]) x
              ===
              case unpack x of
                (_ : _) -> Error $ ErrorAt "firstError"
@@ -141,9 +141,9 @@ spec = do
 
     context "when all parsers succeed" $
       prop "returns last parser success" $
-        \x -> parse (allOf ["firstSuccess"  <$ char,
-                           "secondSuccess" <$ char,
-                           "thirdSuccess"  <$ char]) x
+        \x -> parse (allOf ["firstSuccess"  <$ anyChar,
+                           "secondSuccess" <$ anyChar,
+                           "thirdSuccess"  <$ anyChar]) x
              ===
              case unpack x of
                (_ : rest) -> Result (pack rest) "thirdSuccess"
@@ -152,7 +152,7 @@ spec = do
   describe "exactly" $
 
     prop "returns an error when some chars remain after parsing" $
-      \x -> parse (exactly char) x
+      \x -> parse (exactly anyChar) x
            ===
            case unpack x of
              [ch]       -> Result (pack []) ch
@@ -162,16 +162,16 @@ spec = do
   describe "runParser" $
 
     prop "parses exactly and wraps the result into an either" $
-      \x -> runParser char x
+      \x -> runParser anyChar x
            ===
-           toEither (parse (exactly char) x)
+           toEither (parse (exactly anyChar) x)
 
 
   describe "withError" $
 
     prop "includes error labels in order when running the parser" $
-      \x -> runParser ((,) <$> withErrorN 2 "firstErr" char
-                          <*> withErrorN 1 "secondErr" char) x
+      \x -> runParser ((,) <$> withErrorN 2 "firstErr" anyChar
+                          <*> withErrorN 1 "secondErr" anyChar) x
            ===
            case unpack x of
              [ch1, ch2] -> Right (ch1, ch2)
@@ -185,12 +185,13 @@ spec = do
   describe "withTransform" $
 
     prop "transforms current parser with provided fn" $
-      \x -> parse (withTransform (\p -> char *> p <* char) char) x
+      \x -> parse (withTransform (\p -> anyChar *> p <* anyChar) anyChar) x
            ===
-           parse (char *> char <* char) x
+           parse (anyChar *> anyChar <* anyChar) x
 
 
-
+isMatch :: (a -> a -> Bool) -> Parser a -> a -> Parser a
+isMatch cond ma c1 = satisfy (cond c1) ma
 
 toEither :: ParseResult a -> Either [ParseError] a
 toEither = \case

@@ -1,8 +1,9 @@
 module Bookhound.Parsers.Char where
 
-import Bookhound.ParserCombinators (IsMatch (..), (<|>))
+import Bookhound.ParserCombinators (IsMatch (..))
 
-import Bookhound.Parser (Parser)
+import Bookhound.Parser    (Parser)
+import Control.Applicative
 
 
 digit :: Parser Char

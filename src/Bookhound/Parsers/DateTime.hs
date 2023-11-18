@@ -1,14 +1,13 @@
 module Bookhound.Parsers.DateTime (date, time, timeZoneOffset, localDateTime, offsetDateTime, dateTime, year, day, month, hour, minute, second) where
 
-import Bookhound.Parser            (Parser, check, withErrorN)
-import Bookhound.ParserCombinators (IsMatch (..), within, (<#>), (<|>), (|+),
-                                    (|?))
+import Bookhound.Parser            (Parser, satisfy, withErrorN)
+import Bookhound.ParserCombinators (IsMatch (..), within, (<#>), (|+), (|?))
 import Bookhound.Parsers.Char      (colon, dash, digit, dot, plus)
+import Control.Applicative
 
 import Data.Maybe (fromMaybe)
 import Data.Time  (Day, LocalTime (..), TimeOfDay (..), TimeZone,
                    ZonedTime (..), fromGregorian, minutesToTimeZone)
-
 
 
 date :: Parser Day
@@ -54,22 +53,22 @@ year :: Parser Integer
 year = read <$> digit <#> 4
 
 day :: Parser Int
-day = check "Day" (range 1 31) $ read <$> digit <#> 2
+day = withErrorN (-1) "Day" $ satisfy (range 1 31) $ read <$> digit <#> 2
 
 month :: Parser Int
-month = check "Month" (range 1 12) $ read <$> digit <#> 2
+month = withErrorN (-1) "Month" $ satisfy (range 1 12) $ read <$> digit <#> 2
 
 hour :: Parser Int
-hour = check "Hour" (range 0 23) $ read <$> digit <#> 2
+hour = withErrorN (-1) "Hour" $ satisfy (range 0 23) $ read <$> digit <#> 2
 
 minute :: Parser Int
-minute = check "Minute" (range 0 59) $ read <$> digit <#> 2
+minute = withErrorN (-1) "Minute" $ satisfy (range 0 59) $ read <$> digit <#> 2
 
 second :: Parser Int
-second = check "Second" (range 0 59) $ read <$> digit <#> 2
+second = withErrorN (-1) "Second" $ satisfy (range 0 59) $ read <$> digit <#> 2
 
 secondDecimals :: Parser String
-secondDecimals = check "Pico Seconds" ((<= 12) . length) (digit |+)
+secondDecimals = withErrorN (-1) "Pico Seconds" $ satisfy ((<= 12) . length) (digit |+)
 
 
 

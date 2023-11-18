@@ -18,7 +18,7 @@ spec = do
   describe "times" $
 
     prop "applies a parser n times sequentially" $
-      \x n -> parse (times n char) x
+      \x n -> parse (times n anyChar) x
            ===
             if Text.length x >= n then
                Result (Text.drop n x) (unpack $ Text.take n x)
@@ -28,90 +28,90 @@ spec = do
   describe "maybeTimes" $
 
     prop "applies a parser 1 or 0 times" $
-      \x -> parse (maybeTimes char) x
+      \x -> parse (maybeTimes anyChar) x
            ===
-           (headSafe <$> parseTimes char [0, 1] x)
+           (headSafe <$> parseTimes anyChar [0, 1] x)
 
   describe "anyTimes" $
 
     prop "applies a parser any number of times" $
-      \x -> parse (anyTimes char) x
+      \x -> parse (anyTimes anyChar) x
            ===
-           parseTimes char [0 .. Text.length x] x
+           parseTimes anyChar [0 .. Text.length x] x
 
 
   describe "someTimes" $
 
     prop "applies a parser at least once" $
-      \x -> parse (someTimes char) x
+      \x -> parse (someTimes anyChar) x
            ===
            replaceError "someTimes"
-             (parseTimes char [1 .. Text.length x] x)
+             (parseTimes anyChar [1 .. Text.length x] x)
 
   describe "multipleTimes" $
 
     prop "applies a parser at least twice" $
-      \x -> parse (multipleTimes char) x
+      \x -> parse (multipleTimes anyChar) x
            ===
            replaceError "multipleTimes"
-             (parseTimes char [2 .. Text.length x] x)
+             (parseTimes anyChar [2 .. Text.length x] x)
 
   describe "withinBoth" $
 
     prop "applies a parser surrounded by 2 parsers" $
       \x (y :: Char) (z :: Char) ->
-        parse (withinBoth (is y) (is z) char) x
+        parse (withinBoth (is y) (is z) anyChar) x
         ===
-        parse (is y *> char <* is z) x
+        parse (is y *> anyChar <* is z) x
 
   describe "maybeWithinBoth" $
 
     prop "applies a parser surrounded by 2 optional parsers" $
       \x (y :: Char) (z :: Char) ->
-        parse (maybeWithinBoth (is y) (is z) char) x
+        parse (maybeWithinBoth (is y) (is z) anyChar) x
         ===
-        parse ((is y |?) *> char <* (is z |?)) x
+        parse ((is y |?) *> anyChar <* (is z |?)) x
 
   describe "within" $
 
     prop "applies a parser surrounded by a parser" $
       \x (y :: Char) ->
-        parse (within (is y) char) x
+        parse (within (is y) anyChar) x
         ===
-        parse (is y *> char <* is y) x
+        parse (is y *> anyChar <* is y) x
 
   describe "maybeWithin" $
 
     prop "applies a parser surrounded by a optional parsers" $
       \x (y :: Char) ->
-        parse (maybeWithin (is y) char) x
+        parse (maybeWithin (is y) anyChar) x
         ===
-        parse ((is y |?) *> char <* (is y |?)) x
+        parse ((is y |?) *> anyChar <* (is y |?)) x
 
   describe "anySepBy" $
 
     prop "applies a parser separated by a parser any number of times" $
       \x (y :: Char) ->
-        parse (anySepBy (is y) char) x
+        parse (anySepBy (is y) anyChar) x
         ===
-        parse ((<>) <$> (Foldable.toList <$> (char |?))
-                    <*> ((is y *> char) |*)) x
+        parse ((<>) <$> (Foldable.toList <$> (anyChar |?))
+                    <*> ((is y *> anyChar) |*)) x
 
   describe "someSepBy" $
 
     prop "applies a parser separated by a parser at least once" $
       \x (y :: Char) ->
-        parse (someSepBy (is y) char) x
+        parse (someSepBy (is y) anyChar) x
         ===
-        parse ((:) <$> char <*> ((is y *> char) |*)) x
+        parse ((:) <$> anyChar <*> ((is y *> anyChar) |*)) x
 
   describe "multipleSepBy" $
 
     prop "applies a parser separated by a parser at least twice" $
       \x (y :: Char) ->
-        parse (multipleSepBy (is y) char) x
+        parse (multipleSepBy (is y) anyChar) x
         ===
-        parse ((:) <$> char <*> ((is y *> char) |+)) x
+        parse ((:) <$> anyChar <*> ((is y *> anyChar) |+)) x
 
   describe "->>-" $
 

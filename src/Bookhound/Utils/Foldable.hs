@@ -7,16 +7,6 @@ import Data.List              (intercalate)
 import Data.Maybe             (isJust)
 
 
-hasNone :: Foldable m => m a -> Bool
-hasNone = null
-
-hasSome :: Foldable m => m a -> Bool
-hasSome = not . hasNone
-
-hasMultiple :: Foldable m => m a -> Bool
-hasMultiple xs = all hasSome $ [id, tail] <*> [toList xs]
-
-
 stringify :: Foldable m => String -> String -> String -> Int -> m String -> String
 stringify sep start end n xs = start <> indent n str <> end
   where

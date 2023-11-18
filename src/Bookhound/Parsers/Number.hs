@@ -1,9 +1,10 @@
 module Bookhound.Parsers.Number (int, double, posInt, negInt, unsignedInt, hexInt, octInt, intLike) where
 
-import Bookhound.Parser            (ParseError (..), Parser, errorParser,
+import Bookhound.Parser            (ParseError (..), Parser, throwError,
                                     withErrorN)
-import Bookhound.ParserCombinators (IsMatch (..), (->>-), (<|>), (|+), (|?))
+import Bookhound.ParserCombinators (IsMatch (..), (->>-), (|+), (|?))
 import Bookhound.Parsers.Char      (dash, digit, dot, plus)
+import Control.Applicative
 
 
 hexInt :: Parser Integer
@@ -41,8 +42,7 @@ intLike = parser <|> int
                 if length n1 + length n2 <= fromInteger expNum then
                   pure . read $ n1 <> "." <> n2 <> "E" <> show expNum
                 else
-                  errorParser $ NoMatch "Int Like"
-
+                  throwError $ NoMatch "Int Like"
 
 double :: Parser Double
 double = withErrorN (-1) "Double"

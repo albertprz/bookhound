@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.0.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -77,10 +77,11 @@ library
       GeneralizedNewtypeDeriving
   ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wpartial-fields -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
-    , containers >=0.6 && <1
+      base
+    , containers
+    , mtl
     , text
-    , time >=1.9 && <2
+    , time
   default-language: Haskell2010
 
 test-suite test
@@ -132,11 +133,12 @@ test-suite test
       hspec-discover:hspec-discover
   build-depends:
       QuickCheck
-    , base >=4.7 && <5
+    , base
     , bookhound
-    , containers >=0.6 && <1
+    , containers
     , hspec
+    , mtl
     , quickcheck-instances
     , text
-    , time >=1.9 && <2
+    , time
   default-language: Haskell2010

@@ -68,6 +68,9 @@ betweenQuotes = surroundedBy quote
 betweenDoubleQuotes :: Parser b -> Parser b
 betweenDoubleQuotes = surroundedBy doubleQuote
 
+betweenSpacing :: Parser b -> Parser b
+betweenSpacing = surroundedBy spacing
+
 betweenParens :: Parser b -> Parser b
 betweenParens = between openParens closeParens
 
@@ -87,6 +90,9 @@ maybeBetweenQuotes = maybeSurroundedBy quote
 
 maybeBetweenDoubleQuotes :: Parser b -> Parser b
 maybeBetweenDoubleQuotes = maybeSurroundedBy doubleQuote
+
+maybeBetweenSpacing :: Parser b -> Parser b
+maybeBetweenSpacing = maybeSurroundedBy spacing
 
 maybeBetweenParens :: Parser b -> Parser b
 maybeBetweenParens = maybeBetween openParens closeParens

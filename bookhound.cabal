@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           bookhound
-version:        0.1.25.0
+version:        0.1.26.0
 synopsis:       Simple Parser Combinators
 description:    Please see the README on GitHub at <https://github.com/albertprz/bookhound#readme>
 category:       Parser Combinators
@@ -46,42 +46,24 @@ library
       LambdaCase
       MultiWayIf
       TupleSections
-      PostfixOperators
       BlockArguments
+      PostfixOperators
       RankNTypes
-      ExplicitForAll
       ScopedTypeVariables
-      LiberalTypeSynonyms
-      InstanceSigs
-      FunctionalDependencies
       DuplicateRecordFields
       NamedFieldPuns
       RecordWildCards
-      ConstrainedClassMethods
       MultiParamTypeClasses
-      FlexibleContexts
       FlexibleInstances
       ApplicativeDo
-      ParallelListComp
-      MonadComprehensions
       OverloadedStrings
-      GADTs
-      TypeFamilies
-      TypeFamilyDependencies
-      DataKinds
-      PolyKinds
-      DeriveFunctor
-      DeriveFoldable
-      DeriveTraversable
-      DeriveGeneric
-      GeneralizedNewtypeDeriving
-  ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wpartial-fields -Wincomplete-uni-patterns -Wredundant-constraints
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wpartial-fields -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
-      base
-    , containers
-    , mtl
-    , text
-    , time
+      base ==4.*
+    , containers ==0.6.*
+    , mtl ==2.*
+    , text >=2.0 && <3
+    , time ==1.*
   default-language: Haskell2010
 
 test-suite test
@@ -100,46 +82,28 @@ test-suite test
       LambdaCase
       MultiWayIf
       TupleSections
-      PostfixOperators
       BlockArguments
+      PostfixOperators
       RankNTypes
-      ExplicitForAll
       ScopedTypeVariables
-      LiberalTypeSynonyms
-      InstanceSigs
-      FunctionalDependencies
       DuplicateRecordFields
       NamedFieldPuns
       RecordWildCards
-      ConstrainedClassMethods
       MultiParamTypeClasses
-      FlexibleContexts
       FlexibleInstances
       ApplicativeDo
-      ParallelListComp
-      MonadComprehensions
       OverloadedStrings
-      GADTs
-      TypeFamilies
-      TypeFamilyDependencies
-      DataKinds
-      PolyKinds
-      DeriveFunctor
-      DeriveFoldable
-      DeriveTraversable
-      DeriveGeneric
-      GeneralizedNewtypeDeriving
-  ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wpartial-fields -Wincomplete-uni-patterns -Wredundant-constraints -Wno-type-defaults
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wpartial-fields -Wincomplete-uni-patterns -Wredundant-constraints -Wno-type-defaults
   build-tool-depends:
       hspec-discover:hspec-discover
   build-depends:
       QuickCheck
-    , base
+    , base ==4.*
     , bookhound
-    , containers
+    , containers ==0.6.*
     , hspec
-    , mtl
+    , mtl ==2.*
     , quickcheck-instances
-    , text
-    , time
+    , text >=2.0 && <3
+    , time ==1.*
   default-language: Haskell2010

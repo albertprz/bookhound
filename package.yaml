@@ -1,5 +1,5 @@
 name:                bookhound
-version:             0.1.25.0
+version:             0.1.26.0
 github:              "albertprz/bookhound"
 license:             LGPL
 author:              "Alberto Perez Lopez"
@@ -19,14 +19,13 @@ category:            Parser Combinators
 description: Please see the README on GitHub at <https://github.com/albertprz/bookhound#readme>
 
 dependencies:
-- base
-- containers
-- text
-- time
-- mtl
+- base >= 4 && < 5
+- text >= 2.0 && < 3
+- containers  >= 0.6 && < 0.7
+- mtl >= 2 && < 3
+- time >= 1 && < 2
 
 ghc-options:
-- -Werror
 - -Wall
 - -Wcompat
 - -Widentities
@@ -40,49 +39,25 @@ default-extensions:
 - LambdaCase
 - MultiWayIf
 - TupleSections
-- PostfixOperators
 - BlockArguments
+- PostfixOperators
 
 # Types
 - RankNTypes
-- ExplicitForAll
 - ScopedTypeVariables
-- LiberalTypeSynonyms
-- InstanceSigs
-- FunctionalDependencies
 
 # Records
 - DuplicateRecordFields
 - NamedFieldPuns
 - RecordWildCards
-# - NoFieldSelectors
-# - OverloadedRecordDot
 
 # Type Classes
-- ConstrainedClassMethods
 - MultiParamTypeClasses
-- FlexibleContexts
 - FlexibleInstances
 
 # Convenience
 - ApplicativeDo
-- ParallelListComp
-- MonadComprehensions
 - OverloadedStrings
-
-# Type Level Programming
-- GADTs
-- TypeFamilies
-- TypeFamilyDependencies
-- DataKinds
-- PolyKinds
-
-# Deriving
-- DeriveFunctor
-- DeriveFoldable
-- DeriveTraversable
-- DeriveGeneric
-- GeneralizedNewtypeDeriving
 
 library:
   source-dirs: src

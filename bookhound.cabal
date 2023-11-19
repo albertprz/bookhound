@@ -33,7 +33,6 @@ library
       Bookhound.Parsers.DateTime
       Bookhound.Parsers.Number
       Bookhound.Parsers.Text
-      Bookhound.Utils.Applicative
       Bookhound.Utils.DateTime
       Bookhound.Utils.Foldable
       Bookhound.Utils.List

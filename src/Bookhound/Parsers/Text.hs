@@ -8,7 +8,7 @@ import           Bookhound.ParserCombinators (IsMatch (..), between,
 import           Bookhound.Parsers.Char      (alpha, alphaNum, closeAngle,
                                               closeCurly, closeParens,
                                               closeSquare, digit, doubleQuote,
-                                              letter, lower, newLine, openAngle,
+                                              lower, newLine, openAngle,
                                               openCurly, openParens, openSquare,
                                               quote, space, spaceOrTab, tab,
                                               upper, whiteSpace)
@@ -30,9 +30,6 @@ uppers = (upper ||+)
 
 lowers :: Parser Text
 lowers = (lower ||+)
-
-letters :: Parser Text
-letters = (letter ||+)
 
 alphas :: Parser Text
 alphas = (alpha ||+)
@@ -66,39 +63,39 @@ blankLines = fmap Text.concat (blankLine |+)
 
 
 betweenQuotes :: Parser b -> Parser b
-betweenQuotes = between quote
+betweenQuotes = surroundedBy quote
 
 betweenDoubleQuotes :: Parser b -> Parser b
-betweenDoubleQuotes = between doubleQuote
+betweenDoubleQuotes = surroundedBy doubleQuote
 
 betweenParens :: Parser b -> Parser b
-betweenParens = surroundedBy openParens closeParens
+betweenParens = between openParens closeParens
 
-betweenSquareBrackets :: Parser b -> Parser b
-betweenSquareBrackets = surroundedBy openSquare closeSquare
+betweenSquare :: Parser b -> Parser b
+betweenSquare = between openSquare closeSquare
 
 betweenCurlyBrackets :: Parser b -> Parser b
-betweenCurlyBrackets = surroundedBy openCurly closeCurly
+betweenCurlyBrackets = between openCurly closeCurly
 
 betweenAngleBrackets :: Parser b -> Parser b
-betweenAngleBrackets = surroundedBy openAngle closeAngle
+betweenAngleBrackets = between openAngle closeAngle
 
 
 
 maybeBetweenQuotes :: Parser b -> Parser b
-maybeBetweenQuotes = maybeBetween quote
+maybeBetweenQuotes = maybeSurroundedBy quote
 
 maybeBetweenDoubleQuotes :: Parser b -> Parser b
-maybeBetweenDoubleQuotes = maybeBetween doubleQuote
+maybeBetweenDoubleQuotes = maybeSurroundedBy doubleQuote
 
 maybeBetweenParens :: Parser b -> Parser b
-maybeBetweenParens = maybeSurroundedBy openParens closeParens
+maybeBetweenParens = maybeBetween openParens closeParens
 
 maybeBetweenSquareBrackets :: Parser b -> Parser b
-maybeBetweenSquareBrackets = maybeSurroundedBy openSquare closeSquare
+maybeBetweenSquareBrackets = maybeBetween openSquare closeSquare
 
 maybeBetweenCurlyBrackets :: Parser b -> Parser b
-maybeBetweenCurlyBrackets = maybeSurroundedBy openCurly closeCurly
+maybeBetweenCurlyBrackets = maybeBetween openCurly closeCurly
 
 maybeBetweenAngleBrackets :: Parser b -> Parser b
-maybeBetweenAngleBrackets = maybeSurroundedBy openAngle closeAngle
+maybeBetweenAngleBrackets = maybeBetween openAngle closeAngle

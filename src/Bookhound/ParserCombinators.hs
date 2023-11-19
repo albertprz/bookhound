@@ -1,6 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
 module Bookhound.ParserCombinators (IsMatch(..), satisfy, char, string, times, many, some, multiple,
                           between, maybeBetween, surroundedBy, maybeSurroundedBy,
                           manySepBy, someSepBy, multipleSepBy, sepByOps, sepByOp, manyEndBy, someEndBy, multipleEndBy,
@@ -8,10 +5,9 @@ module Bookhound.ParserCombinators (IsMatch(..), satisfy, char, string, times, m
 import Bookhound.Parser (Parser, allOf, anyChar, anyOf, except, satisfy,
                          withError)
 
-import Bookhound.Utils.Applicative (extract)
-import Bookhound.Utils.List        (hasMultiple, hasSome)
-import Bookhound.Utils.Text        (ToString (..))
-import Control.Applicative         (liftA2, optional, (<|>))
+import Bookhound.Utils.List (hasMultiple, hasSome)
+import Bookhound.Utils.Text (ToString (..))
+import Control.Applicative  (liftA2, optional, (<|>))
 
 import qualified Data.Foldable as Foldable
 import           Data.Text     (Text, pack, unpack)
@@ -71,17 +67,17 @@ times n p
 
 
 -- Between combinators
-surroundedBy :: Parser a -> Parser b -> Parser c -> Parser c
-surroundedBy = extract
+between :: Parser a -> Parser b -> Parser c -> Parser c
+between start end p = start *> p <* end
 
-maybeSurroundedBy :: Parser a -> Parser b -> Parser c -> Parser c
-maybeSurroundedBy p1 p2 = surroundedBy (p1 |?) (p2 |?)
+maybeBetween :: Parser a -> Parser b -> Parser c -> Parser c
+maybeBetween p1 p2 = between (p1 |?) (p2 |?)
 
-between :: Parser a -> Parser b -> Parser b
-between p = surroundedBy p p
+surroundedBy :: Parser a -> Parser b -> Parser b
+surroundedBy p = between p p
 
-maybeBetween :: Parser a -> Parser b -> Parser b
-maybeBetween p = between (p |?)
+maybeSurroundedBy :: Parser a -> Parser b -> Parser b
+maybeSurroundedBy p = surroundedBy (p |?)
 
 
 -- Sep by combinators

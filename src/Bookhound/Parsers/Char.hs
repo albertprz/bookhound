@@ -1,29 +1,34 @@
-module Bookhound.Parsers.Char where
+module Bookhound.Parsers.Char (module AnyChar, digit, hexDigit, octDigit, upper, lower, alpha, alphaNum, space, tab, newLine, spaceOrTab, whiteSpace, comma, dot, colon, quote, doubleQuote, dash, plus, equal, underscore, hashTag, question, openParens, closeParens, openSquare, closeSquare, openCurly, closeCurly, openAngle, closeAngle)  where
 
-import Bookhound.ParserCombinators (IsMatch (..))
+import qualified Bookhound.Parser            as AnyChar (anyChar)
+import qualified Bookhound.Parser            as Parser
+import           Bookhound.ParserCombinators (IsMatch (..))
 
-import Bookhound.Parser    (Parser)
+import Bookhound.Parser    (Parser, anyChar)
 import Control.Applicative
-
+import Data.Char           (isAsciiLower, isAsciiUpper, isDigit, isHexDigit,
+                            isOctDigit)
 
 digit :: Parser Char
-digit = oneOf ['0' .. '9']
+digit = satisfy isDigit
+
+hexDigit :: Parser Char
+hexDigit = satisfy isHexDigit
+
+octDigit :: Parser Char
+octDigit = satisfy isOctDigit
 
 upper :: Parser Char
-upper = oneOf ['A' .. 'Z']
+upper = satisfy isAsciiUpper
 
 lower :: Parser Char
-lower = oneOf ['a' .. 'z']
-
-letter :: Parser Char
-letter = upper <|> lower
+lower = satisfy isAsciiLower
 
 alpha :: Parser Char
-alpha = letter
+alpha = satisfy isAlpha
 
 alphaNum :: Parser Char
-alphaNum = alpha <|> digit
-
+alphaNum = satisfy isAlphaNum
 
 
 space :: Parser Char
@@ -99,3 +104,13 @@ openAngle = is '<'
 
 closeAngle :: Parser Char
 closeAngle = is '>'
+
+
+isAlpha :: Char -> Bool
+isAlpha x = isAsciiLower x || isAsciiUpper x
+
+isAlphaNum :: Char -> Bool
+isAlphaNum x = isAlpha x || isDigit x
+
+satisfy :: (Char -> Bool) -> Parser Char
+satisfy = flip Parser.satisfy anyChar

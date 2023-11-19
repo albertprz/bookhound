@@ -55,35 +55,35 @@ spec = do
            ===
            parseTimes anyChar [2 .. Text.length x + 10] x
 
-  describe "surroundedBy" $
+  describe "between" $
 
     prop "applies a parser surrounded by 2 parsers" $
       \x (y :: Char) (z :: Char) ->
-        parse (surroundedBy (is y) (is z) anyChar) x
+        parse (between (is y) (is z) anyChar) x
         ===
         parse (is y *> anyChar <* is z) x
 
-  describe "maybeSurroundedBy" $
+  describe "maybeBetween" $
 
     prop "applies a parser surrounded by 2 optional parsers" $
       \x (y :: Char) (z :: Char) ->
-        parse (maybeSurroundedBy (is y) (is z) anyChar) x
+        parse (maybeBetween (is y) (is z) anyChar) x
         ===
         parse ((is y |?) *> anyChar <* (is z |?)) x
 
-  describe "between" $
+  describe "surroundedBy" $
 
     prop "applies a parser surrounded by a parser" $
       \x (y :: Char) ->
-        parse (between (is y) anyChar) x
+        parse (surroundedBy (is y) anyChar) x
         ===
         parse (is y *> anyChar <* is y) x
 
-  describe "maybeBetween" $
+  describe "maybeSurroundedBy" $
 
     prop "applies a parser surrounded by a optional parsers" $
       \x (y :: Char) ->
-        parse (maybeBetween (is y) anyChar) x
+        parse (maybeSurroundedBy (is y) anyChar) x
         ===
         parse ((is y |?) *> anyChar <* (is y |?)) x
 

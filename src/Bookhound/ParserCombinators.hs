@@ -6,7 +6,7 @@ import Bookhound.Parser (Parser, allOf, anyChar, anyOf, except, satisfy,
                          withError)
 
 import Bookhound.Utils.List (hasMultiple, hasSome)
-import Bookhound.Utils.Text (ToString (..))
+import Bookhound.Utils.Text (ToText (..))
 import Control.Applicative  (liftA2, optional, (<|>))
 
 import qualified Data.Foldable as Foldable
@@ -135,13 +135,13 @@ infixl 6 <#>
 (<#>) = flip times
 
 infixl 6 <?>
-(<?>) :: Parser a -> String -> Parser a
+(<?>) :: Parser a -> Text -> Parser a
 (<?>) = flip withError
 
 infixl 6 ->>-
-(->>-) :: (ToString a, ToString b) => Parser a -> Parser b -> Parser Text
-(->>-) p1 p2 = fmap pack $ (<>) <$> fmap toString p1
-                             <*> fmap toString p2
+(->>-) :: (ToText a, ToText b) => Parser a -> Parser b -> Parser Text
+(->>-) p1 p2 = (<>) <$> fmap toText p1
+                 <*> fmap toText p2
 
 -- Apply Binary Operators
 infixl 6 </\>

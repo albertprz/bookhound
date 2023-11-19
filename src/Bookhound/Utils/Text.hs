@@ -1,33 +1,37 @@
 module Bookhound.Utils.Text where
 
-import Data.List (intercalate)
-import Data.Text (Text, unpack)
+import qualified Data.Foldable as Foldable
+import           Data.List     (intercalate)
+import           Data.Text     (Text, pack)
+import qualified Data.Text     as Text
 
 
-class ToString a where
-  toString :: a -> String
+class ToText a where
+  toText :: a -> Text
 
-instance ToString Char where
-  toString = pure
+instance ToText Char where
+  toText = Text.singleton
 
-instance ToString Int where
-  toString = show
+instance ToText Int where
+  toText = pack . show
 
-instance ToString Text where
-  toString = unpack
+instance ToText Text where
+  toText = id
 
-instance ToString Integer where
-  toString = show
+instance ToText Integer where
+  toText = pack . show
 
-instance ToString Float where
-  toString = show
+instance ToText Float where
+  toText = pack .show
 
-instance ToString Double where
-  toString = show
+instance ToText Double where
+  toText = pack . show
 
-instance (ToString a, Foldable m) => ToString (m a) where
-  toString = concatMap toString
+instance ToText a => ToText [a] where
+  toText = Text.concat . fmap toText
 
+instance (ToText a, Foldable f, Functor f) => ToText (f a) where
+  toText = Text.concat . Foldable.toList . fmap toText
 
 
 indent :: Int -> String -> String

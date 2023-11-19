@@ -139,10 +139,10 @@ satisfy cond ma = do
   else
     empty
 
-withError :: String -> Parser a -> Parser a
+withError :: Text -> Parser a -> Parser a
 withError = withErrorN 0
 
-withErrorN :: Int -> String -> Parser a -> Parser a
+withErrorN :: Int -> Text -> Parser a -> Parser a
 withErrorN n str = applyError . Set.singleton $ (n, ErrorAt str)
 
 
@@ -200,13 +200,13 @@ instance Show a => Show (ParseResult a) where
 data ParseError
   = UnexpectedEof
   | ExpectedEof Input
-  | ErrorAt String
+  | ErrorAt Text
   deriving (Eq, Ord)
 
 instance Show ParseError where
   show UnexpectedEof        = "Unexpected end of stream"
   show (ExpectedEof i)      = "Expected end of stream, but got "
                                <> ">" <> unpack i <> "<"
-  show (ErrorAt s)          = "Error at " <> s
+  show (ErrorAt s)          = "Error at " <> unpack s
 
 type Input = Text

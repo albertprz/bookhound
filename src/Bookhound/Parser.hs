@@ -4,9 +4,10 @@ import           Bookhound.Utils.Foldable  (findJust)
 import           Control.Applicative       (Alternative (..), liftA2)
 import           Control.Monad             (MonadPlus)
 import           Control.Monad.Error.Class (MonadError (..))
+import           Data.Either               (fromRight)
 import           Data.Set                  (Set)
 import qualified Data.Set                  as Set
-import           Data.Text                 (Text, pack, unpack)
+import           Data.Text                 (Text, unpack)
 import qualified Data.Text                 as Text
 
 data Parser a
@@ -76,16 +77,15 @@ runParser p@(P _ _ e) i = toEither $ parse (exactly p) i
         <> (snd <$> reverse (Set.toList e))
         <> filter (not . hasPriorityError) [pe]
 
-andThen :: Parser String -> Parser a -> Parser a
+andThen :: Parser Text -> Parser a -> Parser a
 andThen p1 p2@(P _ t e) = applyTransformError t e $
-  mkParser (\i -> parse p2 $ either (const i) pack (runParser p1 i))
+  mkParser (\i -> parse p2 $ fromRight i (runParser p1 i))
 
 exactly :: Parser a -> Parser a
 exactly p = p <* eof
 
 eof :: Parser ()
-eof = mkParser
-  \i ->
+eof = mkParser \i ->
     if i == mempty then
       Result i ()
     else
@@ -127,7 +127,7 @@ both (P p t e) (P p' t' e') =
 except :: Parser a -> Parser a -> Parser a
 except (P p t e) (P p' _ _) = applyTransformError t e $ mkParser (
   \x -> case p' x of
-    Result _ _ -> Error $ NoMatch "except"
+    Result _ _ -> Error $ ExpectedEof x
     Error _    -> p x
   )
 
@@ -200,9 +200,6 @@ instance Show a => Show (ParseResult a) where
 data ParseError
   = UnexpectedEof
   | ExpectedEof Input
-  | UnexpectedChar Char
-  | UnexpectedString String
-  | NoMatch String
   | ErrorAt String
   deriving (Eq, Ord)
 
@@ -210,11 +207,6 @@ instance Show ParseError where
   show UnexpectedEof        = "Unexpected end of stream"
   show (ExpectedEof i)      = "Expected end of stream, but got "
                                <> ">" <> unpack i <> "<"
-  show (UnexpectedChar c)   = "Unexpected anyChar: "
-                               <> "[" <> show c <> "]"
-  show (UnexpectedString s) = "Unexpected string: "
-                               <> "[" <> s <> "]"
-  show (NoMatch s)          = "Did not match condition: " <> s
   show (ErrorAt s)          = "Error at " <> s
 
 type Input = Text

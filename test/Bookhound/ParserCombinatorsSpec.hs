@@ -7,8 +7,9 @@ import Test.QuickCheck.Instances.Text ()
 import           Bookhound.Parser
 import           Bookhound.ParserCombinators
 import           Bookhound.Utils.List        (headSafe)
+import           Control.Applicative         (optional)
 import qualified Data.Foldable               as Foldable
-import           Data.Text                   (Text, unpack)
+import           Data.Text                   (Text, pack, unpack)
 import qualified Data.Text                   as Text
 import           Test.QuickCheck.Property    ((===))
 
@@ -25,74 +26,72 @@ spec = do
             else
               Error UnexpectedEof
 
-  describe "maybeTimes" $
+  describe "optional" $
 
     prop "applies a parser 1 or 0 times" $
-      \x -> parse (maybeTimes anyChar) x
+      \x -> parse (optional anyChar) x
            ===
            (headSafe <$> parseTimes anyChar [0, 1] x)
 
-  describe "anyTimes" $
+  describe "many" $
 
     prop "applies a parser any number of times" $
-      \x -> parse (anyTimes anyChar) x
+      \x -> parse (many anyChar) x
            ===
-           parseTimes anyChar [0 .. Text.length x] x
+           parseTimes anyChar [0 .. Text.length x + 10] x
 
 
-  describe "someTimes" $
+  describe "some" $
 
     prop "applies a parser at least once" $
-      \x -> parse (someTimes anyChar) x
+      \x -> parse (some anyChar) x
            ===
-           replaceError "someTimes"
-             (parseTimes anyChar [1 .. Text.length x] x)
+           parseTimes anyChar [1 .. Text.length x + 10] x
 
-  describe "multipleTimes" $
+  describe "multiple" $
 
     prop "applies a parser at least twice" $
-      \x -> parse (multipleTimes anyChar) x
+      \x -> parse (multiple anyChar) x
            ===
-           replaceError "multipleTimes"
-             (parseTimes anyChar [2 .. Text.length x] x)
+           parseTimes anyChar [2 .. Text.length x + 10] x
 
-  describe "withinBoth" $
+  describe "surroundedBy" $
 
     prop "applies a parser surrounded by 2 parsers" $
       \x (y :: Char) (z :: Char) ->
-        parse (withinBoth (is y) (is z) anyChar) x
+        parse (surroundedBy (is y) (is z) anyChar) x
         ===
         parse (is y *> anyChar <* is z) x
 
-  describe "maybeWithinBoth" $
+  describe "maybeSurroundedBy" $
 
     prop "applies a parser surrounded by 2 optional parsers" $
       \x (y :: Char) (z :: Char) ->
-        parse (maybeWithinBoth (is y) (is z) anyChar) x
+        parse (maybeSurroundedBy (is y) (is z) anyChar) x
         ===
         parse ((is y |?) *> anyChar <* (is z |?)) x
 
-  describe "within" $
+  describe "between" $
 
     prop "applies a parser surrounded by a parser" $
       \x (y :: Char) ->
-        parse (within (is y) anyChar) x
+        parse (between (is y) anyChar) x
         ===
         parse (is y *> anyChar <* is y) x
 
-  describe "maybeWithin" $
+  describe "maybeBetween" $
 
     prop "applies a parser surrounded by a optional parsers" $
       \x (y :: Char) ->
-        parse (maybeWithin (is y) anyChar) x
+        parse (maybeBetween (is y) anyChar) x
         ===
         parse ((is y |?) *> anyChar <* (is y |?)) x
 
-  describe "anySepBy" $
+  describe "manySepBy" $
 
     prop "applies a parser separated by a parser any number of times" $
       \x (y :: Char) ->
-        parse (anySepBy (is y) anyChar) x
+        parse (manySepBy (is y) anyChar) x
         ===
         parse ((<>) <$> (Foldable.toList <$> (anyChar |?))
                     <*> ((is y *> anyChar) |*)) x
@@ -115,17 +114,13 @@ spec = do
 
   describe "->>-" $
 
-    prop "concats results of 2 parsers that can be converted to Strings" $
+    prop "concats results of 2 parsers that can be converted to Texts" $
       \x (y :: Char) (z :: Char) ->
         parse (is y ->>- is z) x
         ===
-        parse (is [y, z]) x
+        parse (is $ pack [y, z]) x
 
 
 parseTimes :: Parser a -> [Int] -> Text -> ParseResult [a]
 parseTimes p ns = parse $ anyOf ((`times` p) <$> reverse ns)
 
-
-replaceError :: String -> ParseResult a -> ParseResult a
-replaceError err (Error (NoMatch _)) = Error $ NoMatch err
-replaceError _ result                = result

@@ -1,7 +1,7 @@
 module Bookhound.Parsers.DateTime (date, time, timeZoneOffset, localDateTime, offsetDateTime, dateTime, year, day, month, hour, minute, second) where
 
 import Bookhound.Parser            (Parser, satisfy, withErrorN)
-import Bookhound.ParserCombinators (IsMatch (..), within, (<#>), (|+), (|?))
+import Bookhound.ParserCombinators (IsMatch (..), between, (<#>), (|+), (|?))
 import Bookhound.Parsers.Char      (colon, dash, digit, dot, plus)
 import Control.Applicative
 
@@ -12,7 +12,7 @@ import Data.Time  (Day, LocalTime (..), TimeOfDay (..), TimeZone,
 
 date :: Parser Day
 date = withErrorN (-1) "Date" $
-  fromGregorian <$> year <*> within dash month <*> day
+  fromGregorian <$> year <*> between dash month <*> day
 
 
 time :: Parser TimeOfDay

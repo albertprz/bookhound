@@ -1,23 +1,21 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
-module Bookhound.ParserCombinators (IsMatch(..), satisfy,
-                          times, maybeTimes, anyTimes, someTimes, multipleTimes,
-                          within, maybeWithin, withinBoth, maybeWithinBoth,
-                          anySepBy, someSepBy, multipleSepBy, sepByOps, sepByOp,
-                          (<?>), (<#>), (->>-), (|?), (|*), (|+), (|++))  where
-
-import Bookhound.Parser (ParseError (..), Parser, allOf, anyChar, anyOf, except,
-                         satisfy, withError)
+module Bookhound.ParserCombinators (IsMatch(..), satisfy, char, string, times, many, some, multiple,
+                          between, maybeBetween, surroundedBy, maybeSurroundedBy,
+                          manySepBy, someSepBy, multipleSepBy, sepByOps, sepByOp, manyEndBy, someEndBy, multipleEndBy,
+                          (<?>), (<#>), (</\>), (<:>), (->>-), (|?), (|*), (|+), (|++), (||?), (||*), (||+), (||++))  where
+import Bookhound.Parser (Parser, allOf, anyChar, anyOf, except, satisfy,
+                         withError)
 
 import Bookhound.Utils.Applicative (extract)
 import Bookhound.Utils.List        (hasMultiple, hasSome)
-import Bookhound.Utils.String      (ToString (..))
-import Control.Applicative
-import Control.Monad.Error.Class   (MonadError (..))
+import Bookhound.Utils.Text        (ToString (..))
+import Control.Applicative         (liftA2, optional, (<|>))
 
-import           Data.Bifunctor (Bifunctor (first))
-import qualified Data.Foldable  as Foldable
+import qualified Data.Foldable as Foldable
+import           Data.Text     (Text, pack, unpack)
+import qualified Data.Text     as Text
 
 
 class IsMatch a where
@@ -30,7 +28,6 @@ class IsMatch a where
   oneOf xs  = anyOf $ is <$> xs
   noneOf xs = allOf $ isNot <$> xs
 
-
 instance   IsMatch Char where
   is      = isMatch (==) anyChar
   isNot   = isMatch (/=) anyChar
@@ -41,73 +38,99 @@ instance   IsMatch String where
   isNot   = traverse is
   inverse = except (anyChar |*)
 
-instance {-# OVERLAPPABLE #-} (Num a, Read a, Show a) => IsMatch a where
-  is n      = read <$> (is . show) n
-  isNot n   = read <$> (isNot . show) n
-  inverse p = read <$> inverse (show <$> p)
+instance   IsMatch Text where
+  is      = fmap pack . is . unpack
+  isNot   = fmap pack . is . unpack
+  inverse = except (anyChar ||*)
 
 
 isMatch :: (Char -> Char -> Bool) -> Parser Char -> Char -> Parser Char
-isMatch cond parser c1 =
-  do c2 <- parser
-     if cond c1 c2
-       then pure c2
-       else throwError $ UnexpectedChar c2
+isMatch cond p c1 = satisfy (cond c1) p
 
+char :: Char -> Parser Char
+char = is
+
+string :: Text -> Parser Text
+string = is
 
  -- Frequency combinators
+many :: Parser a -> Parser [a]
+many p = (p >>= \x -> (x :) <$> many p)
+  <|> pure []
+
+some :: Parser a -> Parser [a]
+some = satisfy hasSome . many
+
+multiple :: Parser a -> Parser [a]
+multiple = satisfy hasMultiple . many
+
 times :: Int -> Parser a  -> Parser [a]
-times n p = sequence $ p <$ [1 .. n]
-
-maybeTimes :: Parser a -> Parser (Maybe a)
-maybeTimes = optional
-
-anyTimes :: Parser a -> Parser [a]
-anyTimes p = (p >>= \x -> (x :) <$> anyTimes p) <|> pure []
-
-someTimes :: Parser a -> Parser [a]
-someTimes = satisfy hasSome . anyTimes
-
-multipleTimes :: Parser a -> Parser [a]
-multipleTimes = satisfy hasMultiple . anyTimes
+times n p
+  | n < 1 = pure []
+  | otherwise = sequence $ p <$ [1 .. n]
 
 
--- Within combinators
-withinBoth :: Parser a -> Parser b -> Parser c -> Parser c
-withinBoth = extract
+-- Between combinators
+surroundedBy :: Parser a -> Parser b -> Parser c -> Parser c
+surroundedBy = extract
 
-maybeWithinBoth :: Parser a -> Parser b -> Parser c -> Parser c
-maybeWithinBoth p1 p2 = withinBoth (p1 |?) (p2 |?)
+maybeSurroundedBy :: Parser a -> Parser b -> Parser c -> Parser c
+maybeSurroundedBy p1 p2 = surroundedBy (p1 |?) (p2 |?)
 
-within :: Parser a -> Parser b -> Parser b
-within p = withinBoth p p
+between :: Parser a -> Parser b -> Parser b
+between p = surroundedBy p p
 
-maybeWithin :: Parser a -> Parser b -> Parser b
-maybeWithin p = within (p |?)
+maybeBetween :: Parser a -> Parser b -> Parser b
+maybeBetween p = between (p |?)
 
 
--- Separated by combinators
+-- Sep by combinators
 sepBy :: (Parser b -> Parser (Maybe b)) -> (Parser b -> Parser [b])
                 -> Parser a -> Parser b -> Parser [b]
 sepBy freq1 freq2 sep p = (<>) <$> (Foldable.toList <$> freq1 p)
                                <*> freq2 (sep *> p)
 
-anySepBy :: Parser a -> Parser b -> Parser [b]
-anySepBy = sepBy (|?) (|*)
+manySepBy :: Parser a -> Parser b -> Parser [b]
+manySepBy = sepBy optional many
 
 someSepBy :: Parser a -> Parser b -> Parser [b]
-someSepBy = sepBy (fmap Just) (|*)
+someSepBy = sepBy (fmap Just) many
 
 multipleSepBy :: Parser a -> Parser b -> Parser [b]
-multipleSepBy = sepBy (fmap Just) (|+)
+multipleSepBy = sepBy (fmap Just) some
 
 sepByOps :: Parser a -> Parser b -> Parser ([a], [b])
 sepByOps sep p = do x <-  p
-                    y <- (((,) <$> sep <*> p) |+)
-                    pure (fst <$> y, x : (snd <$> y))
+                    y <- (|+) (sep </\> p)
+                    pure (fmap fst y, x : fmap snd y)
 
 sepByOp :: Parser a -> Parser b -> Parser (a, [b])
-sepByOp sep p = first head <$> sepByOps sep p
+sepByOp sepP p = do
+  x1 <- p
+  sep <- sepP
+  x2 <- p
+  xs <- (|*) (sepP *> p)
+  pure (sep, x1 : x2 : xs)
+
+-- End by combinators
+endBy
+  :: forall a b
+   . (Parser b -> Parser (Maybe b))
+  -> (Parser b -> Parser [b])
+  -> Parser a
+  -> Parser b
+  -> Parser [b]
+endBy freq1 freq2 sep p =
+  sepBy freq1 freq2 sep p <* sep
+
+manyEndBy :: forall a b. Parser a -> Parser b -> Parser [ b]
+manyEndBy = endBy optional many
+
+someEndBy :: forall a b. Parser a -> Parser b -> Parser [ b]
+someEndBy = endBy (fmap Just) many
+
+multipleEndBy :: forall a b. Parser a -> Parser b -> Parser [ b]
+multipleEndBy = endBy (fmap Just) some
 
 
 -- Parser Binary Operators
@@ -120,20 +143,40 @@ infixl 6 <?>
 (<?>) = flip withError
 
 infixl 6 ->>-
-(->>-) :: (ToString a, ToString b) => Parser a -> Parser b -> Parser String
-(->>-) p1 p2 = (<>) <$> (toString <$> p1)
-                 <*> (toString <$> p2)
+(->>-) :: (ToString a, ToString b) => Parser a -> Parser b -> Parser Text
+(->>-) p1 p2 = fmap pack $ (<>) <$> fmap toString p1
+                             <*> fmap toString p2
 
+-- Apply Binary Operators
+infixl 6 </\>
+(</\>) :: Applicative f => f a -> f b -> f (a, b)
+(</\>) = liftA2 (,)
+
+infixl 6 <:>
+(<:>) :: Applicative f => f a -> f [a] -> f [a]
+(<:>) = liftA2 (:)
 
 -- Parser Unary Operators
 (|?) :: Parser a -> Parser (Maybe a)
-(|?) = maybeTimes
+(|?) = optional
 
 (|*) :: Parser a -> Parser [a]
-(|*) = anyTimes
+(|*) = many
 
 (|+) :: Parser a -> Parser [a]
-(|+) = someTimes
+(|+) = some
 
 (|++) :: Parser a -> Parser [a]
-(|++) = multipleTimes
+(|++) = multiple
+
+(||?) :: Parser Char -> Parser Text
+(||?) = fmap (maybe mempty Text.singleton) . optional
+
+(||*) :: Parser Char -> Parser Text
+(||*) = fmap pack . many
+
+(||+) :: Parser Char -> Parser Text
+(||+) = fmap pack . some
+
+(||++) :: Parser Char -> Parser Text
+(||++) = fmap pack . multiple

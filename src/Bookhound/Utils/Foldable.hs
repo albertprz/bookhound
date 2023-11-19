@@ -1,10 +1,10 @@
 module Bookhound.Utils.Foldable where
 
-import Bookhound.Utils.String (indent)
-import Control.Monad          (join)
-import Data.Foldable          as Foldable (Foldable (toList), find)
-import Data.List              (intercalate)
-import Data.Maybe             (isJust)
+import Bookhound.Utils.Text (indent)
+import Control.Monad        (join)
+import Data.Foldable        as Foldable (Foldable (toList), find)
+import Data.List            (intercalate)
+import Data.Maybe           (isJust)
 
 
 stringify :: Foldable m => String -> String -> String -> Int -> m String -> String

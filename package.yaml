@@ -68,6 +68,7 @@ default-extensions:
 - ApplicativeDo
 - ParallelListComp
 - MonadComprehensions
+- OverloadedStrings
 
 # Type Level Programming
 - GADTs
@@ -97,4 +98,4 @@ tests:
     - bookhound
     - quickcheck-instances
     ghc-options:
-    - -Wno-orphans
+    - -Wno-type-defaults

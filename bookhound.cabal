@@ -32,13 +32,13 @@ library
       Bookhound.Parsers.Collections
       Bookhound.Parsers.DateTime
       Bookhound.Parsers.Number
-      Bookhound.Parsers.String
+      Bookhound.Parsers.Text
       Bookhound.Utils.Applicative
       Bookhound.Utils.DateTime
       Bookhound.Utils.Foldable
       Bookhound.Utils.List
       Bookhound.Utils.Map
-      Bookhound.Utils.String
+      Bookhound.Utils.Text
   other-modules:
       Paths_bookhound
   hs-source-dirs:
@@ -65,6 +65,7 @@ library
       ApplicativeDo
       ParallelListComp
       MonadComprehensions
+      OverloadedStrings
       GADTs
       TypeFamilies
       TypeFamilyDependencies
@@ -118,6 +119,7 @@ test-suite test
       ApplicativeDo
       ParallelListComp
       MonadComprehensions
+      OverloadedStrings
       GADTs
       TypeFamilies
       TypeFamilyDependencies
@@ -128,7 +130,7 @@ test-suite test
       DeriveTraversable
       DeriveGeneric
       GeneralizedNewtypeDeriving
-  ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wpartial-fields -Wincomplete-uni-patterns -Wredundant-constraints -Wno-orphans
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wpartial-fields -Wincomplete-uni-patterns -Wredundant-constraints -Wno-type-defaults
   build-tool-depends:
       hspec-discover:hspec-discover
   build-depends:

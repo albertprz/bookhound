@@ -4,6 +4,7 @@ import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck.Instances.Text ()
 
+import Bookhound.Utils.List 
 import Bookhound.Parser
 import Data.Char
 import Data.Text                (pack, unpack)
@@ -80,8 +81,8 @@ spec = do
              case unpack x of
                (ch : rest)
                  | ch == y    -> Result (pack rest) ch
-                 | otherwise -> Error $ UnexpectedChar ch
-               []            -> Error UnexpectedEof
+                 | hasSome rest -> Error $ ExpectedEof $ pack rest
+               _            -> Error UnexpectedEof
 
     prop "works for /=" $
       \x y -> parse (isMatch (/=) anyChar y) x
@@ -89,8 +90,8 @@ spec = do
              case unpack x of
                (ch : rest)
                  | ch /= y    -> Result (pack rest) ch
-                 | otherwise -> Error $ UnexpectedChar ch
-               []            -> Error UnexpectedEof
+                 | hasSome rest -> Error $ ExpectedEof $ pack rest
+               _            -> Error UnexpectedEof
 
   describe "satisfy" $
 
@@ -100,8 +101,8 @@ spec = do
            case unpack x of
              (ch : rest)
                | isDigit ch -> Result (pack rest) ch
-               | otherwise  -> Error $ ExpectedEof $ pack rest
-             []             -> Error UnexpectedEof
+               | hasSome rest -> Error $ ExpectedEof $ pack rest
+             _             -> Error UnexpectedEof
 
   describe "except" $
 
@@ -111,7 +112,7 @@ spec = do
              ===
              case unpack x of
                [ch]    -> Result (pack "") ch
-               (_ : _) -> Error $ NoMatch "except"
+               (_ : _) -> Error $ ExpectedEof x
                []      -> Error UnexpectedEof
 
   describe "anyOf" $

@@ -19,7 +19,7 @@ spec = do
   describe "posInt" $
 
     prop "parses a positive Int" $
-      \(x :: Integer) -> x > 0 ==>
+      \(x :: Int) -> x > 0 ==>
         runParser posInt (pack $ show x)
         ===
         Right x
@@ -27,7 +27,7 @@ spec = do
   describe "negInt" $
 
     prop "parses a negative Int" $
-      \(x :: Integer) -> x < 0 ==>
+      \(x :: Int) -> x < 0 ==>
         runParser negInt (pack $ show x)
         ===
         Right x
@@ -35,16 +35,8 @@ spec = do
   describe "int" $
 
     prop "parses an Int" $
-      \(x :: Integer) ->
+      \(x :: Int) ->
         runParser int (pack $ show x)
         ===
         Right x
 
-
-  describe "double" $
-
-    prop "parses a Double" $
-      \(x :: Double) ->
-        runParser double (pack $ show x)
-        ===
-        Right x

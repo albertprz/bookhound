@@ -1,4 +1,4 @@
-module Bookhound.Utils.String where
+module Bookhound.Utils.Text where
 
 import Data.List (intercalate)
 import Data.Text (Text, unpack)

@@ -11,7 +11,7 @@ import           Bookhound.Parsers.Collections
 import           Data.Char                     (isAlpha, isAscii)
 import           Data.List                     (intercalate)
 import qualified Data.Map                      as Map
-import           Data.Text                     ( pack)
+import           Data.Text                     (pack, unpack)
 import           Test.QuickCheck               ((==>))
 import           Test.QuickCheck.Property      ((===))
 
@@ -46,7 +46,7 @@ spec = do
 
     prop "parses a map provided the key and value parsers" $
       \(x :: [(Char, Char)]) ->
-        runParser (mapOf (is (":" :: String)) alpha alpha)
+        runParser (mapOf (unpack <$> (is ":")) alpha alpha)
         (pack ("{" <>
                intercalate ", " (showMapEntry <$> filter areAlpha' x)
                <> "}"))

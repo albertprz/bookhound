@@ -44,11 +44,12 @@ instance Monoid a => Monoid (Parser a) where
   mempty = pure mempty
 
 instance Alternative Parser where
-  (<|>) (P p t e) ~(P p' t' e') =
-    applyTransformsErrors [ t, t' ] [ e, e' ] $
+  (<|>) (P p t e) p2 =
+    applyTransformError t e $
       mkParser
         \x -> case p x of
-          Error _ -> p' x
+          Error _ -> let (P _ t' e') = p2 in
+                  parse (applyTransformsErrors [t, t'] [e, e'] p2) x
           result  -> result
   empty = mkParser \i ->
     if Text.null i then

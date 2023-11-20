@@ -5,6 +5,7 @@ import           Control.Applicative       (Alternative (..), liftA2)
 import           Control.Monad             (MonadPlus)
 import           Control.Monad.Error.Class (MonadError (..))
 import           Data.Either               (fromRight)
+import           Data.Foldable             (foldl')
 import           Data.Set                  (Set)
 import qualified Data.Set                  as Set
 import           Data.Text                 (Text, unpack)
@@ -111,10 +112,10 @@ choice :: Foldable f => f (Parser a) -> Parser a
 choice = anyOf
 
 anyOf :: Foldable f => f (Parser a) -> Parser a
-anyOf = foldl (<|>) empty
+anyOf = foldl' (<|>) empty
 
 allOf :: Foldable f => f (Parser a) -> Parser a
-allOf = foldl both (pure undefined)
+allOf = foldl' both (pure undefined)
 
 both :: Parser a -> Parser a -> Parser a
 both (P p t e) (P p' t' e') =

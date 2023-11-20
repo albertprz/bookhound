@@ -16,8 +16,8 @@ import           Data.Text                   (Text)
 import qualified Data.Text                   as Text
 
 
-string :: Parser Text
-string = (anyChar ||*)
+anyString :: Parser Text
+anyString = (anyChar ||*)
 
 word :: Parser Text
 word = (inverse whiteSpace ||+)

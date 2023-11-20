@@ -29,14 +29,9 @@ instance   IsMatch Char where
   isNot   = isMatch (/=) anyChar
   inverse = except anyChar
 
-instance   IsMatch String where
-  is      = traverse is
-  isNot   = traverse is
-  inverse = except (anyChar |*)
-
 instance   IsMatch Text where
-  is      = fmap pack . is . unpack
-  isNot   = fmap pack . is . unpack
+  is      = fmap pack . traverse is . unpack
+  isNot   = fmap pack . traverse is . unpack
   inverse = except (anyChar ||*)
 
 

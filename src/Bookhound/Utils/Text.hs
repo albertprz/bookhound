@@ -27,7 +27,7 @@ instance ToText Float where
 instance ToText Double where
   toText = pack . show
 
-instance ToText a => ToText [a] where
+instance {-# OVERLAPPING #-} ToText a => ToText [a] where
   toText = Text.concat . fmap toText
 
 instance (ToText a, Foldable f, Functor f) => ToText (f a) where
